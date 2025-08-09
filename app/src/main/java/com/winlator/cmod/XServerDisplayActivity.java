@@ -59,7 +59,6 @@ import com.winlator.cmod.contents.AdrenotoolsManager;
 import com.winlator.cmod.core.AppUtils;
 import com.winlator.cmod.core.DefaultVersion;
 import com.winlator.cmod.core.EnvVars;
-import com.winlator.cmod.core.EnvironmentManager;
 import com.winlator.cmod.core.FileUtils;
 import com.winlator.cmod.core.KeyValueSet;
 import com.winlator.cmod.core.OnExtractFileListener;
@@ -67,7 +66,6 @@ import com.winlator.cmod.core.PreloaderDialog;
 import com.winlator.cmod.core.ProcessHelper;
 import com.winlator.cmod.core.StringUtils;
 import com.winlator.cmod.core.TarCompressorUtils;
-import com.winlator.cmod.core.Win32AppWorkarounds;
 import com.winlator.cmod.core.WineInfo;
 import com.winlator.cmod.core.WineRegistryEditor;
 import com.winlator.cmod.core.WineRequestHandler;
@@ -129,7 +127,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.concurrent.Executors;
 
 import cn.sherlock.com.sun.media.sound.SF2Soundbank;
@@ -205,8 +202,6 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
     private GlibcProgramLauncherComponent glibcLauncher; // Reference to GlibcProgramLauncherComponent
     private BionicProgramLauncherComponent bionicLauncher; // Reference to BionicProgramLauncherComponent
     private FileObserver restartTriggerObserver;
-
-    private Win32AppWorkarounds win32AppWorkarounds;
     private EnvVars overrideEnvVars;
 
 
@@ -443,9 +438,6 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
                 shortcut = new Shortcut(container, new File(shortcutPath));
             }
 
-            // Initialize Win32AppWorkarounds
-            win32AppWorkarounds = new Win32AppWorkarounds(this);
-
             taskAffinityMask = (short) ProcessHelper.getAffinityMask(container.getCPUList(true));
             taskAffinityMaskWoW64 = (short) ProcessHelper.getAffinityMask(container.getCPUListWoW64(true));
 
@@ -454,30 +446,9 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
                 taskAffinityMaskWoW64 = (short) ProcessHelper.getAffinityMask(shortcut.getExtra("cpuListWoW64", container.getCPUListWoW64(true)));
             }
 
-            win32AppWorkarounds.setTaskAffinityMask(taskAffinityMask);
-            win32AppWorkarounds.setTaskAffinityMaskWoW64(taskAffinityMaskWoW64);
-
             // Determine the class name for the startup workarounds
             String wmClass = shortcut != null ? shortcut.getExtra("wmClass", "") : "";
             Log.d("XServerDisplayActivity", "Startup wmClass: " + wmClass);
-
-            if (!wmClass.isEmpty()) {
-                // Apply startup workarounds based on wmClass
-                win32AppWorkarounds.applyStartupWorkarounds(wmClass);
-            } else {
-                // Fallback: Use the executable name for workarounds
-                String execPath = getIntent().getStringExtra("exec_path");
-                Log.d("XServerDisplayActivity", "Startup execPath: " + execPath);
-
-                if (execPath != null && !execPath.isEmpty()) {
-                    String execName = FileUtils.getName(execPath);
-                    Log.d("XServerDisplayActivity", "Startup execName: " + execName);
-
-                    win32AppWorkarounds.applyStartupWorkarounds(execName);
-                } else {
-                    Log.w("XServerDisplayActivity", "No wmClass or execPath provided for startup workarounds.");
-                }
-            }
 
             firstTimeBoot = container.getExtra("appVersion").isEmpty();
 
@@ -594,17 +565,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
             public void onMapWindow(Window window) {
                 // Log the class name of the mapped window
                 Log.d("XServerDisplayActivity", "onMapWindow: Detected window className: " + window.getClassName());
-
-                // Apply task affinity and other workarounds
-                if (win32AppWorkarounds != null) {
-                    // Apply dynamic workarounds based on the window class name
-                    win32AppWorkarounds.applyStartupWorkarounds(window.getClassName());
-
-                    // Assign CPU affinity for the process
-                    win32AppWorkarounds.assignTaskAffinity(window);
-                } else {
-                    Log.e("XServerDisplayActivity", "win32AppWorkarounds is null in onMapWindow.");
-                }
+                assignTaskAffinity(window);
             }
 
             @Override
@@ -1815,7 +1776,6 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
         FileUtils.symlink(".."+FileUtils.toRelativePath(rootDir.getPath(), containerPatternDir.getPath()), linkFile.getPath());
 
         GuestProgramLauncherComponent guestProgramLauncherComponent = environment.getComponent(GuestProgramLauncherComponent.class);
-//        guestProgramLauncherComponent.setGuestExecutable(wineInfo.getExecutable(this, false)+" explorer /desktop=shell,"+Container.DEFAULT_SCREEN_SIZE+" winecfg");
         guestProgramLauncherComponent.setGuestExecutable("wineboot -u explorer /desktop=shell,"+Container.DEFAULT_SCREEN_SIZE+" winecfg");
 
         final PreloaderDialog preloaderDialog = new PreloaderDialog(this);
@@ -2123,19 +2083,19 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
         container.putExtra("desktopTheme", null);
     }
 
-//    private void assignTaskAffinity(Window window) {
-//        if (taskAffinityMask == 0) return;
-//        int processId = window.getProcessId();
-//        String className = window.getClassName();
-//        int processAffinity = window.isWoW64() ? taskAffinityMaskWoW64 : taskAffinityMask;
-//
-//        if (processId > 0) {
-//            winHandler.setProcessAffinity(processId, processAffinity);
-//        }
-//        else if (!className.isEmpty()) {
-//            winHandler.setProcessAffinity(window.getClassName(), processAffinity);
-//        }
-//    }
+    private void assignTaskAffinity(Window window) {
+        if (taskAffinityMask == 0) return;
+        int processId = window.getProcessId();
+        String className = window.getClassName();
+        int processAffinity = window.isWoW64() ? taskAffinityMaskWoW64 : taskAffinityMask;
+
+        if (processId > 0) {
+            winHandler.setProcessAffinity(processId, processAffinity);
+        }
+        else if (!className.isEmpty()) {
+            winHandler.setProcessAffinity(window.getClassName(), processAffinity);
+        }
+    }
 
     private void changeFrameRatingVisibility(Window window, Property property) {
         if (frameRating == null) return;
