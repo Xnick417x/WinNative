@@ -1559,14 +1559,9 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
         if (maxDeviceMemory != null && Integer.parseInt(maxDeviceMemory) > 0)
             envVars.put("UTIL_LAYER_VMEM_MAX_SIZE", maxDeviceMemory);
 
-        String frameSync = graphicsDriverConfig.get("frameSync");
-        if (frameSync.equals("Always") && useDRI3) {
-            envVars.put("MESA_VK_WSI_DEBUG", "forcesync");
-        }
-        else if (frameSync.equals("Never")) {
-            envVars.put("WRAPPER_DISABLE_PRESENT_WAIT", "1");
-        }
-        envVars.put("MESA_VK_WSI_PRESENT_MODE", "mailbox");
+        String presentMode = graphicsDriverConfig.get("presentMode");
+        envVars.put("MESA_VK_WSI_PRESENT_MODE", presentMode);
+
         if (!vkbasaltConfig.isEmpty()) {
             envVars.put("ENABLE_VKBASALT", "1");
             envVars.put("VKBASALT_CONFIG", vkbasaltConfig);

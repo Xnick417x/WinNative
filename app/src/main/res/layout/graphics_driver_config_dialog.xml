@@ -22,6 +22,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/SGraphicsDriverVersion"
             android:spinnerMode="dialog"/>
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -55,7 +56,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/graphics_driver_frame_sync"
+            android:text="@string/graphics_driver_present_modes"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:paddingBottom="8dp"/>
 
@@ -63,8 +64,8 @@
             style="@style/ComboBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/SGraphicsDriverFrameSync"
-            android:entries="@array/frame_sync_entries"
+            android:id="@+id/SGraphicsDriverPresentMode"
+            android:entries="@array/present_mode_entries"
             android:spinnerMode="dialog"/>
 
         <CheckBox
