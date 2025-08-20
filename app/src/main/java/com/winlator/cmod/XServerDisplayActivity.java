@@ -1468,9 +1468,6 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
         String adrenoToolsDriverId = graphicsDriverConfig.get("version");
         String isAdrenotoolsTurnip = graphicsDriverConfig.get("adrenotoolsTurnip");
 
-        if (adrenoToolsDriverId.isEmpty())
-            adrenoToolsDriverId = GPUInformation.isDriverSupported(DefaultVersion.WRAPPER_ADRENO, this) ? DefaultVersion.WRAPPER_ADRENO : DefaultVersion.WRAPPER;
-
         Log.d("GraphicsDriverExtraction", "Adrenotools DriverID: " + adrenoToolsDriverId);
 
         File rootDir = imageFs.getRootDir();
