@@ -116,7 +116,8 @@ public abstract class TarCompressorUtils {
         try {
             return extract(type, context.getAssets().open(assetFile), destination, onExtractFileListener);
         }
-        catch (IOException e) {
+        catch (Throwable e) {
+            Log.e("TarCompressor", "Error extracting asset: " + assetFile, e);
             return false;
         }
     }
@@ -148,7 +149,8 @@ public abstract class TarCompressorUtils {
         try {
             return extract(type, new BufferedInputStream(new FileInputStream(source), StreamUtils.BUFFER_SIZE), destination, onExtractFileListener);
         }
-        catch (FileNotFoundException e) {
+        catch (Throwable e) {
+            Log.e("TarCompressor", "Error extracting file: " + source, e);
             return false;
         }
     }
@@ -185,8 +187,8 @@ public abstract class TarCompressorUtils {
             }
             return true;
         }
-        catch (IOException e) {
-            e.printStackTrace();
+        catch (Throwable e) {
+            Log.e("TarCompressor", "Error during extraction", e);
             return false;
         }
     }

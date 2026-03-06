@@ -140,7 +140,7 @@ dependencies {
     implementation 'commons-validator:commons-validator:1.9.0'
     implementation 'io.ktor:ktor-client-cio:3.0.3'
     implementation 'com.google.protobuf:protobuf-java:4.30.2'
-    implementation 'com.github.luben:zstd-jni:1.5.6-9'
+    implementation 'com.github.luben:zstd-jni:1.5.6-9@aar'
     implementation 'org.bouncycastle:bcprov-jdk18on:1.80'
     implementation 'androidx.browser:browser:1.8.0'
     implementation 'com.auth0.android:jwtdecode:2.0.2'

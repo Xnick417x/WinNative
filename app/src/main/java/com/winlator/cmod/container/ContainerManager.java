@@ -121,6 +121,8 @@ public class ContainerManager {
             int id = maxContainerId + 1;
             File containerDir = new File(homeDir, ImageFs.USER + "-" + id);
             
+            Log.d("ContainerManager", "createContainer: homeDir=" + homeDir.getAbsolutePath() + " exists=" + homeDir.exists());
+            
             // If a previous creation crashed, the directory might exist but not be registered.
             while (containerDir.exists()) {
                 id++;
@@ -128,18 +130,34 @@ public class ContainerManager {
             }
 
             data.put("id", id);
-            if (!containerDir.mkdirs()) return null;
+            if (!containerDir.mkdirs()) {
+                Log.e("ContainerManager", "createContainer: FAILED to create dir: " + containerDir.getAbsolutePath());
+                // Try creating parent dirs first
+                if (!homeDir.exists()) {
+                    Log.d("ContainerManager", "createContainer: homeDir does not exist, creating...");
+                    homeDir.mkdirs();
+                }
+                if (!containerDir.mkdirs() && !containerDir.exists()) {
+                    Log.e("ContainerManager", "createContainer: STILL failed to create dir after retry");
+                    return null;
+                }
+            }
+            Log.d("ContainerManager", "createContainer: dir created at " + containerDir.getAbsolutePath());
 
             Container container = new Container(id, this);
             container.setRootDir(containerDir);
             container.loadData(data);
 
-            container.setWineVersion(data.getString("wineVersion"));
+            String wineVersion = data.getString("wineVersion");
+            Log.d("ContainerManager", "createContainer: wineVersion=" + wineVersion);
+            container.setWineVersion(wineVersion);
 
             if (!extractContainerPatternFile(container, container.getWineVersion(), contentsManager, containerDir, null)) {
+                Log.e("ContainerManager", "createContainer: extractContainerPatternFile FAILED for wineVersion=" + container.getWineVersion());
                 FileUtils.delete(containerDir);
                 return null;
             }
+            Log.d("ContainerManager", "createContainer: container pattern extracted successfully");
 
 //            // Extract the selected graphics driver files
 //            String driverVersion = container.getGraphicsDriverVersion();
@@ -260,13 +278,19 @@ public class ContainerManager {
     }
 
     public boolean extractContainerPatternFile(Container container, String wineVersion, ContentsManager contentsManager, File containerDir, OnExtractFileListener onExtractFileListener) {
+        Log.d("ContainerManager", "extractContainerPatternFile: wineVersion=" + wineVersion + " containerDir=" + containerDir.getAbsolutePath());
         WineInfo wineInfo = WineInfo.fromIdentifier(context, contentsManager, wineVersion);
+        Log.d("ContainerManager", "extractContainerPatternFile: wineInfo=" + wineInfo + " path=" + (wineInfo != null ? wineInfo.path : "null"));
         String containerPattern = wineVersion + "_container_pattern.tzst";
+        Log.d("ContainerManager", "extractContainerPatternFile: trying asset: " + containerPattern);
         boolean result = TarCompressorUtils.extract(TarCompressorUtils.Type.ZSTD, context, containerPattern, containerDir, onExtractFileListener);
+        Log.d("ContainerManager", "extractContainerPatternFile: asset extraction result=" + result);
 
         if (!result) {
             File containerPatternFile = new File(wineInfo.path + "/prefixPack.txz");
+            Log.d("ContainerManager", "extractContainerPatternFile: trying file: " + containerPatternFile.getAbsolutePath() + " exists=" + containerPatternFile.exists());
             result = TarCompressorUtils.extract(TarCompressorUtils.Type.XZ, containerPatternFile, containerDir);
+            Log.d("ContainerManager", "extractContainerPatternFile: file extraction result=" + result);
         }
 
         if (result) {
@@ -279,6 +303,7 @@ public class ContainerManager {
                 extractCommonDlls(wineInfo, "i386-windows", "syswow64", containerDir, onExtractFileListener);
             }
             catch (JSONException e) {
+                Log.e("ContainerManager", "extractContainerPatternFile: extractCommonDlls failed", e);
                 return false;
             }
         }
