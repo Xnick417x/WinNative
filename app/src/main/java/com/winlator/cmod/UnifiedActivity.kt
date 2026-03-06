@@ -13,6 +13,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -36,6 +37,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -87,6 +89,10 @@ private val StatusOffline = Color(0xFF6E7681)
 @AndroidEntryPoint
 class UnifiedActivity : ComponentActivity() {
     @Inject lateinit var db: PluviaDatabase
+
+    // Track the currently selected game in the carousel for Game Settings button
+    private var selectedSteamAppId: Int = 0
+    private var selectedSteamAppName: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -283,12 +289,18 @@ class UnifiedActivity : ComponentActivity() {
                 contentAlignment = Alignment.Center
             ) {
                 IconButton(onClick = {
+                    // Open per-game settings (container/shortcut config) for selected game
                     val intent = Intent(context, MainActivity::class.java)
-                    intent.putExtra("selected_menu_item_id", R.id.main_menu_input_controls)
                     intent.putExtra("return_to_unified", true)
+                    // Pass the currently selected game's app ID if available
+                    val appId = selectedSteamAppId
+                    if (appId > 0) {
+                        intent.putExtra("create_shortcut_for_app_id", appId)
+                        intent.putExtra("create_shortcut_for_app_name", selectedSteamAppName)
+                    }
                     context.startActivity(intent)
                 }, modifier = Modifier.size(44.dp)) {
-                    Icon(Icons.Default.SportsEsports, contentDescription = "Controller", tint = TextPrimary, modifier = Modifier.size(24.dp))
+                    Icon(Icons.Default.Tune, contentDescription = "Game Settings", tint = TextPrimary, modifier = Modifier.size(24.dp))
                 }
             }
 
@@ -381,16 +393,24 @@ class UnifiedActivity : ComponentActivity() {
         val installedApps = remember(steamApps) {
             steamApps.filter { SteamService.isAppInstalled(it.id) }
         }
-        val allApps = if (installedApps.isEmpty()) steamApps else installedApps
 
-        if (allApps.isEmpty()) {
+        if (installedApps.isEmpty()) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                EmptyStateMessage("No games found. Use a Store tab to find and install games.")
+                EmptyStateMessage("No games installed. Use a Store tab to find and install games.")
             }
             return
         }
 
         val listState = rememberLazyListState()
+
+        // Center the carousel on the middle item at launch
+        LaunchedEffect(installedApps.size) {
+            if (installedApps.isNotEmpty()) {
+                val midIndex = installedApps.size / 2
+                listState.scrollToItem(midIndex)
+            }
+        }
+
         val centerIdx by remember {
             derivedStateOf {
                 val layoutInfo = listState.layoutInfo
@@ -401,6 +421,13 @@ class UnifiedActivity : ComponentActivity() {
             }
         }
 
+        // Track which game is selected for the top-right "Game Settings" button
+        val selectedApp = installedApps.getOrNull(centerIdx)
+        LaunchedEffect(selectedApp) {
+            selectedSteamAppId = selectedApp?.id ?: 0
+            selectedSteamAppName = selectedApp?.name ?: ""
+        }
+
         Column(
             modifier = Modifier.fillMaxSize().padding(top = 16.dp),
             verticalArrangement = Arrangement.Top
@@ -409,12 +436,12 @@ class UnifiedActivity : ComponentActivity() {
             // ── Horizontal carousel ──
             LazyRow(
                 state = listState,
-                modifier = Modifier.fillMaxWidth().height(320.dp),
-                contentPadding = PaddingValues(horizontal = 80.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxWidth().height(250.dp),
+                contentPadding = PaddingValues(horizontal = 100.dp),
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                itemsIndexed(allApps) { index, app ->
+                itemsIndexed(installedApps) { index, app ->
                     val isCentered = index == centerIdx
                     val targetScale by animateFloatAsState(
                         targetValue = if (isCentered) 1.12f else 0.88f,
@@ -438,26 +465,12 @@ class UnifiedActivity : ComponentActivity() {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
-                            .width(180.dp)
+                            .width(140.dp)
                             .graphicsLayer {
                                 scaleX = targetScale
                                 scaleY = targetScale
                             }
                     ) {
-                        // Game title above capsule
-                        Text(
-                            text = app.name,
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.SemiBold,
-                            color = TextPrimary.copy(alpha = titleAlpha),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier
-                                .widthIn(max = 180.dp)
-                                .padding(bottom = 6.dp)
-                        )
-
                         GameCapsule(
                             app = app,
                             modifier = Modifier
@@ -471,7 +484,6 @@ class UnifiedActivity : ComponentActivity() {
             Spacer(Modifier.height(24.dp))
 
             // ── Selected game details ──
-            val selectedApp = allApps.getOrNull(centerIdx)
             if (selectedApp != null) {
                 Column(
                     modifier = Modifier
@@ -539,19 +551,21 @@ class UnifiedActivity : ComponentActivity() {
             modifier = modifier
                 .clip(RoundedCornerShape(12.dp))
                 .background(CardDark)
-                .clickable {
-                    if (SteamService.isAppInstalled(app.id)) {
-                        val containerManager = ContainerManager(context)
-                        launchSteamGame(context, containerManager, app)
+                .pointerInput(app.id) {
+                    detectTapGestures {
+                        if (SteamService.isAppInstalled(app.id)) {
+                            val containerManager = ContainerManager(context)
+                            launchSteamGame(context, containerManager, app)
+                        }
                     }
                 }
         ) {
             // Artwork — extended fallback chain for maximum coverage
-            val imageUrl = app.getHeroUrl()
-                ?: app.getHeaderImageUrl()
-                ?: app.getCapsuleUrl()
+            val imageUrl = app.getCapsuleUrl()
                 ?: app.getCapsuleUrl(large = true)
-                ?: "https://cdn.cloudflare.steamstatic.com/steam/apps/${app.id}/library_hero.jpg"
+                ?: app.getHeroUrl()
+                ?: app.getHeaderImageUrl()
+                ?: "https://shared.steamstatic.com/store_item_assets/steam/apps/${app.id}/library_600x900.jpg"
 
             AsyncImage(
                 model = ImageRequest.Builder(context)
@@ -559,18 +573,19 @@ class UnifiedActivity : ComponentActivity() {
                     .crossfade(300)
                     .build(),
                 contentDescription = app.name,
-                modifier = Modifier.fillMaxWidth().height(234.dp),
+                modifier = Modifier.fillMaxWidth().height(175.dp),
                 contentScale = ContentScale.Crop
             )
 
             Text(
                 text = app.name,
-                modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
-                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 6.dp, vertical = 6.dp),
+                style = MaterialTheme.typography.labelSmall,
                 color = TextPrimary,
-                maxLines = 2,
+                maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.Center
             )
         }
     }
@@ -929,13 +944,28 @@ class UnifiedActivity : ComponentActivity() {
             intent.putExtra("shortcut_name", shortcut.name)
             context.startActivity(intent)
         } else {
-            // No shortcut — use the first available container with A: drive mapped
-            val containers = containerManager.getContainers()
-            val container = containers.firstOrNull()
+            // No shortcut — get or auto-create a container 
+            var containers = containerManager.getContainers()
+            var container = containers.firstOrNull()
             if (container == null) {
-                android.widget.Toast.makeText(context, "No container available. Create one in Game Settings first.", android.widget.Toast.LENGTH_SHORT).show()
+                // Auto-create a default container
+                try {
+                    val data = org.json.JSONObject()
+                    data.put("name", "Default")
+                    data.put("wineVersion", "proton-9.0-x86_64")
+                    val contentsManager = com.winlator.cmod.contents.ContentsManager(context)
+                    contentsManager.syncContents()
+                    container = containerManager.createContainer(data, contentsManager)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+
+            if (container == null) {
+                android.widget.Toast.makeText(context, "Failed to create container. Open Game Settings first.", android.widget.Toast.LENGTH_SHORT).show()
                 return
             }
+
             mountADrive(container, gameInstallPath)
 
             // Find the first .exe in the game directory

@@ -83,7 +83,10 @@ public class ContainersFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
         
         view.findViewById(R.id.BTAddContainer).setOnClickListener(v -> {
-            if (!ImageFs.find(getContext()).isValid()) return;
+            if (!ImageFs.find(getContext()).isValid()) {
+                android.widget.Toast.makeText(getContext(), "System image not installed. Please install components first.", android.widget.Toast.LENGTH_LONG).show();
+                return;
+            }
             FragmentManager fragmentManager = getParentFragmentManager();
             fragmentManager.beginTransaction()
                     .setCustomAnimations(R.anim.slide_in_up, R.anim.slide_out_down, R.anim.slide_in_down, R.anim.slide_out_up)

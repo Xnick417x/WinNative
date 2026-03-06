@@ -102,6 +102,60 @@ public abstract class ImageFsInstaller {
         if (!imageFs.isValid() || imageFs.getVersion() < LATEST_VERSION) installFromAssets(activity);
     }
 
+    /**
+     * Version that works from any Activity (e.g. UnifiedActivity).
+     * Shows a simple progress dialog and installs ImageFS from assets if needed.
+     */
+    public static void installIfNeededFromAny(final android.app.Activity activity) {
+        ImageFs imageFs = ImageFs.find(activity);
+        if (imageFs.isValid() && imageFs.getVersion() >= LATEST_VERSION) return;
+
+        // Show a simple progress dialog
+        final android.app.ProgressDialog dialog = new android.app.ProgressDialog(activity);
+        dialog.setTitle("Installing System Files");
+        dialog.setMessage("Please wait...");
+        dialog.setProgressStyle(android.app.ProgressDialog.STYLE_HORIZONTAL);
+        dialog.setMax(100);
+        dialog.setCancelable(false);
+        activity.runOnUiThread(dialog::show);
+
+        File rootDir = imageFs.getRootDir();
+        Executors.newSingleThreadExecutor().execute(() -> {
+            clearRootDir(rootDir);
+            final byte compressionRatio = 22;
+            final long contentLength = (long)(FileUtils.getSize(activity, "imagefs.txz") * (100.0f / compressionRatio));
+            AtomicLong totalSizeRef = new AtomicLong();
+
+            boolean success = TarCompressorUtils.extract(TarCompressorUtils.Type.XZ, activity, "imagefs.txz", rootDir, (file, size) -> {
+                if (size > 0) {
+                    long totalSize = totalSizeRef.addAndGet(size);
+                    final int progress = (int)(((float)totalSize / contentLength) * 100);
+                    activity.runOnUiThread(() -> dialog.setProgress(progress));
+                }
+                return file;
+            });
+
+            if (success) {
+                // Install wine and drivers if available
+                try {
+                    String[] versions = activity.getResources().getStringArray(R.array.wine_entries);
+                    for (String version : versions) {
+                        File outFile = new File(rootDir, "/opt/" + version);
+                        outFile.mkdirs();
+                        TarCompressorUtils.extract(TarCompressorUtils.Type.XZ, activity, version + ".txz", outFile);
+                    }
+                } catch (Exception e) { /* wine assets may not exist */ }
+                imageFs.createImgVersionFile(LATEST_VERSION);
+            } else {
+                activity.runOnUiThread(() ->
+                    android.widget.Toast.makeText(activity, R.string.unable_to_install_system_files, android.widget.Toast.LENGTH_LONG).show()
+                );
+            }
+
+            activity.runOnUiThread(dialog::dismiss);
+        });
+    }
+
     private static void clearOptDir(File optDir) {
         File[] files = optDir.listFiles();
         if (files != null) {
