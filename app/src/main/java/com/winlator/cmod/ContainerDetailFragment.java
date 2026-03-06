@@ -309,8 +309,19 @@ public class ContainerDetailFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup root, @Nullable Bundle savedInstanceState) {
         final Context context = getContext();
+        final View view;
+        try {
+            view = inflater.inflate(R.layout.container_detail_fragment, root, false);
+        } catch (Throwable e) {
+            Log.e(TAG, "FATAL: Failed to inflate container_detail_fragment layout", e);
+            AppUtils.showToast(context, "Error: could not load container settings screen");
+            View fallback = new FrameLayout(context);
+            if (getActivity() != null) getActivity().onBackPressed();
+            return fallback;
+        }
+        try {
+        Log.d(TAG, "onCreateView: layout inflated");
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        final View view = inflater.inflate(R.layout.container_detail_fragment, root, false);
 
         // Determine if dark mode is enabled
         isDarkMode = preferences.getBoolean("dark_mode", true); // Adjust this based on how you store theme info
@@ -321,6 +332,7 @@ public class ContainerDetailFragment extends Fragment {
         // Apply dynamic styles recursively
 //        applyDynamicStylesRecursively(view, isDarkMode);
 
+        Log.d(TAG, "onCreateView: step 1 - creating ContainerManager");
         manager = new ContainerManager(context);
         
         if (shortcut != null) {
@@ -329,8 +341,10 @@ public class ContainerDetailFragment extends Fragment {
             container = containerId > 0 ? manager.getContainerById(containerId) : null;
         }
         
+        Log.d(TAG, "onCreateView: step 2 - creating ContentsManager");
         contentsManager = new ContentsManager(context);
         contentsManager.syncContents();
+        Log.d(TAG, "onCreateView: step 3 - contentsManager synced");
 
         final EditText etName = view.findViewById(R.id.ETName);
 
@@ -358,7 +372,9 @@ public class ContainerDetailFragment extends Fragment {
             applyDarkMode(view);
         }
 
+        Log.d(TAG, "onCreateView: step 4 - loading wine version spinner");
         loadWineVersionSpinner(view, sWineVersion, sBox64Version);
+        Log.d(TAG, "onCreateView: step 5 - wine version spinner loaded");
 
         loadScreenSizeSpinner(view, isShortcutMode() ? shortcut.getExtra("screenSize", container != null ? container.getScreenSize() : Container.DEFAULT_SCREEN_SIZE) : (isEditMode() && container != null ? container.getScreenSize() : Container.DEFAULT_SCREEN_SIZE));
 
@@ -372,9 +388,11 @@ public class ContainerDetailFragment extends Fragment {
         final View vGraphicsDriverConfig = view.findViewById(R.id.BTGraphicsDriverConfig);
         vGraphicsDriverConfig.setTag(isShortcutMode() ? shortcut.getExtra("graphicsDriverConfig", container != null ? container.getGraphicsDriverConfig() : Container.DEFAULT_GRAPHICSDRIVERCONFIG) : (isEditMode() && container != null ? container.getGraphicsDriverConfig() : Container.DEFAULT_GRAPHICSDRIVERCONFIG));
 
+        Log.d(TAG, "onCreateView: step 6 - loading graphics driver spinner");
         loadGraphicsDriverSpinner(sGraphicsDriver, sDXWrapper, vGraphicsDriverConfig,
                 isShortcutMode() ? shortcut.getExtra("graphicsDriver", container != null ? container.getGraphicsDriver() : Container.DEFAULT_GRAPHICS_DRIVER) : (isEditMode() && container != null ? container.getGraphicsDriver() : Container.DEFAULT_GRAPHICS_DRIVER),
                 isShortcutMode() ? shortcut.getExtra("dxwrapper", container != null ? container.getDXWrapper() : Container.DEFAULT_DXWRAPPER) : (isEditMode() && container != null ? container.getDXWrapper() : Container.DEFAULT_DXWRAPPER));
+        Log.d(TAG, "onCreateView: step 7 - graphics driver spinner loaded");
 
         view.findViewById(R.id.BTHelpDXWrapper).setOnClickListener((v) -> AppUtils.showHelpBox(context, v, R.string.dxwrapper_help_content));
 
@@ -694,7 +712,18 @@ public class ContainerDetailFragment extends Fragment {
                 AppUtils.showToast(context, "Unexpected error: " + e.getMessage());
             }
         });
+        Log.d(TAG, "onCreateView: completed successfully");
         return view;
+        } catch (Throwable e) {
+            Log.e(TAG, "FATAL: Error in onCreateView setup", e);
+            try {
+                AppUtils.showToast(context, "Error loading container settings: " + e.getMessage());
+            } catch (Throwable ignored) {}
+            if (getActivity() != null) {
+                try { getActivity().onBackPressed(); } catch (Throwable ignored) {}
+            }
+            return view;
+        }
     }
 
     private void saveWineRegistryKeys(View view) {
