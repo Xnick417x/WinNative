@@ -502,17 +502,24 @@ public class ContainerDetailFragment extends Fragment {
                 String name = etName.getText().toString();
                 String screenSize = getScreenSize(view);
                 String envVars = envVarsView.getEnvVars();
-                String graphicsDriver = sGraphicsDriver.getSelectedItem() != null ? StringUtils.parseIdentifier(sGraphicsDriver.getSelectedItem()) : "";
+                String graphicsDriver = sGraphicsDriver.getSelectedItem() != null ? StringUtils.parseIdentifier(sGraphicsDriver.getSelectedItem()) : Container.DEFAULT_GRAPHICS_DRIVER;
                 String graphicsDriverConfig = vGraphicsDriverConfig.getTag() != null ? vGraphicsDriverConfig.getTag().toString() : "";
                 HashMap<String, String> config = GraphicsDriverConfigDialog.parseGraphicsDriverConfig(graphicsDriverConfig);
                 if (config.get("version") == null || config.get("version").isEmpty()) {
-                    config.put("version", GPUInformation.isDriverSupported(DefaultVersion.WRAPPER_ADRENO, context) ? DefaultVersion.WRAPPER_ADRENO : DefaultVersion.WRAPPER);
+                    String defaultVersion;
+                    try {
+                        defaultVersion = GPUInformation.isDriverSupported(DefaultVersion.WRAPPER_ADRENO, context) ? DefaultVersion.WRAPPER_ADRENO : DefaultVersion.WRAPPER;
+                    } catch (Throwable e) {
+                        Log.w(TAG, "Error checking driver support for default version", e);
+                        defaultVersion = DefaultVersion.WRAPPER;
+                    }
+                    config.put("version", defaultVersion);
                     graphicsDriverConfig = GraphicsDriverConfigDialog.toGraphicsDriverConfig(config);
                 }
-                String dxwrapper = sDXWrapper.getSelectedItem() != null ? StringUtils.parseIdentifier(sDXWrapper.getSelectedItem()) : "";
+                String dxwrapper = sDXWrapper.getSelectedItem() != null ? StringUtils.parseIdentifier(sDXWrapper.getSelectedItem()) : Container.DEFAULT_DXWRAPPER;
                 String dxwrapperConfig = vDXWrapperConfig.getTag() != null ? vDXWrapperConfig.getTag().toString() : "";
-                String audioDriver = sAudioDriver.getSelectedItem() != null ? StringUtils.parseIdentifier(sAudioDriver.getSelectedItem()) : "";
-                String emulator = sEmulator.getSelectedItem() != null ? StringUtils.parseIdentifier(sEmulator.getSelectedItem()) : "";
+                String audioDriver = sAudioDriver.getSelectedItem() != null ? StringUtils.parseIdentifier(sAudioDriver.getSelectedItem()) : Container.DEFAULT_AUDIO_DRIVER;
+                String emulator = sEmulator.getSelectedItem() != null ? StringUtils.parseIdentifier(sEmulator.getSelectedItem()) : Container.DEFAULT_EMULATOR;
                 String wincomponents = getWinComponents(view);
                 String drives = getDrives(view);
                 boolean showFPS = cbShowFPS.isChecked();
@@ -680,7 +687,11 @@ public class ContainerDetailFragment extends Fragment {
                     });
                 }
             } catch (JSONException e) {
-                e.printStackTrace();
+                Log.e(TAG, "Error saving container data", e);
+                AppUtils.showToast(context, "Error: " + e.getMessage());
+            } catch (Throwable e) {
+                Log.e(TAG, "Unexpected error saving container", e);
+                AppUtils.showToast(context, "Unexpected error: " + e.getMessage());
             }
         });
         return view;
@@ -830,7 +841,7 @@ public class ContainerDetailFragment extends Fragment {
         updateGraphicsDriverSpinner(context, sGraphicsDriver);
 
         Runnable update = () -> {
-            String graphicsDriver = StringUtils.parseIdentifier(sGraphicsDriver.getSelectedItem());
+            String graphicsDriver = sGraphicsDriver.getSelectedItem() != null ? StringUtils.parseIdentifier(sGraphicsDriver.getSelectedItem()) : Container.DEFAULT_GRAPHICS_DRIVER;
 
             // Update the DXWrapper spinner
             ArrayList<String> items = new ArrayList<>();
@@ -841,7 +852,7 @@ public class ContainerDetailFragment extends Fragment {
             AppUtils.setSpinnerSelectionFromIdentifier(sDXWrapper, selectedDXWrapper);
 
             vGraphicsDriverConfig.setOnClickListener((v) -> {
-                new GraphicsDriverConfigDialog(vGraphicsDriverConfig, graphicsDriver, null).show();
+                GraphicsDriverConfigDialog.showSafe(vGraphicsDriverConfig, graphicsDriver, null);
             });
             vGraphicsDriverConfig.setVisibility(View.VISIBLE);
         };
@@ -865,11 +876,23 @@ public class ContainerDetailFragment extends Fragment {
         AdapterView.OnItemSelectedListener listener = new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String dxwrapper = StringUtils.parseIdentifier(sDXWrapper.getSelectedItem());
+                String dxwrapper = sDXWrapper.getSelectedItem() != null ? StringUtils.parseIdentifier(sDXWrapper.getSelectedItem()) : "";
                 if (dxwrapper.contains("dxvk")) {
-                    vDXWrapperConfig.setOnClickListener((v) -> (new DXVKConfigDialog(vDXWrapperConfig, isARM64EC)).show());
+                    vDXWrapperConfig.setOnClickListener((v) -> {
+                        try {
+                            (new DXVKConfigDialog(vDXWrapperConfig, isARM64EC)).show();
+                        } catch (Throwable e) {
+                            Log.e(TAG, "Error opening DXVKConfigDialog", e);
+                        }
+                    });
                 } else {
-                    vDXWrapperConfig.setOnClickListener((v) -> (new WineD3DConfigDialog(vDXWrapperConfig)).show());
+                    vDXWrapperConfig.setOnClickListener((v) -> {
+                        try {
+                            (new WineD3DConfigDialog(vDXWrapperConfig)).show();
+                        } catch (Throwable e) {
+                            Log.e(TAG, "Error opening WineD3DConfigDialog", e);
+                        }
+                    });
                 }
                 vDXWrapperConfig.setVisibility(View.VISIBLE);
             }

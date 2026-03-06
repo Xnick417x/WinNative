@@ -175,7 +175,12 @@ public class ShortcutsFragment extends Fragment {
                             .commit();
                 }
                 else if (itemId == R.id.shortcut_settings) {
-                    (new ShortcutSettingsDialog(ShortcutsFragment.this, shortcut)).show();
+                    try {
+                        (new ShortcutSettingsDialog(ShortcutsFragment.this, shortcut)).show();
+                    } catch (Throwable e) {
+                        Log.e("ShortcutsFragment", "Error opening shortcut settings", e);
+                        Toast.makeText(getContext(), "Error opening shortcut settings", Toast.LENGTH_SHORT).show();
+                    }
                 }
                 else if (itemId == R.id.shortcut_remove) {
                     ContentDialog.confirm(context, R.string.do_you_want_to_remove_this_shortcut, () -> {

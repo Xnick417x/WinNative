@@ -1550,8 +1550,18 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
         }
 
         String vulkanVersion = graphicsDriverConfig.get("vulkanVersion");
-        String vulkanVersionPatch = GPUInformation.getVulkanVersion(adrenoToolsDriverId, this).split("\\.")[2];
-        vulkanVersion = vulkanVersion + "." + vulkanVersionPatch;
+        if (vulkanVersion == null) vulkanVersion = "1.3";
+        try {
+            String fullVkVersion = GPUInformation.getVulkanVersion(adrenoToolsDriverId, this);
+            if (fullVkVersion != null && fullVkVersion.contains(".")) {
+                String[] parts = fullVkVersion.split("\\.");
+                if (parts.length >= 3) {
+                    vulkanVersion = vulkanVersion + "." + parts[2];
+                }
+            }
+        } catch (Throwable e) {
+            Log.w("GraphicsDriverExtraction", "Error getting Vulkan version patch", e);
+        }
         envVars.put("WRAPPER_VK_VERSION", vulkanVersion);
 
         String blacklistedExtensions = graphicsDriverConfig.get("blacklistedExtensions");
@@ -1559,7 +1569,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
 
         String gpuName = graphicsDriverConfig.get("gpuName");
         String dxvkVersion = dxwrapperConfig.get("version");
-        if (!gpuName.equals("Device") && !dxvkVersion.equals("1.11.1-sarek")) {
+        if (gpuName != null && !gpuName.equals("Device") && dxvkVersion != null && !dxvkVersion.equals("1.11.1-sarek")) {
             envVars.put("WRAPPER_DEVICE_NAME", gpuName);
             envVars.put("WRAPPER_DEVICE_ID", WineD3DConfigDialog.getDeviceIdFromGPUName(this, gpuName));
             envVars.put("WRAPPER_VENDOR_ID", WineD3DConfigDialog.getVendorIdFromGPUName(this, gpuName));
@@ -1570,7 +1580,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
             envVars.put("WRAPPER_VMEM_MAX_SIZE", maxDeviceMemory);
         
         String presentMode = graphicsDriverConfig.get("presentMode");
-        if (presentMode.contains("immediate")) {
+        if (presentMode != null && presentMode.contains("immediate")) {
             envVars.put("WRAPPER_MAX_IMAGE_COUNT", "1");
         }
         envVars.put("MESA_VK_WSI_PRESENT_MODE", presentMode);
@@ -1579,7 +1589,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
         envVars.put("WRAPPER_RESOURCE_TYPE", resourceType);
 
         String syncFrame = graphicsDriverConfig.get("syncFrame");
-        if (syncFrame.equals("1"))
+        if ("1".equals(syncFrame))
             envVars.put("MESA_VK_WSI_DEBUG", "forcesync");
 
         String disablePresentWait = graphicsDriverConfig.get("disablePresentWait");
@@ -1590,14 +1600,18 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
 
         switch (bcnEmulation) {
             case "auto" -> {
-                if (bcnEmulationType.equals("compute") && GPUInformation.getVendorID(null, null) != 0x5143) {
+                int vendorId = 0;
+                try { vendorId = GPUInformation.getVendorID(null, null); } catch (Throwable ignored) {}
+                if (bcnEmulationType.equals("compute") && vendorId != 0x5143) {
                     envVars.put("ENABLE_BCN_COMPUTE", "1");
                     envVars.put("BCN_COMPUTE_AUTO", "1");
                 }
                 envVars.put("WRAPPER_EMULATE_BCN", "3");
             }
             case "full" -> {
-                if (bcnEmulationType.equals("compute") && GPUInformation.getVendorID(null, null) != 0x5143) {
+                int vendorId2 = 0;
+                try { vendorId2 = GPUInformation.getVendorID(null, null); } catch (Throwable ignored) {}
+                if (bcnEmulationType.equals("compute") && vendorId2 != 0x5143) {
                     envVars.put("ENABLE_BCN_COMPUTE", "1");
                     envVars.put("BCN_COMPUTE_AUTO", "0");
                 }

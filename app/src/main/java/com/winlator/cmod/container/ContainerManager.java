@@ -152,8 +152,8 @@ public class ContainerManager {
             maxContainerId++;
             containers.add(container);
             return container;
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Throwable e) {
+            Log.e("ContainerManager", "Error creating container", e);
         }
         return null;
     }

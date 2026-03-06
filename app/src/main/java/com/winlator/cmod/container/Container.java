@@ -309,7 +309,7 @@ public class Container {
     }
 
     public String getExtra(String key) {
-        return getExtra(name, "");
+        return getExtra(key, "");
     }
 
     public String getExtra(String name, String fallback) {

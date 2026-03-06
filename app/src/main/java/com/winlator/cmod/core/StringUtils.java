@@ -34,6 +34,7 @@ public class StringUtils {
     }
 
     public static String parseNumber(Object text) {
+        if (text == null) return "0";
         return text.toString().replaceAll("[^0-9\\.]+", "");
     }
 

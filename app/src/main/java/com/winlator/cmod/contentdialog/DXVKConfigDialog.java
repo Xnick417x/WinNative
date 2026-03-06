@@ -131,18 +131,16 @@ public class DXVKConfigDialog extends ContentDialog {
                 String currentDXVKVersion = config.get("version");
 
                 if (!selectedVersion.equals("None")) {
-                    ArrayList<String> versions = new ArrayList<>();
+                    ArrayList<String> filteredVersions = new ArrayList<>();
 
                     for (int i = 0; i < dxvkVersions.size(); i++) {
                         Integer major = tryGetMajor(dxvkVersions.get(i));
-                        if (major != null && major < 2) {
-                            versions.add(dxvkVersions.get(i));
+                        if (major == null || major >= 2) {
+                            filteredVersions.add(dxvkVersions.get(i));
                         }
                     }
 
-                    dxvkVersions.removeAll(versions);
-
-                    ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_dropdown_item, dxvkVersions);
+                    ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_dropdown_item, filteredVersions);
                     sDXVKVersion.setAdapter(adapter);
 
                     Integer curMajor = tryGetMajor(currentDXVKVersion);
@@ -164,14 +162,18 @@ public class DXVKConfigDialog extends ContentDialog {
         });
 
         setOnConfirmCallback(() -> {
-            config.put("version", sDXVKVersion.getSelectedItem() != null ? sDXVKVersion.getSelectedItem().toString() : "");
-            config.put("framerate", sFramerate.getSelectedItem() != null ? StringUtils.parseNumber(sFramerate.getSelectedItem()) : "");
+            config.put("version", sDXVKVersion.getSelectedItem() != null ? sDXVKVersion.getSelectedItem().toString() : DefaultVersion.DXVK);
+            config.put("framerate", sFramerate.getSelectedItem() != null ? StringUtils.parseNumber(sFramerate.getSelectedItem()) : "0");
             config.put("async", ((swAsync.isChecked())&&(llAsync.getVisibility()==View.VISIBLE))?"1":"0");
             config.put("asyncCache", ((swAsyncCache.isChecked())&&(llAsyncCache.getVisibility()==View.VISIBLE))?"1":"0");
-            VKD3DVersionItem selectedItem = (VKD3DVersionItem) sVKD3DVersion.getSelectedItem();
-            config.put("vkd3dVersion", selectedItem != null ? selectedItem.getIdentifier() : "0");
+            Object vkd3dItem = sVKD3DVersion.getSelectedItem();
+            if (vkd3dItem instanceof VKD3DVersionItem) {
+                config.put("vkd3dVersion", ((VKD3DVersionItem) vkd3dItem).getIdentifier());
+            } else {
+                config.put("vkd3dVersion", vkd3dItem != null ? vkd3dItem.toString() : "None");
+            }
             config.put("vkd3dLevel", sVKD3DFeatureLevel.getSelectedItem() != null ? sVKD3DFeatureLevel.getSelectedItem().toString() : "12_0");
-            config.put("ddrawrapper", sDDRAWrapper.getSelectedItem() != null ? StringUtils.parseIdentifier(sDDRAWrapper.getSelectedItem().toString()) : "");
+            config.put("ddrawrapper", sDDRAWrapper.getSelectedItem() != null ? StringUtils.parseIdentifier(sDDRAWrapper.getSelectedItem().toString()) : Container.DEFAULT_DDRAWRAPPER);
             anchor.setTag(config.toString());
         });
     }
@@ -204,18 +206,16 @@ public class DXVKConfigDialog extends ContentDialog {
         String selectedVersion = config.get("vkd3dVersion");
         String currentDXVKVersion = config.get("version");
         if (!selectedVersion.equals("None")) {
-            ArrayList<String> versions = new ArrayList<>();
+            ArrayList<String> filteredVersions = new ArrayList<>();
 
             for (int i = 0; i < dxvkVersions.size(); i++) {
                 Integer major = tryGetMajor(dxvkVersions.get(i));
-                if (major != null && major < 2) {
-                    versions.add(dxvkVersions.get(i));
+                if (major == null || major >= 2) {
+                    filteredVersions.add(dxvkVersions.get(i));
                 }
             }
 
-            dxvkVersions.removeAll(versions);
-
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_dropdown_item, dxvkVersions);
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_dropdown_item, filteredVersions);
             sDXVKVersion.setAdapter(adapter);
 
             Integer curMajor = tryGetMajor(currentDXVKVersion);
@@ -270,13 +270,14 @@ public class DXVKConfigDialog extends ContentDialog {
             itemList.add(entryName.substring(firstDashIndex + 1));
         }
 
-        for (int i = 0; i < itemList.size(); i++) {
+        // Remove arm64ec items using reverse iteration to avoid skipping elements
+        for (int i = itemList.size() - 1; i >= 0; i--) {
             if (itemList.get(i).contains("arm64ec") && !isARM64EC)
                 itemList.remove(i);
         }
 
         spinner.setAdapter(new ArrayAdapter<>(context, android.R.layout.simple_spinner_dropdown_item, itemList));
-        dxvkVersions = itemList;
+        dxvkVersions = new ArrayList<>(itemList);
     }
 
     private void loadVkd3dVersionSpinner(ContentsManager manager, Spinner spinner) {
