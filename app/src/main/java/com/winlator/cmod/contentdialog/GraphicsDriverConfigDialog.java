@@ -181,7 +181,7 @@ public class GraphicsDriverConfigDialog extends ContentDialog {
         sVersion.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                selectedVersion = sVersion.getSelectedItem().toString();
+                selectedVersion = sVersion.getSelectedItem() != null ? sVersion.getSelectedItem().toString() : "";
                 String[] availableExtensions = queryAvailableExtensions(selectedVersion, anchor.getContext());
                 String blacklistedExtensions = "";
 
@@ -208,7 +208,7 @@ public class GraphicsDriverConfigDialog extends ContentDialog {
         sVulkanVersion.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                selectedVulkanVersion = sVulkanVersion.getSelectedItem().toString();
+                selectedVulkanVersion = sVulkanVersion.getSelectedItem() != null ? sVulkanVersion.getSelectedItem().toString() : "1.3";
             }
 
             @Override
@@ -220,7 +220,7 @@ public class GraphicsDriverConfigDialog extends ContentDialog {
         sGPUName.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                selectedGPUName = sGPUName.getSelectedItem().toString();
+                selectedGPUName = sGPUName.getSelectedItem() != null ? sGPUName.getSelectedItem().toString() : "Device";
             }
 
             @Override
@@ -232,7 +232,7 @@ public class GraphicsDriverConfigDialog extends ContentDialog {
         sMaxDeviceMemory.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                selectedDeviceMemory = sMaxDeviceMemory.getSelectedItem().toString();
+                selectedDeviceMemory = sMaxDeviceMemory.getSelectedItem() != null ? sMaxDeviceMemory.getSelectedItem().toString() : "0";
             }
 
             @Override
@@ -244,7 +244,7 @@ public class GraphicsDriverConfigDialog extends ContentDialog {
         sPresentMode.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                selectedPresentMode = sPresentMode.getSelectedItem().toString();
+                selectedPresentMode = sPresentMode.getSelectedItem() != null ? sPresentMode.getSelectedItem().toString() : "mailbox";
             }
 
             @Override
@@ -255,8 +255,8 @@ public class GraphicsDriverConfigDialog extends ContentDialog {
 
         sResourceType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                selectedResourceType = sResourceType.getSelectedItem().toString();
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                selectedResourceType = sResourceType.getSelectedItem() != null ? sResourceType.getSelectedItem().toString() : "auto";
             }
 
             @Override
@@ -267,8 +267,8 @@ public class GraphicsDriverConfigDialog extends ContentDialog {
 
         sBCnEmulation.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                selectedBCnEmulation = sBCnEmulation.getSelectedItem().toString();
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                selectedBCnEmulation = sBCnEmulation.getSelectedItem() != null ? sBCnEmulation.getSelectedItem().toString() : "auto";
             }
 
             @Override
@@ -279,8 +279,8 @@ public class GraphicsDriverConfigDialog extends ContentDialog {
 
         sBCnEmulationType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                selectedBCnEmulationType = sBCnEmulationType.getSelectedItem().toString();
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                selectedBCnEmulationType = sBCnEmulationType.getSelectedItem() != null ? sBCnEmulationType.getSelectedItem().toString() : "compute";
             }
 
             @Override

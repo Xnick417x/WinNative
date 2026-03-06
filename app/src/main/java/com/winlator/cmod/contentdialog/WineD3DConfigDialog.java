@@ -64,12 +64,12 @@ public class WineD3DConfigDialog extends ContentDialog {
         AppUtils.setSpinnerSelectionFromNumber(sVideoMemorySize, config.get("videoMemorySize"));
 
         setOnConfirmCallback(() -> {
-            config.put("csmt", sCSMT.getSelectedItem().toString().equals("Enabled") ? "3": "0");
-            config.put("strict_shader_math", sStrictShaderMath.getSelectedItem().toString().equals("Enabled") ? "1" : "0");
-            config.put("OffscreenRenderingMode", sOffscreenRenderingMode.getSelectedItem().toString());
-            config.put("gpuName", sGPUName.getSelectedItem().toString());
-            config.put("videoMemorySize", StringUtils.parseNumber(sVideoMemorySize.getSelectedItem().toString()));
-            config.put("renderer", sRenderer.getSelectedItem().toString());
+            config.put("csmt", sCSMT.getSelectedItem() != null && sCSMT.getSelectedItem().toString().equals("Enabled") ? "3": "0");
+            config.put("strict_shader_math", sStrictShaderMath.getSelectedItem() != null && sStrictShaderMath.getSelectedItem().toString().equals("Enabled") ? "1" : "0");
+            config.put("OffscreenRenderingMode", sOffscreenRenderingMode.getSelectedItem() != null ? sOffscreenRenderingMode.getSelectedItem().toString() : "fbo");
+            config.put("gpuName", sGPUName.getSelectedItem() != null ? sGPUName.getSelectedItem().toString() : "");
+            config.put("videoMemorySize", sVideoMemorySize.getSelectedItem() != null ? StringUtils.parseNumber(sVideoMemorySize.getSelectedItem().toString()) : "0");
+            config.put("renderer", sRenderer.getSelectedItem() != null ? sRenderer.getSelectedItem().toString() : "gl");
             anchor.setTag(config.toString());
         });
 

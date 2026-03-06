@@ -126,7 +126,8 @@ public class DXVKConfigDialog extends ContentDialog {
         sVKD3DVersion.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selectedVersion = sVKD3DVersion.getSelectedItem().toString();
+                Object selectedItem = sVKD3DVersion.getSelectedItem();
+                String selectedVersion = selectedItem != null ? selectedItem.toString() : "None";
                 String currentDXVKVersion = config.get("version");
 
                 if (!selectedVersion.equals("None")) {
@@ -163,14 +164,14 @@ public class DXVKConfigDialog extends ContentDialog {
         });
 
         setOnConfirmCallback(() -> {
-            config.put("version", sDXVKVersion.getSelectedItem().toString());
-            config.put("framerate", StringUtils.parseNumber(sFramerate.getSelectedItem()));
+            config.put("version", sDXVKVersion.getSelectedItem() != null ? sDXVKVersion.getSelectedItem().toString() : "");
+            config.put("framerate", sFramerate.getSelectedItem() != null ? StringUtils.parseNumber(sFramerate.getSelectedItem()) : "");
             config.put("async", ((swAsync.isChecked())&&(llAsync.getVisibility()==View.VISIBLE))?"1":"0");
             config.put("asyncCache", ((swAsyncCache.isChecked())&&(llAsyncCache.getVisibility()==View.VISIBLE))?"1":"0");
             VKD3DVersionItem selectedItem = (VKD3DVersionItem) sVKD3DVersion.getSelectedItem();
-            config.put("vkd3dVersion", selectedItem.getIdentifier());
-            config.put("vkd3dLevel", sVKD3DFeatureLevel.getSelectedItem().toString());
-            config.put("ddrawrapper", StringUtils.parseIdentifier(sDDRAWrapper.getSelectedItem().toString()));
+            config.put("vkd3dVersion", selectedItem != null ? selectedItem.getIdentifier() : "0");
+            config.put("vkd3dLevel", sVKD3DFeatureLevel.getSelectedItem() != null ? sVKD3DFeatureLevel.getSelectedItem().toString() : "12_0");
+            config.put("ddrawrapper", sDDRAWrapper.getSelectedItem() != null ? StringUtils.parseIdentifier(sDDRAWrapper.getSelectedItem().toString()) : "");
             anchor.setTag(config.toString());
         });
     }
@@ -189,6 +190,7 @@ public class DXVKConfigDialog extends ContentDialog {
     }
 
     private int getDXVKType(int pos) {
+        if (dxvkVersions == null || pos < 0 || pos >= dxvkVersions.size()) return DXVK_TYPE_NONE;
         final String v = dxvkVersions.get(pos);
         int dxvkType = DXVK_TYPE_NONE;
         if (v.contains("gplasync"))
