@@ -83,12 +83,12 @@ import androidx.compose.ui.text.style.TextAlign
 // ─── Color palette ───────────────────────────────────────────────────
 private val BgDark = Color(0xFF0D1117)
 private val SurfaceDark = Color(0xFF161B22)
-private val CardDark = Color(0xFF1B2838)
-private val Accent = Color(0xFF58A6FF)
-private val AccentGlow = Color(0xFF1A9FFF)
+private val CardDark = Color(0xFF1F2922)
+private val Accent = Color(0xFF238636)
+private val AccentGlow = Color(0xFF3FB950)
 private val TextPrimary = Color(0xFFE6EDF3)
 private val TextSecondary = Color(0xFF8B949E)
-private val StatusOnline = Color(0xFF57CBDE)
+private val StatusOnline = Color(0xFF3FB950)
 private val StatusAway = Color(0xFFF0C040)
 private val StatusOffline = Color(0xFF6E7681)
 
@@ -147,12 +147,16 @@ class UnifiedActivity : ComponentActivity() {
         val scope = rememberCoroutineScope()
 
         // Clamp selectedIdx if tabs shrink
+        var globalSettingsApp by remember { mutableStateOf<SteamApp?>(null) }
+        
         LaunchedEffect(tabs.size) { if (selectedIdx >= tabs.size) selectedIdx = 0 }
         LaunchedEffect(Unit) { SteamService.requestUserPersona() }
 
         Scaffold(
             containerColor = BgDark,
-            topBar = { TopBar(tabs, selectedIdx, { selectedIdx = it }, persona, context, scope) }
+            topBar = { TopBar(tabs, selectedIdx, { selectedIdx = it }, persona, context, scope) {
+                globalSettingsApp = steamApps.find { it.id == selectedSteamAppId }
+            } }
         ) { padding ->
             Box(Modifier.padding(padding).fillMaxSize().background(BgDark)) {
                 val key = tabs.getOrNull(selectedIdx)?.key ?: "library"
@@ -195,6 +199,13 @@ class UnifiedActivity : ComponentActivity() {
                 }
             }
         }
+
+        if (globalSettingsApp != null) {
+            GameSettingsDialog(
+                app = globalSettingsApp!!,
+                onDismissRequest = { globalSettingsApp = null }
+            )
+        }
     }
 
     // ─── Top bar ──────────────────────────────────────────────────────
@@ -205,7 +216,8 @@ class UnifiedActivity : ComponentActivity() {
         onSelect: (Int) -> Unit,
         persona: com.winlator.cmod.steam.data.SteamFriend?,
         context: android.content.Context,
-        scope: kotlinx.coroutines.CoroutineScope
+        scope: kotlinx.coroutines.CoroutineScope,
+        onGameSettingsClicked: () -> Unit
     ) {
         var showStatusMenu by remember { mutableStateOf(false) }
         val currentState = persona?.state ?: EPersonaState.Online
@@ -304,16 +316,11 @@ class UnifiedActivity : ComponentActivity() {
                     }
                 } else {
                     IconButton(onClick = {
-                        // Open per-game settings (container/shortcut config) for selected game
-                        val intent = Intent(context, MainActivity::class.java)
-                        intent.putExtra("return_to_unified", true)
-                        // Pass the currently selected game's app ID if available
-                        val appId = selectedSteamAppId
-                        if (appId > 0) {
-                            intent.putExtra("create_shortcut_for_app_id", appId)
-                            intent.putExtra("create_shortcut_for_app_name", selectedSteamAppName)
+                        if (selectedSteamAppId > 0) {
+                            onGameSettingsClicked()
+                        } else {
+                            android.widget.Toast.makeText(context, "Select a game from your library first", android.widget.Toast.LENGTH_SHORT).show()
                         }
-                        context.startActivity(intent)
                     }, modifier = Modifier.size(44.dp)) {
                         Icon(Icons.Default.Tune, contentDescription = "Game Settings", tint = TextPrimary, modifier = Modifier.size(24.dp))
                     }
@@ -432,6 +439,8 @@ class UnifiedActivity : ComponentActivity() {
 
         // Track which game is selected for the top-right "Game Settings" button
         val selectedApp = installedApps.getOrNull(centerIdx)
+        var selectedAppForSettings by remember { mutableStateOf<SteamApp?>(null) }
+        
         LaunchedEffect(selectedApp) {
             selectedSteamAppId = selectedApp?.id ?: 0
             selectedSteamAppName = selectedApp?.name ?: ""
@@ -546,15 +555,253 @@ class UnifiedActivity : ComponentActivity() {
                         }
 
                         OutlinedButton(
-                            onClick = {
-                                val intent = Intent(context, MainActivity::class.java)
-                                intent.putExtra("create_shortcut_for_app_id", selectedApp.id)
-                                intent.putExtra("create_shortcut_for_app_name", selectedApp.name)
-                                intent.putExtra("return_to_unified", true)
-                                context.startActivity(intent)
-                            },
+                            onClick = { selectedAppForSettings = selectedApp },
                             shape = RoundedCornerShape(12.dp)
                         ) { Text("Game Settings", color = TextSecondary) }
+                    }
+                }
+            }
+        }
+
+        if (selectedAppForSettings != null) {
+            GameSettingsDialog(
+                app = selectedAppForSettings!!,
+                onDismissRequest = { selectedAppForSettings = null }
+            )
+        }
+    }
+
+    // ─── Game Settings Dialog ─────────────────────────────────────────
+    @Composable
+    private fun GameSettingsDialog(app: SteamApp, onDismissRequest: () -> Unit) {
+        val context = LocalContext.current
+        var currentTab by remember { mutableStateOf("Menu") }
+        val scope = rememberCoroutineScope()
+        
+        // Export logic
+        val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/zip")) { uri ->
+            if (uri != null) {
+                scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                    try {
+                        val os = context.contentResolver.openOutputStream(uri) ?: return@launch
+                        val zos = java.util.zip.ZipOutputStream(java.io.BufferedOutputStream(os))
+
+                        val containerManager = com.winlator.cmod.container.ContainerManager(context)
+                        val shortcut = containerManager.loadShortcuts().find {
+                            it.getExtra("app_id") == app.id.toString()
+                        }
+                        
+                        val dirsToZip = mutableListOf<java.io.File>()
+                        
+                        // Goldberg saves: SteamService.getAppDirPath(app.id)/steam_settings/saves
+                        val goldbergSaves = java.io.File(SteamService.getAppDirPath(app.id), "steam_settings/saves")
+                        if (goldbergSaves.exists() && goldbergSaves.isDirectory) {
+                            dirsToZip.add(goldbergSaves)
+                        }
+
+                        // Also prefix documents/saved games/appdata if shortcut exists
+                        if (shortcut != null) {
+                            val prefixDir = java.io.File(shortcut.container.getRootDir(), ".wine/drive_c/users/xuser")
+                            val docs = java.io.File(prefixDir, "Documents")
+                            val savedGames = java.io.File(prefixDir, "Saved Games")
+                            val appData = java.io.File(prefixDir, "AppData")
+                            if (docs.exists()) dirsToZip.add(docs)
+                            if (savedGames.exists()) dirsToZip.add(savedGames)
+                            if (appData.exists()) dirsToZip.add(appData)
+                        }
+
+                        // recursive zip function
+                        fun zipDir(dir: java.io.File, baseName: String) {
+                            val children = dir.listFiles() ?: return
+                            for (child in children) {
+                                val name = if (baseName.isEmpty()) child.name else "$baseName/${child.name}"
+                                if (child.isDirectory) {
+                                    zos.putNextEntry(java.util.zip.ZipEntry("$name/"))
+                                    zos.closeEntry()
+                                    zipDir(child, name)
+                                } else {
+                                    zos.putNextEntry(java.util.zip.ZipEntry(name))
+                                    val fis = java.io.FileInputStream(child)
+                                    val buf = ByteArray(1024 * 8)
+                                    var len: Int
+                                    while (fis.read(buf).also { len = it } > 0) {
+                                        zos.write(buf, 0, len)
+                                    }
+                                    fis.close()
+                                    zos.closeEntry()
+                                }
+                            }
+                        }
+
+                        for (dir in dirsToZip) {
+                            // We put them in a folder under the zip by their semantic name
+                            val baseName = dir.name // e.g. "saves", "Documents"
+                            zos.putNextEntry(java.util.zip.ZipEntry("$baseName/"))
+                            zos.closeEntry()
+                            zipDir(dir, baseName)
+                        }
+                        
+                        zos.close()
+                        withContext(kotlinx.coroutines.Dispatchers.Main) {
+                            android.widget.Toast.makeText(context, "Saves exported successfully", android.widget.Toast.LENGTH_SHORT).show()
+                            onDismissRequest()
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        withContext(kotlinx.coroutines.Dispatchers.Main) {
+                            android.widget.Toast.makeText(context, "Failed to export saves: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+        }
+
+        // Import logic
+        val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            if (uri != null) {
+                scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                    try {
+                        val `is` = context.contentResolver.openInputStream(uri) ?: return@launch
+                        val zis = java.util.zip.ZipInputStream(java.io.BufferedInputStream(`is`))
+                        
+                        val containerManager = com.winlator.cmod.container.ContainerManager(context)
+                        val shortcut = containerManager.loadShortcuts().find {
+                            it.getExtra("app_id") == app.id.toString()
+                        }
+                        
+                        val goldbergSavesParent = java.io.File(SteamService.getAppDirPath(app.id), "steam_settings")
+                        val prefixDir = shortcut?.let { java.io.File(it.container.getRootDir(), ".wine/drive_c/users/xuser") }
+
+                        var ze: java.util.zip.ZipEntry?
+                        while (zis.nextEntry.also { ze = it } != null) {
+                            val entry = ze!!
+                            val name = entry.name
+                            // Determine destination
+                            var destFile: java.io.File? = null
+                            if (name.startsWith("saves/")) {
+                                destFile = java.io.File(goldbergSavesParent, name)
+                            } else if (prefixDir != null) {
+                                if (name.startsWith("Documents/") || name.startsWith("Saved Games/") || name.startsWith("AppData/")) {
+                                    destFile = java.io.File(prefixDir, name)
+                                }
+                            }
+                            
+                            if (destFile != null) {
+                                if (entry.isDirectory) {
+                                    destFile.mkdirs()
+                                } else {
+                                    destFile.parentFile?.mkdirs()
+                                    val fos = java.io.FileOutputStream(destFile)
+                                    val buf = ByteArray(1024 * 8)
+                                    var len: Int
+                                    while (zis.read(buf).also { len = it } > 0) {
+                                        fos.write(buf, 0, len)
+                                    }
+                                    fos.close()
+                                }
+                            }
+                            zis.closeEntry()
+                        }
+                        zis.close()
+                        withContext(kotlinx.coroutines.Dispatchers.Main) {
+                            android.widget.Toast.makeText(context, "Saves imported successfully", android.widget.Toast.LENGTH_SHORT).show()
+                            onDismissRequest()
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        withContext(kotlinx.coroutines.Dispatchers.Main) {
+                            android.widget.Toast.makeText(context, "Failed to import saves: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+        }
+
+        Dialog(onDismissRequest = onDismissRequest) {
+            Surface(
+                modifier = Modifier.fillMaxWidth(0.9f).wrapContentHeight(),
+                shape = RoundedCornerShape(16.dp),
+                color = CardDark
+            ) {
+                Column(Modifier.padding(24.dp)) {
+                    Text(app.name, style = MaterialTheme.typography.titleLarge, color = TextPrimary, fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.height(16.dp))
+
+                    when (currentTab) {
+                        "Menu" -> {
+                            Button(
+                                onClick = {
+                                    val intent = Intent(context, MainActivity::class.java)
+                                    intent.putExtra("create_shortcut_for_app_id", app.id)
+                                    intent.putExtra("create_shortcut_for_app_name", app.name)
+                                    intent.putExtra("return_to_unified", true)
+                                    context.startActivity(intent)
+                                    onDismissRequest()
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(8.dp)
+                            ) { Text("Settings") }
+                            Spacer(Modifier.height(8.dp))
+                            Button(
+                                onClick = { currentTab = "Saves" },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(8.dp)
+                            ) { Text("Saves") }
+                            Spacer(Modifier.height(8.dp))
+                            Button(
+                                onClick = { currentTab = "Uninstall" },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF4444)),
+                                shape = RoundedCornerShape(8.dp)
+                            ) { Text("Uninstall Game") }
+                        }
+                        "Saves" -> {
+                            Text("Import or export your game saves for this game. For best results, ensure the game is closed.", color = TextSecondary, style = MaterialTheme.typography.bodyMedium)
+                            Spacer(Modifier.height(16.dp))
+                            Button(
+                                onClick = { exportLauncher.launch("${app.name.replace(" ", "_").replace(":", "")}_Saves.zip") },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(8.dp)
+                            ) { Text("Export Saves to ZIP") }
+                            Spacer(Modifier.height(8.dp))
+                            Button(
+                                onClick = { importLauncher.launch(arrayOf("application/zip")) },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(8.dp)
+                            ) { Text("Import Saves from ZIP") }
+                            Spacer(Modifier.height(16.dp))
+                            TextButton(onClick = { currentTab = "Menu" }, modifier = Modifier.align(Alignment.End)) {
+                                Text("Back", color = TextSecondary)
+                            }
+                        }
+                        "Uninstall" -> {
+                            Text("Are you sure you want to uninstall ${app.name}? This will permanently delete the game folder.", color = Color(0xFFFF6B6B))
+                            Spacer(Modifier.height(16.dp))
+                            var isUninstalling by remember { mutableStateOf(false) }
+                            if (isUninstalling) {
+                                CircularProgressIndicator(color = Color(0xFFFF4444), modifier = Modifier.align(Alignment.CenterHorizontally))
+                            } else {
+                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                                    TextButton(onClick = { currentTab = "Menu" }) { Text("Cancel", color = TextSecondary) }
+                                    Spacer(Modifier.width(8.dp))
+                                    Button(
+                                        onClick = {
+                                            isUninstalling = true
+                                            SteamService.uninstallApp(app.id) { success ->
+                                                if (success) {
+                                                    android.widget.Toast.makeText(context, "${app.name} uninstalled.", android.widget.Toast.LENGTH_SHORT).show()
+                                                } else {
+                                                    android.widget.Toast.makeText(context, "Failed to uninstall.", android.widget.Toast.LENGTH_SHORT).show()
+                                                }
+                                                onDismissRequest()
+                                            }
+                                        },
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF4444)),
+                                        shape = RoundedCornerShape(8.dp)
+                                    ) { Text("Confirm Uninstall") }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -573,7 +820,7 @@ class UnifiedActivity : ComponentActivity() {
                 .pointerInput(app.id) {
                     detectTapGestures {
                         if (SteamService.isAppInstalled(app.id)) {
-                            val containerManager = ContainerManager(context)
+                            val containerManager = com.winlator.cmod.container.ContainerManager(context)
                             launchSteamGame(context, containerManager, app)
                         }
                     }
@@ -919,7 +1166,7 @@ class UnifiedActivity : ComponentActivity() {
                                         withContext(Dispatchers.Main) { onDismissRequest() }
                                     }
                                 },
-                                colors = ButtonDefaults.buttonColors(containerColor = if (isInstallEnabled) Color(0xFF5c7e10) else Color.Gray),
+                                colors = ButtonDefaults.buttonColors(containerColor = if (isInstallEnabled) Accent else Color.Gray),
                                 shape = RoundedCornerShape(8.dp)
                             ) { Text("Install") }
                         }

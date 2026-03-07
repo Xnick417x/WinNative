@@ -1140,13 +1140,16 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
                             Log.d("XServerDisplayActivity", "Legacy DRM Steam setup complete for appId=" + appId);
                         } else {
                             // ColdClientLoader mode (default, online play):
-                            // Write steam_settings/ next to steamclient.dll in the Steam directory
+                            // 1. MUST RESTORE the game's actual DLLs if they were previously replaced by TCP stubs
+                            restoreSteamApiDlls(gameDir);
+                            
+                            // 2. Write steam_settings/ next to steamclient.dll in the Steam directory
                             // The Goldberg steamclient DLLs read from this location
                             File steamDir = new File(container.getRootDir(), ".wine/drive_c/Program Files (x86)/Steam");
                             steamDir.mkdirs();
                             setupSteamSettingsForColdClient(steamDir, appId);
                             
-                            // Write ColdClientLoader.ini with game exe path
+                            // 3. Write ColdClientLoader.ini with game exe path
                             String gameExeWinPath = findGameExeWinPath(appId, gameDir);
                             if (gameExeWinPath != null) {
                                 writeColdClientIniForLaunch(appId, gameExeWinPath);
@@ -2166,6 +2169,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
         String accountName = prefs.getString("user_name", "Player");
         long steamId64Long = prefs.getLong("steam_user_steam_id_64", 0L);
         String accountSteamId = steamId64Long > 0 ? String.valueOf(steamId64Long) : "76561198000000000";
+        long accountId = steamId64Long > 0 ? (steamId64Long & 0xFFFFFFFFL) : 0L;
         String language = container.getExtra("containerLanguage", "english");
         if (language == null || language.isEmpty()) language = "english";
         
@@ -2199,6 +2203,9 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
         if (ticketBase64 != null && !ticketBase64.isEmpty()) {
             userIni.append("ticket=").append(ticketBase64).append("\n");
         }
+        userIni.append("\n[user::saves]\n");
+        userIni.append("local_save_path=C:\\Program Files (x86)\\Steam\\userdata\\").append(accountId).append("\n");
+        
         FileUtils.writeString(new File(settingsDir, "configs.user.ini"), userIni.toString());
         
         // configs.main.ini - connectivity (enable online)
@@ -2208,9 +2215,12 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
                 "enable_overlay=0\n";
         FileUtils.writeString(new File(settingsDir, "configs.main.ini"), mainIni);
         
-        // configs.app.ini - DLC settings
+        // configs.app.ini - DLC settings and cloud saves
         String appIni = "[app::dlcs]\n" +
-                "unlock_all=1\n";
+                "unlock_all=1\n\n" +
+                "[app::cloud_save::general]\n" +
+                "create_default_dir=1\n" +
+                "create_specific_dirs=1\n";
         FileUtils.writeString(new File(settingsDir, "configs.app.ini"), appIni);
         
         Log.d("XServerDisplayActivity", "Created ColdClient steam_settings in " + steamDir.getAbsolutePath() + 
@@ -2289,6 +2299,39 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
                         Log.d("XServerDisplayActivity", "Replaced " + file.getName() + " with steampipe version at " + file.getAbsolutePath());
                     } catch (Exception e) {
                         Log.e("XServerDisplayActivity", "Failed to replace " + file.getName(), e);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Restores the original steam_api.dll and steam_api64.dll in the game directory.
+     * Required if a game was previously launched in Legacy DRM mode (which swaps them with stubs),
+     * but is now being launched in ColdClientLoader mode (which requires the real DLLs).
+     */
+    private void restoreSteamApiDlls(File gameDir) {
+        if (gameDir == null || !gameDir.exists()) return;
+        
+        File[] files = gameDir.listFiles();
+        if (files == null) return;
+        
+        for (File file : files) {
+            if (file.isDirectory()) {
+                restoreSteamApiDlls(file);
+            } else {
+                String name = file.getName().toLowerCase();
+                if (name.equals("steam_api.dll.original") || name.equals("steam_api64.dll.original")) {
+                    try {
+                        String originalName = file.getName().substring(0, file.getName().length() - ".original".length());
+                        File target = new File(file.getParent(), originalName);
+                        
+                        if (target.exists()) target.delete();
+                        FileUtils.copy(file, target);
+                        
+                        Log.d("XServerDisplayActivity", "Restored original " + originalName + " from backup");
+                    } catch (Exception e) {
+                        Log.e("XServerDisplayActivity", "Failed to restore " + file.getName(), e);
                     }
                 }
             }

@@ -736,6 +736,29 @@ class SteamService : Service(), IChallengeUrlChanged {
             return MarkerUtils.hasMarker(dirPath, Marker.DOWNLOAD_COMPLETE_MARKER)
         }
 
+        fun uninstallApp(appId: Int, onComplete: (Boolean) -> Unit = {}) {
+            kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+                try {
+                    val appInfo = getInstalledApp(appId)
+                    if (appInfo != null) {
+                        instance?.appInfoDao?.update(appInfo.copy(isDownloaded = false))
+                    }
+                    val dirPath = getAppDirPath(appId)
+                    val dirFile = java.io.File(dirPath)
+                    if (dirFile.exists() && dirFile.isDirectory) {
+                        deleteRecursivelyWithRetries(dirFile)
+                    }
+                    withContext(kotlinx.coroutines.Dispatchers.Main) {
+                        onComplete(true)
+                    }
+                } catch (e: Exception) {
+                    withContext(kotlinx.coroutines.Dispatchers.Main) {
+                        onComplete(false)
+                    }
+                }
+            }
+        }
+
         fun getAppDlc(appId: Int): Map<Int, DepotInfo> {
             return getAppInfoOf(appId)?.let {
                 it.depots.filter { it.value.dlcAppId != INVALID_APP_ID }

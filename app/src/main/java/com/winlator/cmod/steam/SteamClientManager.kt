@@ -38,14 +38,16 @@ object SteamClientManager {
     @JvmStatic
     fun isSteamDownloaded(context: Context): Boolean {
         val steamFile = File(context.filesDir, "steam.tzst")
-        return steamFile.exists() && steamFile.length() > 0
+        val expFile = File(context.filesDir, "experimental-drm-20260116.tzst")
+        return steamFile.exists() && steamFile.length() > 0 && expFile.exists() && expFile.length() > 0
     }
 
     @JvmStatic
     fun isSteamInstalled(context: Context): Boolean {
         val imageFs = ImageFs.find(context)
         val steamExe = File(imageFs.rootDir, "${ImageFs.WINEPREFIX}/drive_c/Program Files (x86)/Steam/steam.exe")
-        return steamExe.exists()
+        val loaderExe = File(imageFs.rootDir, "${ImageFs.WINEPREFIX}/drive_c/Program Files (x86)/Steam/steamclient_loader_x64.exe")
+        return steamExe.exists() && loaderExe.exists()
     }
 
     @JvmStatic
@@ -138,7 +140,8 @@ object SteamClientManager {
         if (isSteamInstalled(context)) return true
 
         val steamFile = File(context.filesDir, "steam.tzst")
-        if (!steamFile.exists()) return false
+        val expFile = File(context.filesDir, "experimental-drm-20260116.tzst")
+        if (!steamFile.exists() || !expFile.exists()) return false
 
         val imageFs = ImageFs.find(context)
         return try {
@@ -148,9 +151,15 @@ object SteamClientManager {
                 imageFs.rootDir,
                 null
             )
+            TarCompressorUtils.extract(
+                TarCompressorUtils.Type.ZSTD,
+                expFile,
+                imageFs.rootDir,
+                null
+            )
             true
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to extract steam.tzst: ${e.message}")
+            Log.e(TAG, "Failed to extract steam archives: ${e.message}")
             false
         }
     }
@@ -170,47 +179,57 @@ object SteamClientManager {
 
         // Need to download?
         if (!isSteamDownloaded(context)) {
-            Log.d(TAG, "steam.tzst not found, downloading...")
+            Log.d(TAG, "Steam files not found, downloading...")
             Handler(Looper.getMainLooper()).post {
                 Toast.makeText(context, "Downloading Steam client...", Toast.LENGTH_SHORT).show()
             }
 
-            val dest = File(context.filesDir, "steam.tzst")
-            val tmp = File("${dest.absolutePath}.part")
-            var downloaded = false
+            val filesToDownload = listOf("steam.tzst", "experimental-drm-20260116.tzst")
+            for (fileName in filesToDownload) {
+                val dest = File(context.filesDir, fileName)
+                if (dest.exists() && dest.length() > 0) continue
+                
+                val tmp = File("${dest.absolutePath}.part")
+                var downloaded = false
 
-            val urls = arrayOf(STEAM_DOWNLOAD_URL, STEAM_PRIMARY_CDN, STEAM_FALLBACK_CDN)
-            for (urlStr in urls) {
-                try {
-                    Log.d(TAG, "Downloading from: $urlStr")
-                    downloadFile(urlStr, tmp, null)
+                val urls = arrayOf(
+                    if (fileName == "steam.tzst") STEAM_DOWNLOAD_URL else "https://github.com/maxjivi05/Components/releases/download/Components/$fileName",
+                    "https://downloads.gamenative.app/$fileName", 
+                    "https://pub-9fcd5294bd0d4b85a9d73615bf98f3b5.r2.dev/$fileName"
+                )
+                
+                for (urlStr in urls) {
+                    try {
+                        Log.d(TAG, "Downloading from: $urlStr")
+                        downloadFile(urlStr, tmp, null)
 
-                    if (tmp.exists() && tmp.length() > 0) {
-                        if (!tmp.renameTo(dest)) {
-                            Files.copy(tmp.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING)
-                            tmp.delete()
+                        if (tmp.exists() && tmp.length() > 0) {
+                            if (!tmp.renameTo(dest)) {
+                                Files.copy(tmp.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                                tmp.delete()
+                            }
+                            downloaded = true
+                            Log.d(TAG, "Download completed for $fileName: ${dest.length()} bytes")
+                            break
                         }
-                        downloaded = true
-                        Log.d(TAG, "Steam download completed: ${dest.length()} bytes")
-                        break
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Download failed from $urlStr: ${e.message}")
+                        tmp.delete()
                     }
-                } catch (e: Exception) {
-                    Log.w(TAG, "Download failed from $urlStr: ${e.message}")
-                    tmp.delete()
                 }
-            }
 
-            if (!downloaded) {
-                Log.e(TAG, "Failed to download steam.tzst from all sources")
-                Handler(Looper.getMainLooper()).post {
-                    Toast.makeText(context, "Failed to download Steam client", Toast.LENGTH_LONG).show()
+                if (!downloaded) {
+                    Log.e(TAG, "Failed to download $fileName from all sources")
+                    Handler(Looper.getMainLooper()).post {
+                        Toast.makeText(context, "Failed to download Steam client", Toast.LENGTH_LONG).show()
+                    }
+                    return false
                 }
-                return false
             }
         }
 
         // Extract
-        Log.d(TAG, "Extracting steam.tzst...")
+        Log.d(TAG, "Extracting steam files...")
         val success = extractSteam(context)
         if (success) {
             Log.d(TAG, "Steam client extracted successfully")
