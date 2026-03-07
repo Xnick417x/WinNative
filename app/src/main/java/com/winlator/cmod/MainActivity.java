@@ -166,17 +166,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
         editInputControls = intent.getBooleanExtra("edit_input_controls", false);
-        if (editInputControls) {
-            selectedProfileId = intent.getIntExtra("selected_profile_id", 0);
-            onNavigationItemSelected(navigationView.getMenu().findItem(R.id.main_menu_input_controls));
-            navigationView.setCheckedItem(R.id.main_menu_input_controls);
-        } else {
-            int selectedMenuItemId = intent.getIntExtra("selected_menu_item_id", 0);
-            int menuItemId = selectedMenuItemId > 0 ? selectedMenuItemId : R.id.main_menu_shortcuts;
+        navigationView.post(() -> {
+            if (editInputControls) {
+                selectedProfileId = intent.getIntExtra("selected_profile_id", 0);
+                onNavigationItemSelected(navigationView.getMenu().findItem(R.id.main_menu_input_controls));
+                navigationView.setCheckedItem(R.id.main_menu_input_controls);
+            } else {
+                int selectedMenuItemId = intent.getIntExtra("selected_menu_item_id", 0);
+                int menuItemId = selectedMenuItemId > 0 ? selectedMenuItemId : R.id.main_menu_shortcuts;
 
-            onNavigationItemSelected(navigationView.getMenu().findItem(menuItemId));
-            navigationView.setCheckedItem(menuItemId);
-        }
+                MenuItem item = navigationView.getMenu().findItem(menuItemId);
+                if (item != null) {
+                    onNavigationItemSelected(item);
+                    navigationView.setCheckedItem(menuItemId);
+                }
+            }
+        });
     }
 
     @Override

@@ -394,10 +394,10 @@ public class SettingsFragment extends Fragment {
 
             if (editor.commit()) {
                 NavigationView navigationView = getActivity().findViewById(R.id.NavigationView);
-                navigationView.setCheckedItem(R.id.main_menu_shortcuts);
+                navigationView.setCheckedItem(R.id.main_menu_containers);
                 FragmentManager fragmentManager = getParentFragmentManager();
                 fragmentManager.beginTransaction()
-                        .replace(R.id.FLFragmentContainer, new ShortcutsFragment())
+                        .replace(R.id.FLFragmentContainer, new ContainersFragment())
                         .commit();
             }
         });
