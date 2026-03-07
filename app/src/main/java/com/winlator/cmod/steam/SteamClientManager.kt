@@ -155,6 +155,74 @@ object SteamClientManager {
         }
     }
 
+    /**
+     * Ensures Steam client files are ready: downloads steam.tzst if missing,
+     * then extracts it. This is a blocking call and should be run from a worker thread.
+     * @return true if Steam client is ready to use
+     */
+    @JvmStatic
+    fun ensureSteamReady(context: Context): Boolean {
+        // Already installed?
+        if (isSteamInstalled(context)) {
+            Log.d(TAG, "Steam client already installed")
+            return true
+        }
+
+        // Need to download?
+        if (!isSteamDownloaded(context)) {
+            Log.d(TAG, "steam.tzst not found, downloading...")
+            Handler(Looper.getMainLooper()).post {
+                Toast.makeText(context, "Downloading Steam client...", Toast.LENGTH_SHORT).show()
+            }
+
+            val dest = File(context.filesDir, "steam.tzst")
+            val tmp = File("${dest.absolutePath}.part")
+            var downloaded = false
+
+            val urls = arrayOf(STEAM_DOWNLOAD_URL, STEAM_PRIMARY_CDN, STEAM_FALLBACK_CDN)
+            for (urlStr in urls) {
+                try {
+                    Log.d(TAG, "Downloading from: $urlStr")
+                    downloadFile(urlStr, tmp, null)
+
+                    if (tmp.exists() && tmp.length() > 0) {
+                        if (!tmp.renameTo(dest)) {
+                            Files.copy(tmp.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                            tmp.delete()
+                        }
+                        downloaded = true
+                        Log.d(TAG, "Steam download completed: ${dest.length()} bytes")
+                        break
+                    }
+                } catch (e: Exception) {
+                    Log.w(TAG, "Download failed from $urlStr: ${e.message}")
+                    tmp.delete()
+                }
+            }
+
+            if (!downloaded) {
+                Log.e(TAG, "Failed to download steam.tzst from all sources")
+                Handler(Looper.getMainLooper()).post {
+                    Toast.makeText(context, "Failed to download Steam client", Toast.LENGTH_LONG).show()
+                }
+                return false
+            }
+        }
+
+        // Extract
+        Log.d(TAG, "Extracting steam.tzst...")
+        val success = extractSteam(context)
+        if (success) {
+            Log.d(TAG, "Steam client extracted successfully")
+            Handler(Looper.getMainLooper()).post {
+                Toast.makeText(context, "Steam client ready", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            Log.e(TAG, "Failed to extract steam.tzst")
+        }
+        return success
+    }
+
     @JvmStatic
     fun runSteamless(context: Context, exePath: String, shellRunner: ShellCommandRunner): Boolean {
         val rootDir = ImageFs.find(context).rootDir
@@ -192,6 +260,39 @@ object SteamClientManager {
             return false
         } finally {
             batchFile?.delete()
+        }
+    }
+
+    /**
+     * Get encrypted app ticket as base64, blocking wrapper for Java callers.
+     * Returns null if not logged in or ticket unavailable.
+     */
+    @JvmStatic
+    fun getEncryptedAppTicketBase64Blocking(appId: Int): String? {
+        return try {
+            val service = com.winlator.cmod.steam.service.SteamService.instance ?: return null
+            kotlinx.coroutines.runBlocking {
+                service.getEncryptedAppTicketBase64(appId)
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to get encrypted app ticket: ${e.message}")
+            null
+        }
+    }
+
+    /**
+     * Check if user is currently logged into Steam.
+     */
+    @JvmStatic
+    fun isSteamLoggedIn(): Boolean {
+        return try {
+            val serviceClass = Class.forName("com.winlator.cmod.steam.service.SteamService")
+            val companion = serviceClass.getField("Companion").get(null)!!
+            val method = companion.javaClass.getMethod("isLoggedIn")
+            method.invoke(companion) as Boolean
+        } catch (e: Exception) {
+            Log.d(TAG, "isLoggedIn check failed: ${e.message}")
+            false
         }
     }
 }

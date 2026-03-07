@@ -1043,21 +1043,34 @@ class UnifiedActivity : ComponentActivity() {
     }
 
     private fun findGameExe(dir: java.io.File): java.io.File? {
-        // Prefer setup/launcher executables, then any .exe
-        val preferred = listOf("launcher.exe", "game.exe", "start.exe")
-        dir.walkTopDown().maxDepth(3).forEach { file ->
-            if (file.extension.equals("exe", ignoreCase = true) &&
-                preferred.any { file.name.equals(it, ignoreCase = true) }) {
-                return file
+        // BFS: check each directory level fully before going deeper
+        val exclusions = listOf("unins", "redist", "setup", "dotnet", "vcredist", 
+            "dxsetup", "helper", "crash", "ue4prereq", "dxwebsetup")
+        
+        var currentDirs = listOf(dir)
+        var depth = 0
+        
+        while (currentDirs.isNotEmpty() && depth <= 3) {
+            val nextDirs = mutableListOf<java.io.File>()
+            
+            for (d in currentDirs) {
+                val children = d.listFiles() ?: continue
+                for (f in children) {
+                    if (f.isDirectory) {
+                        nextDirs.add(f)
+                    } else if (f.extension.equals("exe", ignoreCase = true)) {
+                        val name = f.name.lowercase()
+                        if (exclusions.none { name.contains(it) }) {
+                            return f // Return first valid exe at this level
+                        }
+                    }
+                }
             }
+            
+            currentDirs = nextDirs
+            depth++
         }
-        // Fallback: first .exe found
-        return dir.walkTopDown().maxDepth(3).firstOrNull {
-            it.extension.equals("exe", ignoreCase = true) &&
-            !it.name.contains("unins", ignoreCase = true) &&
-            !it.name.contains("redist", ignoreCase = true) &&
-            !it.name.contains("setup", ignoreCase = true)
-        }
+        return null
     }
 
 

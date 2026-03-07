@@ -60,4 +60,51 @@ public class SteamBridge {
             return false;
         }
     }
+
+    /**
+     * Downloads steam.tzst if missing, then extracts it. Blocking call.
+     */
+    public static boolean ensureSteamReady(Context context) {
+        try {
+            Class<?> clazz = Class.forName("com.winlator.cmod.steam.SteamClientManager");
+            Object instance = clazz.getField("INSTANCE").get(null);
+            Method method = clazz.getMethod("ensureSteamReady", Context.class);
+            return (Boolean) method.invoke(instance, context);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to call SteamClientManager.ensureSteamReady", e);
+            return false;
+        }
+    }
+
+    /**
+     * Get the encrypted app ticket as base64 string for the given appId.
+     * Requires an active Steam login. Returns null if not logged in or ticket unavailable.
+     */
+    public static String getEncryptedAppTicketBase64(int appId) {
+        try {
+            Class<?> clazz = Class.forName("com.winlator.cmod.steam.SteamClientManager");
+            Object instance = clazz.getField("INSTANCE").get(null);
+            Method method = clazz.getMethod("getEncryptedAppTicketBase64Blocking", int.class);
+            return (String) method.invoke(instance, appId);
+        } catch (Exception e) {
+            Log.d(TAG, "getEncryptedAppTicketBase64 not available: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Check if the user is logged into Steam.
+     */
+    public static boolean isLoggedIn() {
+        try {
+            Class<?> serviceClass = Class.forName("com.winlator.cmod.steam.service.SteamService");
+            Class<?> companion = Class.forName("com.winlator.cmod.steam.service.SteamService$Companion");
+            Object companionInstance = serviceClass.getField("Companion").get(null);
+            Method method = companion.getMethod("isLoggedIn");
+            return (Boolean) method.invoke(companionInstance);
+        } catch (Exception e) {
+            Log.d(TAG, "isLoggedIn check failed: " + e.getMessage());
+            return false;
+        }
+    }
 }

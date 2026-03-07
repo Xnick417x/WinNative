@@ -374,6 +374,10 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
             FileUtils.chmod(box64File, 0755);
         }
 
+        Log.d("GuestProgramLauncherComponent", "=== FINAL LAUNCH COMMAND ===");
+        Log.d("GuestProgramLauncherComponent", "Command: " + command);
+        Log.d("GuestProgramLauncherComponent", "Working dir: " + rootDir.getAbsolutePath());
+
         return ProcessHelper.exec(command, envVars.toStringArray(), rootDir, (status) -> {
             synchronized (lock) {
                 pid = -1;
