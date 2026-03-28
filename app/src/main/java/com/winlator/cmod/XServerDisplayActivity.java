@@ -4835,30 +4835,23 @@ public class XServerDisplayActivity extends AppCompatActivity {
         if (frameRating == null) return;
 
         if (property != null) {
-            if (property.nameAsString().contains("_MESA_DRV_ENGINE_NAME")) {
+            if (frameRatingWindowId == -1 && property.nameAsString().contains("_MESA_DRV")) {
                 frameRatingWindowId = window.id;
-                runOnUiThread(() -> {
-                    frameRating.setRenderer(property.toString());
-                    frameRating.update();
-                });
+                Log.d("XServerDisplayActivity", "Showing hud for Window " + window.getName());
+                frameRating.update();
             }
-
-            if (frameRatingWindowId == window.id) {
-                if (property.nameAsString().contains("_MESA_DRV_GPU_NAME")) {
-                    runOnUiThread(() -> frameRating.setGpuName(property.toString()));
-                }
-                if (property.nameAsString().contains("_MESA_DRV")) {
-                    runOnUiThread(() -> frameRating.update());
-                }
+            if (property.nameAsString().contains("_MESA_DRV_ENGINE_NAME")) {
+                runOnUiThread(() -> frameRating.setRenderer(property.toString()));
+            }
+            if (property.nameAsString().contains("_MESA_DRV_GPU_NAME")) {
+                runOnUiThread(() -> frameRating.setGpuName(property.toString()));
             }
         }
-        else if (frameRatingWindowId == window.id) {
+        else if (frameRatingWindowId != -1) {
             frameRatingWindowId = -1;
             Log.d("XServerDisplayActivity", "Hiding hud for Window " + window.getName());
-            runOnUiThread(() -> {
-                frameRating.setVisibility(View.GONE);
-                frameRating.reset();
-            });
+            runOnUiThread(() -> frameRating.setVisibility(View.GONE));
+            runOnUiThread(() -> frameRating.reset());
         }
     }
 
