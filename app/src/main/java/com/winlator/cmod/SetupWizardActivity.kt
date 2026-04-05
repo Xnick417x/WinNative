@@ -514,8 +514,8 @@ class SetupWizardActivity : FragmentActivity() {
                 colorScheme = darkColorScheme(
                     primary = Color(0xFF57CBDE),
                     secondary = Color(0xFF3FB950),
-                    background = Color(0xFF0D1117),
-                    surface = Color(0xFF161B22)
+                    background = Color(0xFF0F1724),
+                    surface = Color(0xFF141F30)
                 )
             ) {
                 SetupWizardScreen()

@@ -93,24 +93,24 @@ import com.winlator.cmod.widget.chasingBorder
 import kotlin.math.roundToInt
 
 // ---------------------------------------------------------------------------
-// Black / gray color scheme
+// Dark navy blue color scheme
 // ---------------------------------------------------------------------------
-private val BgDeep = Color(0xFF0F0F12)
-private val SidebarBg = Color(0xFF0F0F12)
-private val ContentBg = Color(0xFF0F0F12)
-private val CardSurface = Color(0xFF14141E)
-private val CardBorder = Color(0xFF21212E)
-private val InputSurface = Color(0xFF0F0F16)
-private val InputBorder = Color(0xFF21212E)
+private val BgDeep = Color(0xFF0F1724)
+private val SidebarBg = Color(0xFF141F30)
+private val ContentBg = Color(0xFF0F1724)
+private val CardSurface = Color(0xFF1B2A3D)
+private val CardBorder = Color(0xFF2D425A)
+private val InputSurface = Color(0xFF1C2D42)
+private val InputBorder = Color(0xFF2D425A)
 private val AccentBlue = Color(0xFF1A9FFF)
 private val TextPrimary = Color(0xFFF0F4FF)
 private val TextSecondary = Color(0xFF7A8FA8)
 private val TextDim = Color(0xFF6E7681)
-private val DividerColor = Color(0xFF21212E)
-private val CheckBorder = Color(0xFF21212E)
-private val TrackInactive = Color(0xFF14141E)
-private val ChipSurface = Color(0xFF0F0F16)
-private val ChipBorder = Color(0xFF21212E)
+private val DividerColor = Color(0xFF2D425A)
+private val CheckBorder = Color(0xFF2D425A)
+private val TrackInactive = Color(0xFF141F30)
+private val ChipSurface = Color(0xFF1B2A3D)
+private val ChipBorder = Color(0xFF2D425A)
 private val DangerRed = Color(0xFFFF6B6B)
 private val WarningAmber = Color(0xFFFFB74D)
 
