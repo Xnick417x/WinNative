@@ -59,7 +59,7 @@ class PreloaderDialogState {
 }
 
 // Colors matching the app theme
-private val BgDark = Color(0xFF171A1C)
+private val BgDark = Color(0xFF0F1724)
 private val TextPrimary = Color(0xFFF5F9FF)
 private val TextSecondary = Color(0xFF9CB0C7)
 private val TrackColor = Color(0xFF252A2E)

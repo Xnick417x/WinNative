@@ -124,8 +124,8 @@ class StoresFragment : Fragment() {
                 MaterialTheme(
                     colorScheme = darkColorScheme(
                         primary    = Color(0xFF1A9FFF),
-                        background = Color(0xFF0D1117),
-                        surface    = Color(0xFF161B22),
+                        background = Color(0xFF0F1724),
+                        surface    = Color(0xFF141F30),
                     )
                 ) {
                     StoresScreen(
@@ -193,7 +193,7 @@ class StoresFragment : Fragment() {
         // Outer FrameLayout with right margin so the scrollbar never touches the screen edge.
         // Background matches the content area so the gap is invisible.
         return FrameLayout(requireContext()).apply {
-            setBackgroundColor(android.graphics.Color.parseColor("#0F0F12"))
+            setBackgroundColor(android.graphics.Color.parseColor("#0F1724"))
             addView(
                 scrollView,
                 FrameLayout.LayoutParams(

@@ -6572,7 +6572,8 @@ class UnifiedActivity : ComponentActivity() {
                     .fillMaxWidth(0.85f)
                     .heightIn(max = 320.dp),
                 shape = RoundedCornerShape(16.dp),
-                color = CardDark,
+                color = Color(0xFF0F1724), // Using app background color
+                border = BorderStroke(1.dp, Accent.copy(alpha = 0.2f)), // Subtle accent border
                 shadowElevation = 16.dp
             ) {
                 Column(Modifier.padding(16.dp)) {
@@ -6635,7 +6636,7 @@ class UnifiedActivity : ComponentActivity() {
                             },
                             modifier = Modifier.fillMaxWidth().height(40.dp),
                             shape = RoundedCornerShape(10.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = SurfaceDark),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1B2A3D)), // Surface color
                             contentPadding = PaddingValues(horizontal = 12.dp)
                         ) {
                             Icon(Icons.Default.FolderOpen, contentDescription = null, tint = Accent, modifier = Modifier.size(18.dp))
@@ -6668,7 +6669,9 @@ class UnifiedActivity : ComponentActivity() {
                                     unfocusedTextColor = TextPrimary,
                                     cursorColor = Accent,
                                     focusedLabelColor = Accent,
-                                    unfocusedLabelColor = TextSecondary
+                                    unfocusedLabelColor = TextSecondary,
+                                    focusedContainerColor = Color(0xFF1B2A3D),
+                                    unfocusedContainerColor = Color(0xFF1B2A3D)
                                 ),
                                 shape = RoundedCornerShape(10.dp)
                             )
@@ -6680,7 +6683,7 @@ class UnifiedActivity : ComponentActivity() {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(10.dp))
-                                    .background(SurfaceDark)
+                                    .background(Color(0xFF1B2A3D)) // Surface color
                                     .padding(horizontal = 10.dp, vertical = 6.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
