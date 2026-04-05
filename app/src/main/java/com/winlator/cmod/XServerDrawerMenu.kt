@@ -198,10 +198,10 @@ fun setupXServerDrawerComposeView(
     composeView.setContent {
         MaterialTheme(
             colorScheme = darkColorScheme(
-                primary = Color(0xFF2F81F7),
-                background = Color(0xFF0D1117),
-                surface = Color(0xFF161B22),
-                onSurface = Color(0xFFE6EDF3),
+                primary = Color(0xFF1A9FFF),
+                background = Color(0xFF0F1724),
+                surface = Color(0xFF1B2A3D),
+                onSurface = Color(0xFFF5F9FF),
             )
         ) {
             XServerDrawerContent(state = state, listener = listener)
@@ -218,13 +218,13 @@ private fun XServerDrawerContent(
         modifier = Modifier
             .fillMaxHeight()
             .width(336.dp),
-        color = Color(0xFF0D1117),
+        color = Color(0xFF0F1724),
         tonalElevation = 0.dp,
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFF0D1117))
+                .background(Color(0xFF0F1724))
                 .padding(horizontal = 14.dp, vertical = 12.dp)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -244,9 +244,9 @@ private fun XServerHUDSettingsExpanded(
     state: XServerDrawerState,
     listener: XServerDrawerActionListener,
 ) {
-    val card = Color(0xFF1C2333)
-    val accent = Color(0xFF2F81F7)
-    val textSecondary = Color(0xFF8B949E)
+    val card = Color(0xFF1B2A3D)
+    val accent = Color(0xFF1A9FFF)
+    val textSecondary = Color(0xFF9CB0C7)
 
     Column(
         modifier = Modifier
@@ -323,8 +323,8 @@ private fun HUDCheckmarkToggle(
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val textPrimary = Color(0xFFE6EDF3)
-    val accent = Color(0xFF2F81F7)
+    val textPrimary = Color(0xFFF5F9FF)
+    val accent = Color(0xFF1A9FFF)
 
     Row(
         modifier = modifier
@@ -340,7 +340,7 @@ private fun HUDCheckmarkToggle(
             modifier = Modifier.size(24.dp),
             colors = CheckboxDefaults.colors(
                 checkedColor = accent,
-                uncheckedColor = Color(0xFF30363D),
+                uncheckedColor = Color(0xFF2D425A),
                 checkmarkColor = Color.White
             )
         )
@@ -360,17 +360,18 @@ private fun XServerDrawerRow(
     item: XServerDrawerItem,
     onClick: () -> Unit,
 ) {
-    val accent = Color(0xFF2F81F7)
-    val surface = Color(0xFF161B22)
-    val card = Color(0xFF1C2333)
-    val textPrimary = Color(0xFFE6EDF3)
-    val textSecondary = Color(0xFF8B949E)
+    val accent = Color(0xFF1A9FFF)
+    val surface = Color(0xFF1C2D42)
+    val card = Color(0xFF1B2A3D)
+    val cardActive = Color(0xFF2A4066)
+    val textPrimary = Color(0xFFF5F9FF)
+    val textSecondary = Color(0xFF9CB0C7)
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(18.dp))
-            .background(card)
+            .background(if (item.active) cardActive else card)
             .then(
                 if (item.active) Modifier.border(
                     BorderStroke(1.dp, accent.copy(alpha = 0.45f)),

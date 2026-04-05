@@ -73,11 +73,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 // Palette
-private val BgDark        = Color(0xFF0F0F12)
-private val CardDark      = Color(0xFF14141E)
-private val CardBorder    = Color(0xFF21212E)   
-private val IconBoxBg     = Color(0xFF1C1C28)   
-private val SurfaceDark   = Color(0xFF18181F)
+private val BgDark        = Color(0xFF0F1724)
+private val CardDark      = Color(0xFF1B2A3D)
+private val CardBorder    = Color(0xFF2D425A)
+private val IconBoxBg     = Color(0xFF1C2D42)
+private val SurfaceDark   = Color(0xFF141F30)
 private val Accent        = Color(0xFF1A9FFF)
 private val TextPrimary   = Color(0xFFF0F4FF)
 private val TextSecondary = Color(0xFF7A8FA8)
