@@ -155,11 +155,11 @@ public class FrameRating extends LinearLayout implements Runnable {
         this.lastGoodGpuTime = 0;
         this.isStatsRunning = false;
         this.C_VALUE = Color.parseColor("#FFFFFF");
-        this.C_CPU = Color.parseColor("#FFAB91");
-        this.C_RAM = Color.parseColor("#90CAF9");
-        this.C_BAT = Color.parseColor("#EF5350");
-        this.C_TEMP = Color.parseColor("#EF5350");
-        this.C_GPU = Color.parseColor("#E040FB");
+        this.C_CPU = Color.parseColor("#FF9800"); // Richer Orange
+        this.C_RAM = Color.parseColor("#2196F3"); // Stronger Blue
+        this.C_BAT = Color.parseColor("#EF5350"); // Back to Red
+        this.C_TEMP = Color.parseColor("#EF5350"); // Temp red
+        this.C_GPU = Color.parseColor("#BA68C8"); // Subtle Purple
         this.C_FPS_OK = Color.parseColor("#76FF03");
         this.C_DIVISOR = Color.parseColor("#616161");
         this.context = context;
@@ -847,7 +847,7 @@ public class FrameRating extends LinearLayout implements Runnable {
         if (this.enableGpu && this.tvGpuLoad != null) {
             SpannableStringBuilder b = new SpannableStringBuilder();
             append(b, "GPU ", this.C_GPU);
-            append(b, this.gpuLoad >= 0 ? this.gpuLoad + "%" : "N/A", this.C_VALUE);
+            append(b, this.gpuLoad >= 0 ? this.gpuLoad + "%" : "N/A", this.C_GPU);
             this.tvGpuLoad.setText(b);
             this.tvGpuLoad.setVisibility(View.VISIBLE);
         } else if (this.tvGpuLoad != null) this.tvGpuLoad.setVisibility(View.GONE);
@@ -856,14 +856,14 @@ public class FrameRating extends LinearLayout implements Runnable {
             if (this.tvCpu != null) {
                 SpannableStringBuilder b = new SpannableStringBuilder();
                 append(b, "CPU ", this.C_CPU);
-                append(b, this.cpuPercent >= 0 ? this.cpuPercent + "%" : "N/A", this.C_VALUE);
+                append(b, this.cpuPercent >= 0 ? this.cpuPercent + "%" : "N/A", this.C_CPU);
                 this.tvCpu.setText(b);
                 this.tvCpu.setVisibility(View.VISIBLE);
             }
             if (this.tvRam != null) {
                 SpannableStringBuilder b = new SpannableStringBuilder();
                 append(b, "RAM ", this.C_RAM);
-                append(b, this.ramText, this.C_VALUE);
+                append(b, this.ramText, this.C_RAM);
                 this.tvRam.setText(b);
                 this.tvRam.setVisibility(View.VISIBLE);
             }
@@ -886,7 +886,7 @@ public class FrameRating extends LinearLayout implements Runnable {
             if (this.tvTemp != null) {
                 SpannableStringBuilder b = new SpannableStringBuilder();
                 append(b, "TMP ", this.C_TEMP);
-                append(b, this.cpuTemp >= 0 ? this.cpuTemp + "°C" : "N/A", this.C_VALUE);
+                append(b, this.cpuTemp >= 0 ? this.cpuTemp + "°C" : "N/A", this.C_TEMP);
                 this.tvTemp.setText(b);
                 this.tvTemp.setVisibility(View.VISIBLE);
             }
