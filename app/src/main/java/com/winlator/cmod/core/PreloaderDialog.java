@@ -31,6 +31,7 @@ public class PreloaderDialog {
         if (window != null) {
             window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
             window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
+            window.addFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
         }
 
         ComposeView composeView = new ComposeView(activity);

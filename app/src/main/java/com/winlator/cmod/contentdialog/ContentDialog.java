@@ -107,6 +107,15 @@ public class ContentDialog extends Dialog {
         if (getWindow() != null) {
             getWindow().setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN |
                                          android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
+            getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
+        }
+
+        // Prevent keyboard glitch by ensuring EditText doesn't get focus by default
+        View editText = contentView.findViewById(R.id.EditText);
+        if (editText != null) {
+            editText.setVisibility(View.GONE);
+            editText.setFocusable(false);
+            editText.setFocusableInTouchMode(false);
         }
 
         setContentView(contentView);
@@ -226,11 +235,17 @@ public class ContentDialog extends Dialog {
     public static void prompt(Context context, int titleResId, String defaultText, Callback<String> callback) {
         ContentDialog dialog = new ContentDialog(context);
 
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
+        }
+
         final EditText editText = dialog.findViewById(R.id.EditText);
         editText.setHint(R.string.common_ui_untitled);
         editText.setImeOptions(editText.getImeOptions() | android.view.inputmethod.EditorInfo.IME_FLAG_NO_EXTRACT_UI);
         if (defaultText != null) editText.setText(defaultText);
         editText.setVisibility(View.VISIBLE);
+        editText.setFocusable(true);
+        editText.setFocusableInTouchMode(true);
 
         dialog.setTitle(titleResId);
         dialog.setOnConfirmCallback(() -> {
