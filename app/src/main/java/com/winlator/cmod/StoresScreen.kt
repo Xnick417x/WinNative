@@ -471,7 +471,7 @@ private fun SettingsToggleCard(
     icon: ImageVector,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
-    accentColor: Color = Color(0xFF1A9FFF),
+    accentColor: Color = ThemeManager.colorAccent,
     cardColor: Color = ThemeManager.colorSurface,
 ) {
     Box(
@@ -533,7 +533,7 @@ private fun SettingsDropdownCard(
     selectedValue: Int,
     options: List<Pair<Int, String>>,
     onOptionSelected: (Int) -> Unit,
-    accentColor: Color = Color(0xFF1A9FFF),
+    accentColor: Color = ThemeManager.colorAccent,
     highlightMaxValue: Boolean = false,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -678,7 +678,7 @@ private fun FolderPathCard(
                 Icon(
                     imageVector = Icons.Filled.Folder,
                     contentDescription = null,
-                    tint = Color(0xFF1A9FFF),
+                    tint = ThemeManager.colorAccent,
                     modifier = Modifier.size(17.dp),
                 )
             }
@@ -711,7 +711,7 @@ private fun BrowseButton(onClick: () -> Unit) {
         modifier = Modifier
             .scale(scale)
             .clip(RoundedCornerShape(8.dp))
-            .background(Color(0xFF1A9FFF).copy(alpha = 0.12f))
+            .background(ThemeManager.colorAccent.copy(alpha = 0.12f))
             .pointerInput(onClick) {
                 detectTapGestures(
                     onPress = { isPressed = true; tryAwaitRelease(); isPressed = false },
@@ -723,7 +723,7 @@ private fun BrowseButton(onClick: () -> Unit) {
     ) {
         Text(
             text = stringResource(R.string.common_ui_browse),
-            color = Color(0xFF1A9FFF),
+            color = ThemeManager.colorAccent,
             fontSize = 12.sp,
             fontWeight = FontWeight.SemiBold,
         )

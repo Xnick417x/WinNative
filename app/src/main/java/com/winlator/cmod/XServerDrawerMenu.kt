@@ -243,7 +243,7 @@ private fun XServerHUDSettingsExpanded(
     listener: XServerDrawerActionListener,
 ) {
     val card = com.winlator.cmod.core.ThemeManager.colorSurface
-    val accent = Color(0xFF1A9FFF)
+    val accent = ThemeManager.colorAccent
     val textSecondary = com.winlator.cmod.core.ThemeManager.colorTextSecondary
 
     Column(
@@ -348,7 +348,7 @@ private fun HUDCheckmarkToggle(
     modifier: Modifier = Modifier
 ) {
     val textPrimary = com.winlator.cmod.core.ThemeManager.colorTextPrimary
-    val accent = Color(0xFF1A9FFF)
+    val accent = ThemeManager.colorAccent
 
     Row(
         modifier = modifier
@@ -383,7 +383,7 @@ private fun XServerDrawerRow(
     item: XServerDrawerItem,
     onClick: () -> Unit,
 ) {
-    val accent = Color(0xFF1A9FFF)
+    val accent = ThemeManager.colorAccent
     val surface = com.winlator.cmod.core.ThemeManager.colorSurfaceVariant
     val card = com.winlator.cmod.core.ThemeManager.colorSurface
     val cardActive = com.winlator.cmod.core.ThemeManager.colorSurfaceHighlight

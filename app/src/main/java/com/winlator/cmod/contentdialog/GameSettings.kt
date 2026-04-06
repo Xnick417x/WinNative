@@ -111,12 +111,14 @@ private val InputSurface
     @Composable get() = ThemeManager.colorSurfaceVariant
 private val InputBorder
     @Composable get() = ThemeManager.colorOutline
-private val AccentBlue = Color(0xFF1A9FFF)
+private val AccentBlue
+    @Composable get() = ThemeManager.colorAccent
 private val TextPrimary
     @Composable get() = ThemeManager.colorTextPrimary
 private val TextSecondary
     @Composable get() = ThemeManager.colorTextSecondary
-private val TextDim = Color(0xFF6E7681)
+private val TextDim
+    @Composable get() = ThemeManager.colorTextSecondary.copy(alpha = 0.7f)
 private val DividerColor
     @Composable get() = ThemeManager.colorOutline
 private val CheckBorder

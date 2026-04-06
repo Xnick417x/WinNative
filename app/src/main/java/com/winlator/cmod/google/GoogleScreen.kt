@@ -324,7 +324,7 @@ private fun GoogleAccountCard(
                 .padding(horizontal = 14.dp, vertical = 11.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconBox(icon = Icons.Filled.Gamepad, tint = Color(0xFF34A853))
+            IconBox(icon = Icons.Filled.Gamepad, tint = ThemeManager.colorAccent)
 
             Spacer(Modifier.width(14.dp))
 
@@ -370,7 +370,7 @@ private fun GoogleAccountCard(
             if (!isLoggedIn) {
                 ActionButton(
                     label = if (busy) stringResource(R.string.google_cloud_working) else stringResource(R.string.google_cloud_sign_in),
-                    textColor = Color(0xFF34A853),
+                    textColor = ThemeManager.colorAccent,
                     enabled = !busy,
                     onClick = onSignIn
                 )
@@ -477,7 +477,7 @@ private fun StoreLoginCard(
                     )
                     ActionButton(
                         label = if (busy) stringResource(R.string.google_cloud_working) else stringResource(R.string.google_cloud_restore),
-                        textColor = Color(0xFF1A9FFF),
+                        textColor = ThemeManager.colorAccent,
                         icon = Icons.Filled.Restore,
                         enabled = !busy && state.googleSignedIn && state.cloudStores.isNotEmpty(),
                         onClick = onRestore
@@ -586,7 +586,7 @@ private fun ActionButton(
         modifier = Modifier
             .scale(scale)
             .clip(RoundedCornerShape(8.dp))
-            .background(Color(0xFF1A1A26))
+            .background(ThemeManager.colorSurface)
             .border(
                 1.dp,
                 if (enabled) textColor.copy(alpha = 0.30f) else ThemeManager.colorTextSecondary.copy(alpha = 0.2f),

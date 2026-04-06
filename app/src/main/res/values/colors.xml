@@ -9,34 +9,34 @@
     <color name="black">#000000</color>
 
     
-    <color name="window_background_color_dark">#0F1724</color>
-    <color name="settings_background_dark">#141F30</color>
+    <color name="window_background_color_dark">#0F0F12</color>
+    <color name="settings_background_dark">#1A1A26</color>
     <color name="colorPrimaryDarkMode">#37474f</color>
     <color name="colorPrimaryDarkModeDark">#263238</color>
-    <color name="colorAccentDark">#80d8ff</color>
+    <color name="colorAccentDark">#A855F7</color>
     <color name="white">#ffffff</color>
     <color name="gray">#888888</color>
 
     
-<color name="content_dialog_background_dark">#424242</color>
-    <color name="button_neutral_dark">#37474f</color>
-    <color name="button_positive_dark">#1e88e5</color>
-    <color name="settings_section_surface">#1B2A3D</color>
+<color name="content_dialog_background_dark">#1A1A26</color>
+    <color name="button_neutral_dark">#242436</color>
+    <color name="button_positive_dark">#A855F7</color>
+    <color name="settings_section_surface">#1A1A26</color>
     <color name="control_editor_background">#030612</color>
-    <color name="settings_card_surface">#1B2A3D</color>
-    <color name="settings_outline">#2D425A</color>
-    <color name="settings_chip_surface">#1B2A3D</color>
-    <color name="settings_chip_selected">#1A9FFF</color>
-    <color name="settings_chip_selected_stroke">#74D0FF</color>
-    <color name="settings_text_primary">#F5F9FF</color>
-    <color name="settings_text_secondary">#9CB0C7</color>
-    <color name="settings_icon_tint">#D7E6F7</color>
-    <color name="settings_action_surface">#1C2D42</color>
-    <color name="settings_action_surface_pressed">#1A2A3D</color>
-    <color name="settings_accent">#1A9FFF</color>
+    <color name="settings_card_surface">#1A1A26</color>
+    <color name="settings_outline">#2E2E44</color>
+    <color name="settings_chip_surface">#1A1A26</color>
+    <color name="settings_chip_selected">#A855F7</color>
+    <color name="settings_chip_selected_stroke">#C084FC</color>
+    <color name="settings_text_primary">#F0F4FF</color>
+    <color name="settings_text_secondary">#7A8FA8</color>
+    <color name="settings_icon_tint">#E9D5FF</color>
+    <color name="settings_action_surface">#242436</color>
+    <color name="settings_action_surface_pressed">#2E2E44</color>
+    <color name="settings_accent">#A855F7</color>
     <color name="settings_danger">#FF7A88</color>
-    <color name="settings_popup_surface">#1C2D42</color>
-    <color name="settings_popup_surface_edge">#2D425A</color>
+    <color name="settings_popup_surface">#242436</color>
+    <color name="settings_popup_surface_edge">#2E2E44</color>
     <color name="settings_input_outline_soft">#52F5F9FF</color>
 
     <!-- Classic Dark Theme Variants -->

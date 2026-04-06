@@ -16,12 +16,12 @@ object ThemeManager {
     const val THEME_WINNATIVE_BLUE = 0
     const val THEME_CLASSIC_DARK = 1
 
-    private var currentTheme: Int = THEME_WINNATIVE_BLUE
+    private var currentTheme: Int = THEME_CLASSIC_DARK
 
     @JvmStatic
     fun init(context: Context) {
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-        currentTheme = prefs.getInt(PREF_APP_THEME, THEME_WINNATIVE_BLUE)
+        currentTheme = prefs.getInt(PREF_APP_THEME, THEME_CLASSIC_DARK)
     }
 
     @JvmStatic
@@ -41,41 +41,54 @@ object ThemeManager {
     fun getComposeColorScheme(): ColorScheme {
         return if (isClassicDark()) {
             darkColorScheme(
-                primary = androidx.compose.ui.graphics.Color(0xFF1A9FFF),
-                background = androidx.compose.ui.graphics.Color(0xFF000000),
-                surface = androidx.compose.ui.graphics.Color(0xFF14141E),
+                primary = androidx.compose.ui.graphics.Color(0xFFA855F7), // Purple Accent
+                background = androidx.compose.ui.graphics.Color(0xFF0F0F12), // Deep Charcoal
+                surface = androidx.compose.ui.graphics.Color(0xFF1A1A26),    // Dark Dark Purple Surface
                 onSurface = androidx.compose.ui.graphics.Color(0xFFF0F4FF),
+                outline = androidx.compose.ui.graphics.Color(0xFF2E2E44)     // Matching Purple-ish Border
             )
         } else {
             darkColorScheme(
-                primary = androidx.compose.ui.graphics.Color(0xFF1A9FFF),
-                background = androidx.compose.ui.graphics.Color(0xFF0F1724),
-                surface = androidx.compose.ui.graphics.Color(0xFF1B2A3D),
+                primary = androidx.compose.ui.graphics.Color(0xFF1A9FFF), // WinNative Blue
+                background = androidx.compose.ui.graphics.Color(0xFF0F1724), // Navy
+                surface = androidx.compose.ui.graphics.Color(0xFF1B2A3D),    // Lighter Navy
                 onSurface = androidx.compose.ui.graphics.Color(0xFFF5F9FF),
+                outline = androidx.compose.ui.graphics.Color(0xFF2D425A)
             )
         }
     }
 
     val colorBackground: androidx.compose.ui.graphics.Color
-        get() = if (isClassicDark()) androidx.compose.ui.graphics.Color(0xFF000000) else androidx.compose.ui.graphics.Color(0xFF0F1724)
+        @androidx.compose.runtime.Composable
+        get() = if (isClassicDark()) androidx.compose.ui.graphics.Color(0xFF0F0F12) else androidx.compose.ui.graphics.Color(0xFF0F1724)
 
     val colorSurface: androidx.compose.ui.graphics.Color
-        get() = if (isClassicDark()) androidx.compose.ui.graphics.Color(0xFF14141E) else androidx.compose.ui.graphics.Color(0xFF1B2A3D)
+        @androidx.compose.runtime.Composable
+        get() = if (isClassicDark()) androidx.compose.ui.graphics.Color(0xFF1A1A26) else androidx.compose.ui.graphics.Color(0xFF1B2A3D)
 
     val colorSurfaceVariant: androidx.compose.ui.graphics.Color
-        get() = if (isClassicDark()) androidx.compose.ui.graphics.Color(0xFF1C1C28) else androidx.compose.ui.graphics.Color(0xFF1C2D42)
+        @androidx.compose.runtime.Composable
+        get() = if (isClassicDark()) androidx.compose.ui.graphics.Color(0xFF242436) else androidx.compose.ui.graphics.Color(0xFF1C2D42)
         
     val colorSurfaceHighlight: androidx.compose.ui.graphics.Color
-        get() = if (isClassicDark()) androidx.compose.ui.graphics.Color(0xFF28283B) else androidx.compose.ui.graphics.Color(0xFF2A4066)
+        @androidx.compose.runtime.Composable
+        get() = if (isClassicDark()) androidx.compose.ui.graphics.Color(0xFF2E2E44) else androidx.compose.ui.graphics.Color(0xFF2A4066)
 
     val colorOutline: androidx.compose.ui.graphics.Color
-        get() = if (isClassicDark()) androidx.compose.ui.graphics.Color(0xFF21212E) else androidx.compose.ui.graphics.Color(0xFF2D425A)
+        @androidx.compose.runtime.Composable
+        get() = if (isClassicDark()) androidx.compose.ui.graphics.Color(0xFF2E2E44) else androidx.compose.ui.graphics.Color(0xFF2D425A)
 
     val colorTextPrimary: androidx.compose.ui.graphics.Color
+        @androidx.compose.runtime.Composable
         get() = if (isClassicDark()) androidx.compose.ui.graphics.Color(0xFFF0F4FF) else androidx.compose.ui.graphics.Color(0xFFF5F9FF)
 
     val colorTextSecondary: androidx.compose.ui.graphics.Color
+        @androidx.compose.runtime.Composable
         get() = if (isClassicDark()) androidx.compose.ui.graphics.Color(0xFF7A8FA8) else androidx.compose.ui.graphics.Color(0xFF9CB0C7)
+
+    val colorAccent: androidx.compose.ui.graphics.Color
+        @androidx.compose.runtime.Composable
+        get() = if (isClassicDark()) androidx.compose.ui.graphics.Color(0xFFA855F7) else androidx.compose.ui.graphics.Color(0xFF1A9FFF)
 
     val colorStatusGreen: androidx.compose.ui.graphics.Color = androidx.compose.ui.graphics.Color(0xFF3FB950)
     val colorWarningAmber: androidx.compose.ui.graphics.Color = androidx.compose.ui.graphics.Color(0xFFFFC857)
@@ -85,12 +98,12 @@ object ThemeManager {
 
     @JvmStatic
     fun getBackgroundColor(): Int {
-        return if (isClassicDark()) Color.parseColor("#000000") else Color.parseColor("#0F1724")
+        return if (isClassicDark()) Color.parseColor("#0F0F12") else Color.parseColor("#0F1724")
     }
 
     @JvmStatic
     fun getSurfaceColor(): Int {
-        return if (isClassicDark()) Color.parseColor("#14141E") else Color.parseColor("#1B2A3D")
+        return if (isClassicDark()) Color.parseColor("#1A1A26") else Color.parseColor("#1B2A3D")
     }
 
     @JvmStatic

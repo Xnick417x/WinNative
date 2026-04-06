@@ -173,8 +173,6 @@ import androidx.core.view.WindowCompat
 import kotlin.math.roundToInt
 
 // Color palette
-private val Accent = Color(0xFF1A9FFF)
-private val AccentGlow = Color(0xFF58A6FF)
 private val StatusAway = Color(0xFFF0C040)
 private val StatusOffline = Color(0xFF6E7681)
 
@@ -877,9 +875,9 @@ class UnifiedActivity : ComponentActivity() {
                                 .align(Alignment.BottomEnd)
                                 .padding(16.dp)
                                 .size(52.dp)
-                                .shadow(10.dp, CircleShape, spotColor = Accent.copy(alpha = 0.4f))
+                                .shadow(10.dp, CircleShape, spotColor = ThemeManager.colorThemeManager.colorAccent.copy(alpha = 0.4f))
                                 .clip(CircleShape)
-                                .background(Accent)
+                                .background(ThemeManager.colorThemeManager.colorAccent)
                                 .focusProperties { canFocus = false } // No specific button for this, handle via long press or touch
                                 .clickable { showAddCustomGame = true },
                             contentAlignment = Alignment.Center
@@ -942,7 +940,7 @@ class UnifiedActivity : ComponentActivity() {
                         .width(320.dp)
                         .clip(RoundedCornerShape(20.dp))
                         .background(ThemeManager.colorSurface)
-                        .border(1.dp, Accent.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
+                        .border(1.dp, ThemeManager.colorAccent.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
                         .padding(28.dp),
                     contentAlignment = Alignment.Center
                 ) {
@@ -1087,7 +1085,7 @@ class UnifiedActivity : ComponentActivity() {
                                     label = "tabScale"
                                 )
                                 val textColor by animateColorAsState(
-                                    targetValue = if (selected) Accent else ThemeManager.colorTextSecondary,
+                                    targetValue = if (selected) ThemeManager.colorAccent else ThemeManager.colorTextSecondary,
                                     animationSpec = tween(280),
                                     label = "tabTextColor"
                                 )
@@ -1175,7 +1173,7 @@ class UnifiedActivity : ComponentActivity() {
                         .clip(CircleShape)
                         .background(
                             if (isDownloadsTab) ThemeManager.colorSurface.copy(alpha = 0.4f)
-                            else if (isSearchExpanded) Accent.copy(alpha = 0.15f)
+                            else if (isSearchExpanded) ThemeManager.colorAccent.copy(alpha = 0.15f)
                             else ThemeManager.colorSurface
                         )
                         .focusProperties { canFocus = !isLibraryTab },
@@ -1199,7 +1197,7 @@ class UnifiedActivity : ComponentActivity() {
                             Icons.Default.Search,
                             contentDescription = "Search",
                             tint = if (isDownloadsTab) ThemeManager.colorTextSecondary.copy(alpha = 0.4f)
-                                   else if (isSearchExpanded) Accent
+                                   else if (isSearchExpanded) ThemeManager.colorAccent
                                    else ThemeManager.colorTextPrimary,
                             modifier = Modifier
                                 .size(24.dp)
@@ -1286,7 +1284,7 @@ class UnifiedActivity : ComponentActivity() {
                         Icon(
                             Icons.Default.Search,
                             contentDescription = null,
-                            tint = Accent,
+                            tint = ThemeManager.colorAccent,
                             modifier = Modifier.size(22.dp)
                         )
                         Spacer(Modifier.width(12.dp))
@@ -1300,7 +1298,7 @@ class UnifiedActivity : ComponentActivity() {
                             ),
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                             keyboardActions = KeyboardActions(onSearch = { keyboardController?.hide() }),
-                            cursorBrush = Brush.verticalGradient(listOf(Accent, AccentGlow)),
+                            cursorBrush = Brush.verticalGradient(listOf(ThemeManager.colorAccent, ThemeManager.colorThemeManager.colorAccent)),
                             modifier = Modifier
                                 .weight(1f)
                                 .focusRequester(searchFocusRequester),
@@ -1473,7 +1471,7 @@ class UnifiedActivity : ComponentActivity() {
                     label = "loaderFade"
                 )
                 CircularProgressIndicator(
-                    color = Accent,
+                    color = ThemeManager.colorThemeManager.colorAccent,
                     strokeWidth = 3.dp,
                     modifier = Modifier.size(48.dp).alpha(spinAlpha)
                 )
@@ -1741,7 +1739,7 @@ class UnifiedActivity : ComponentActivity() {
     private data class GameSettingsActionItem(
         val title: String,
         val icon: ImageVector,
-        val accentColor: Color = Accent,
+        val accentColor: Color = ThemeManager.colorAccent,
         val onClick: () -> Unit,
     )
 
@@ -1850,7 +1848,7 @@ class UnifiedActivity : ComponentActivity() {
     @Composable
     private fun GameSettingsInfoCard(
         message: String,
-        accentColor: Color = Accent,
+        accentColor: Color = ThemeManager.colorAccent,
     ) {
         Column(
             modifier = Modifier
@@ -2760,7 +2758,7 @@ class UnifiedActivity : ComponentActivity() {
                                     Modifier.fillMaxSize().background(ThemeManager.colorSurface),
                                     contentAlignment = Alignment.Center,
                                 ) {
-                                    Icon(Icons.Default.SportsEsports, contentDescription = null, tint = Accent.copy(alpha = 0.4f), modifier = Modifier.size(72.dp))
+                                    Icon(Icons.Default.SportsEsports, contentDescription = null, tint = ThemeManager.colorAccent.copy(alpha = 0.4f), modifier = Modifier.size(72.dp))
                                 }
                             }
                             Box(
@@ -2815,13 +2813,13 @@ class UnifiedActivity : ComponentActivity() {
                                     ) {
                                         // Source badge row
                                         Surface(
-                                            color = Accent.copy(alpha = 0.15f),
+                                            color = ThemeManager.colorAccent.copy(alpha = 0.15f),
                                             shape = RoundedCornerShape(8.dp),
                                         ) {
                                             Text(
                                                 sourceLabel,
                                                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                                                color = Accent,
+                                                color = ThemeManager.colorAccent,
                                                 fontSize = 12.sp,
                                                 fontWeight = FontWeight.Bold,
                                             )
@@ -3226,7 +3224,7 @@ class UnifiedActivity : ComponentActivity() {
                 .then(if (onClick != null) Modifier.clip(RoundedCornerShape(10.dp)).clickable(onClick = onClick) else Modifier),
             color = ThemeManager.colorSurface,
             shape = RoundedCornerShape(10.dp),
-            border = BorderStroke(1.dp, if (onClick != null) Accent.copy(alpha = 0.25f) else ThemeManager.colorOutline),
+            border = BorderStroke(1.dp, if (onClick != null) ThemeManager.colorAccent.copy(alpha = 0.25f) else ThemeManager.colorOutline),
         ) {
             Column(
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
@@ -3242,13 +3240,13 @@ class UnifiedActivity : ComponentActivity() {
                         fontSize = 10.sp,
                     )
                     if (onClick != null) {
-                        Icon(Icons.Default.OpenInNew, contentDescription = null, modifier = Modifier.size(10.dp), tint = Accent.copy(alpha = 0.6f))
+                        Icon(Icons.Default.OpenInNew, contentDescription = null, modifier = Modifier.size(10.dp), tint = ThemeManager.colorAccent.copy(alpha = 0.6f))
                     }
                 }
                 Text(
                     value,
                     style = MaterialTheme.typography.bodySmall,
-                    color = valueColor ?: (if (onClick != null) Accent else ThemeManager.colorTextPrimary),
+                    color = valueColor ?: (if (onClick != null) ThemeManager.colorAccent else ThemeManager.colorTextPrimary),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -3281,7 +3279,7 @@ class UnifiedActivity : ComponentActivity() {
         val baseGradient = Brush.horizontalGradient(
             colors = listOf(
                 Color(0xFF00B4D8),
-                Accent,
+                ThemeManager.colorAccent,
                 Color(0xFF7B2FF7),
             ),
         )
@@ -3297,8 +3295,8 @@ class UnifiedActivity : ComponentActivity() {
                 .shadow(
                     elevation = 12.dp,
                     shape = RoundedCornerShape(12.dp),
-                    ambientColor = Accent.copy(alpha = glowPulse),
-                    spotColor = Accent.copy(alpha = glowPulse),
+                    ambientColor = ThemeManager.colorAccent.copy(alpha = glowPulse),
+                    spotColor = ThemeManager.colorAccent.copy(alpha = glowPulse),
                 )
                 .clip(RoundedCornerShape(12.dp))
                 .background(baseGradient)
@@ -3353,7 +3351,7 @@ class UnifiedActivity : ComponentActivity() {
         val baseGradient = Brush.horizontalGradient(
             colors = listOf(
                 Color(0xFF00B4D8),
-                Accent,
+                ThemeManager.colorAccent,
                 Color(0xFF7B2FF7),
             ),
         )
@@ -3368,8 +3366,8 @@ class UnifiedActivity : ComponentActivity() {
                 .shadow(
                     elevation = 12.dp,
                     shape = RoundedCornerShape(12.dp),
-                    ambientColor = Accent.copy(alpha = glowPulse),
-                    spotColor = Accent.copy(alpha = glowPulse),
+                    ambientColor = ThemeManager.colorAccent.copy(alpha = glowPulse),
+                    spotColor = ThemeManager.colorAccent.copy(alpha = glowPulse),
                 )
                 .clip(RoundedCornerShape(12.dp))
                 .background(baseGradient)
@@ -3524,7 +3522,7 @@ class UnifiedActivity : ComponentActivity() {
                 if (glowAlpha > 0f) Modifier.drawWithContent {
                     drawContent()
                     drawRoundRect(
-                        color = AccentGlow,
+                        color = ThemeManager.colorThemeManager.colorAccent,
                         alpha = glowAlpha * 0.25f,
                         cornerRadius = CornerRadius(12.dp.toPx()),
                     )
@@ -3575,7 +3573,7 @@ class UnifiedActivity : ComponentActivity() {
                         modifier = artModifier.background(ThemeManager.colorSurface),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Default.SportsEsports, contentDescription = app.name, tint = Accent.copy(alpha = 0.6f), modifier = Modifier.size(48.dp))
+                        Icon(Icons.Default.SportsEsports, contentDescription = app.name, tint = ThemeManager.colorAccent.copy(alpha = 0.6f), modifier = Modifier.size(48.dp))
                     }
                 }
             } else if (gogGame != null) {
@@ -3846,7 +3844,7 @@ class UnifiedActivity : ComponentActivity() {
                     .then(
                         if (glowAlpha > 0f) Modifier.drawWithContent {
                             drawContent()
-                            drawRoundRect(color = AccentGlow, alpha = glowAlpha * 0.25f, cornerRadius = CornerRadius(14.dp.toPx()))
+                            drawRoundRect(color = ThemeManager.colorThemeManager.colorAccent, alpha = glowAlpha * 0.25f, cornerRadius = CornerRadius(14.dp.toPx()))
                         } else Modifier
                     )
                     .clickable(interactionSource = clickInteraction, indication = null, onClick = onClick)
@@ -3898,7 +3896,7 @@ class UnifiedActivity : ComponentActivity() {
                     .then(
                         if (glowAlpha > 0f) Modifier.drawWithContent {
                             drawContent()
-                            drawRoundRect(color = AccentGlow, alpha = glowAlpha * 0.25f, cornerRadius = CornerRadius(16.dp.toPx()))
+                            drawRoundRect(color = ThemeManager.colorThemeManager.colorAccent, alpha = glowAlpha * 0.25f, cornerRadius = CornerRadius(16.dp.toPx()))
                         } else Modifier
                     )
                     .clickable(interactionSource = clickInteraction, indication = null, onClick = onClick)
@@ -4026,13 +4024,13 @@ class UnifiedActivity : ComponentActivity() {
                             ) {
                                 if (sourceLabel.isNotBlank()) {
                                     Surface(
-                                        color = Accent.copy(alpha = 0.15f),
+                                        color = ThemeManager.colorAccent.copy(alpha = 0.15f),
                                         shape = RoundedCornerShape(8.dp),
                                     ) {
                                         Text(
                                             sourceLabel,
                                             modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                                            color = Accent,
+                                            color = ThemeManager.colorAccent,
                                             fontSize = 12.sp,
                                             fontWeight = FontWeight.Bold,
                                         )
@@ -4132,7 +4130,7 @@ class UnifiedActivity : ComponentActivity() {
                                 checked = selectedDlcIds.contains(dlc.id),
                                 onCheckedChange = { if (it) selectedDlcIds.add(dlc.id) else selectedDlcIds.remove(dlc.id) },
                                 colors = CheckboxDefaults.colors(
-                                    checkedColor = Accent,
+                                    checkedColor = ThemeManager.colorAccent,
                                     uncheckedColor = ThemeManager.colorTextSecondary,
                                     checkmarkColor = Color.White,
                                 ),
@@ -4174,7 +4172,7 @@ class UnifiedActivity : ComponentActivity() {
             infoContent = {
                 if (isLoading && !installed) {
                     Spacer(Modifier.height(18.dp))
-                    CircularProgressIndicator(color = Accent)
+                    CircularProgressIndicator(color = ThemeManager.colorAccent)
                 } else if (installed) {
                     DetailCard(
                         label = stringResource(R.string.library_games_install_path),
@@ -4677,7 +4675,7 @@ class UnifiedActivity : ComponentActivity() {
                     .then(
                         if (glowAlpha > 0f) Modifier.drawWithContent {
                             drawContent()
-                            drawRoundRect(color = AccentGlow, alpha = glowAlpha * 0.25f, cornerRadius = CornerRadius(14.dp.toPx()))
+                            drawRoundRect(color = ThemeManager.colorThemeManager.colorAccent, alpha = glowAlpha * 0.25f, cornerRadius = CornerRadius(14.dp.toPx()))
                         } else Modifier
                     )
                     .clickable(interactionSource = clickInteraction, indication = null, onClick = onClick)
@@ -4749,7 +4747,7 @@ class UnifiedActivity : ComponentActivity() {
                     .then(
                         if (glowAlpha > 0f) Modifier.drawWithContent {
                             drawContent()
-                            drawRoundRect(color = AccentGlow, alpha = glowAlpha * 0.25f, cornerRadius = CornerRadius(16.dp.toPx()))
+                            drawRoundRect(color = ThemeManager.colorThemeManager.colorAccent, alpha = glowAlpha * 0.25f, cornerRadius = CornerRadius(16.dp.toPx()))
                         } else Modifier
                     )
                     .clickable(interactionSource = clickInteraction, indication = null, onClick = onClick)
@@ -5041,7 +5039,7 @@ class UnifiedActivity : ComponentActivity() {
         var gogGame by remember(gogId) { mutableStateOf<GOGGame?>(null) }
         val context = LocalContext.current
         var isFocused by remember { mutableStateOf(false) }
-        val borderColor = if (isFocused || isSelected) Accent.copy(alpha = 0.8f) else Color.Transparent
+        val borderColor = if (isFocused || isSelected) ThemeManager.colorAccent.copy(alpha = 0.8f) else Color.Transparent
 
         LaunchedEffect(appId, gogId, isSteam, isEpic, isGog) {
             withContext(Dispatchers.IO) { 
@@ -5103,7 +5101,7 @@ class UnifiedActivity : ComponentActivity() {
                                 Text(
                                     text = "${StorageUtils.formatBinarySize(speed)}/s",
                                     style = MaterialTheme.typography.labelMedium,
-                                    color = Accent,
+                                    color = ThemeManager.colorAccent,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
@@ -5138,7 +5136,7 @@ class UnifiedActivity : ComponentActivity() {
                                 DownloadPhase.FAILED -> Color(0xFFFF6B6B)
                                 DownloadPhase.CANCELLED -> Color(0xFFFF6B6B)
                                 DownloadPhase.COMPLETE -> Color(0xFF4CAF50)
-                                else -> Accent
+                                else -> ThemeManager.colorAccent
                             },
                             trackColor = Color.Black.copy(alpha = 0.3f)
                         )
@@ -5220,7 +5218,7 @@ class UnifiedActivity : ComponentActivity() {
                 Spacer(Modifier.height(24.dp))
                 Button(
                     onClick = { /* TODO: Wire sign-in flow */ },
-                    colors = ButtonDefaults.buttonColors(containerColor = Accent),
+                    colors = ButtonDefaults.buttonColors(containerColor = ThemeManager.colorAccent),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text("Sign In to $storeName")
@@ -5291,7 +5289,7 @@ class UnifiedActivity : ComponentActivity() {
                                 checked = selectedDlcIds.contains(dlc.id),
                                 onCheckedChange = { if (it) selectedDlcIds.add(dlc.id) else selectedDlcIds.remove(dlc.id) },
                                 colors = CheckboxDefaults.colors(
-                                    checkedColor = Accent,
+                                    checkedColor = ThemeManager.colorAccent,
                                     uncheckedColor = ThemeManager.colorTextSecondary,
                                     checkmarkColor = Color.White,
                                 ),
@@ -5343,7 +5341,7 @@ class UnifiedActivity : ComponentActivity() {
             infoContent = {
                 if (isLoading) {
                     Spacer(Modifier.height(18.dp))
-                    CircularProgressIndicator(color = Accent)
+                    CircularProgressIndicator(color = ThemeManager.colorAccent)
                 } else {
                     DetailCard(
                         label = stringResource(R.string.library_games_install_path),
@@ -5515,7 +5513,7 @@ class UnifiedActivity : ComponentActivity() {
                         onCheckedChange = onCloudSyncToggle,
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = ThemeManager.colorTextPrimary,
-                            checkedTrackColor = Accent,
+                            checkedTrackColor = ThemeManager.colorAccent,
                             uncheckedThumbColor = ThemeManager.colorTextPrimary,
                             uncheckedTrackColor = ThemeManager.colorTextSecondary.copy(alpha = 0.5f),
                         )
@@ -5526,7 +5524,7 @@ class UnifiedActivity : ComponentActivity() {
             if (isWorking) {
                 LinearProgressIndicator(
                     modifier = Modifier.fillMaxWidth(),
-                    color = Accent,
+                    color = ThemeManager.colorAccent,
                     trackColor = ThemeManager.colorOutline,
                 )
             }
@@ -6181,7 +6179,7 @@ class UnifiedActivity : ComponentActivity() {
                 Spacer(Modifier.height(24.dp))
                 Button(
                     onClick = onLoginClick,
-                    colors = ButtonDefaults.buttonColors(containerColor = Accent),
+                    colors = ButtonDefaults.buttonColors(containerColor = ThemeManager.colorAccent),
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.height(48.dp).fillMaxWidth(0.7f)
                 ) { Text(buttonText, fontWeight = FontWeight.Bold) }
@@ -6303,7 +6301,7 @@ class UnifiedActivity : ComponentActivity() {
                                 ).forEach { (state, label, color) ->
                                     val isSelected = currentState == state
                                     val rowBg by animateColorAsState(
-                                        targetValue = if (isSelected) Accent.copy(alpha = 0.12f) else Color.Transparent,
+                                        targetValue = if (isSelected) ThemeManager.colorAccent.copy(alpha = 0.12f) else Color.Transparent,
                                         animationSpec = tween(250),
                                         label = "statusRowBg"
                                     )
@@ -6325,7 +6323,7 @@ class UnifiedActivity : ComponentActivity() {
                                             .fillMaxWidth()
                                             .clip(RoundedCornerShape(8.dp))
                                             .background(rowBg)
-                                            .border(1.dp, Accent.copy(alpha = 0.4f * borderAlpha), RoundedCornerShape(8.dp))
+                                            .border(1.dp, ThemeManager.colorAccent.copy(alpha = 0.4f * borderAlpha), RoundedCornerShape(8.dp))
                                             .clickable(
                                                 interactionSource = remember { MutableInteractionSource() },
                                                 indication = null
@@ -6345,7 +6343,7 @@ class UnifiedActivity : ComponentActivity() {
                                         Icon(
                                             Icons.Default.Check,
                                             contentDescription = null,
-                                            tint = Accent,
+                                            tint = ThemeManager.colorAccent,
                                             modifier = Modifier
                                                 .size(16.dp)
                                                 .graphicsLayer {
@@ -6428,17 +6426,17 @@ class UnifiedActivity : ComponentActivity() {
         val isPressed by interactionSource.collectIsPressedAsState()
 
         val bgColor by animateColorAsState(
-            targetValue = if (checked) Accent.copy(alpha = 0.2f) else ThemeManager.colorSurfaceVariant,
+            targetValue = if (checked) ThemeManager.colorAccent.copy(alpha = 0.2f) else ThemeManager.colorSurfaceVariant,
             animationSpec = tween(200),
             label = "filterBg"
         )
         val borderColor by animateColorAsState(
-            targetValue = if (checked) Accent else ThemeManager.colorOutline,
+            targetValue = if (checked) ThemeManager.colorAccent else ThemeManager.colorOutline,
             animationSpec = tween(200),
             label = "filterBorder"
         )
         val textColor by animateColorAsState(
-            targetValue = if (checked) Accent else ThemeManager.colorTextSecondary,
+            targetValue = if (checked) ThemeManager.colorAccent else ThemeManager.colorTextSecondary,
             animationSpec = tween(200),
             label = "filterText"
         )
@@ -6560,7 +6558,7 @@ class UnifiedActivity : ComponentActivity() {
                     .heightIn(max = 320.dp),
                 shape = RoundedCornerShape(16.dp),
                 color = ThemeManager.colorBackground,
-                border = BorderStroke(1.dp, Accent.copy(alpha = 0.2f)), // Subtle accent border
+                border = BorderStroke(1.dp, ThemeManager.colorAccent.copy(alpha = 0.2f)), // Subtle accent border
                 shadowElevation = 16.dp
             ) {
                 Column(Modifier.padding(16.dp)) {
@@ -6569,7 +6567,7 @@ class UnifiedActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.Add, contentDescription = null, tint = Accent, modifier = Modifier.size(22.dp))
+                        Icon(Icons.Default.Add, contentDescription = null, tint = ThemeManager.colorAccent, modifier = Modifier.size(22.dp))
                         Spacer(Modifier.width(8.dp))
                         Text(stringResource(R.string.library_games_add_custom_game), style = MaterialTheme.typography.titleMedium, color = ThemeManager.colorTextPrimary, fontWeight = FontWeight.Bold)
                         Spacer(Modifier.weight(1f))
@@ -6595,7 +6593,7 @@ class UnifiedActivity : ComponentActivity() {
                             },
                             enabled = selectedExePath != null && gameName.isNotBlank() && gameFolder != null && !isAdding,
                             shape = RoundedCornerShape(8.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Accent),
+                            colors = ButtonDefaults.buttonColors(containerColor = ThemeManager.colorAccent),
                             modifier = Modifier.height(34.dp),
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp)
                         ) {
@@ -6626,7 +6624,7 @@ class UnifiedActivity : ComponentActivity() {
                             colors = ButtonDefaults.buttonColors(containerColor = ThemeManager.colorSurfaceVariant),
                             contentPadding = PaddingValues(horizontal = 12.dp)
                         ) {
-                            Icon(Icons.Default.FolderOpen, contentDescription = null, tint = Accent, modifier = Modifier.size(18.dp))
+                            Icon(Icons.Default.FolderOpen, contentDescription = null, tint = ThemeManager.colorAccent, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
                             Text(
                                 if (selectedExePath == null) "Select Executable (.exe)" else java.io.File(selectedExePath!!).name,
@@ -6650,12 +6648,12 @@ class UnifiedActivity : ComponentActivity() {
                                 modifier = Modifier.fillMaxWidth().height(52.dp),
                                 textStyle = MaterialTheme.typography.bodyMedium.copy(color = ThemeManager.colorTextPrimary),
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Accent,
+                                    focusedBorderColor = ThemeManager.colorAccent,
                                     unfocusedBorderColor = ThemeManager.colorTextSecondary.copy(alpha = 0.3f),
                                     focusedTextColor = ThemeManager.colorTextPrimary,
                                     unfocusedTextColor = ThemeManager.colorTextPrimary,
-                                    cursorColor = Accent,
-                                    focusedLabelColor = Accent,
+                                    cursorColor = ThemeManager.colorAccent,
+                                    focusedLabelColor = ThemeManager.colorAccent,
                                     unfocusedLabelColor = ThemeManager.colorTextSecondary,
                                     focusedContainerColor = ThemeManager.colorSurfaceVariant,
                                     unfocusedContainerColor = ThemeManager.colorSurfaceVariant
@@ -6688,7 +6686,7 @@ class UnifiedActivity : ComponentActivity() {
                                     if (!ensureAllFilesAccessForImports(context)) return@IconButton
                                     folderPickerLauncher.launch(null)
                                 }, modifier = Modifier.size(28.dp)) {
-                                    Icon(Icons.Default.Edit, contentDescription = "Change", tint = Accent, modifier = Modifier.size(14.dp))
+                                    Icon(Icons.Default.Edit, contentDescription = "Change", tint = ThemeManager.colorAccent, modifier = Modifier.size(14.dp))
                                 }
                             }
                         }
@@ -6868,7 +6866,7 @@ class UnifiedActivity : ComponentActivity() {
             Surface(
                 shape = RoundedCornerShape(16.dp),
                 color = ThemeManager.colorSurfaceVariant,
-                modifier = Modifier.width(340.dp).padding(16.dp).border(2.dp, Accent.copy(alpha=0.5f), RoundedCornerShape(16.dp))
+                modifier = Modifier.width(340.dp).padding(16.dp).border(2.dp, ThemeManager.colorAccent.copy(alpha=0.5f), RoundedCornerShape(16.dp))
             ) {
                 Column(
                     modifier = Modifier.padding(24.dp),
@@ -6896,7 +6894,7 @@ class UnifiedActivity : ComponentActivity() {
                     androidx.compose.material3.LinearProgressIndicator(
                         progress = { status.progress.coerceIn(0f, 1f) },
                         modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
-                        color = Accent,
+                        color = ThemeManager.colorAccent,
                         trackColor = ThemeManager.colorSurface
                     )
 
@@ -6944,7 +6942,7 @@ class UnifiedActivity : ComponentActivity() {
                         Spacer(Modifier.width(8.dp))
                         Button(
                             onClick = onProceed,
-                            colors = ButtonDefaults.buttonColors(containerColor = Accent),
+                            colors = ButtonDefaults.buttonColors(containerColor = ThemeManager.colorAccent),
                             shape = RoundedCornerShape(8.dp)
                         ) {
                             Text(stringResource(R.string.common_ui_proceed))

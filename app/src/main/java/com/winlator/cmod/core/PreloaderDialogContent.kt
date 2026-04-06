@@ -59,11 +59,16 @@ class PreloaderDialogState {
 }
 
 // Colors matching the app theme
-private val BgDark = Color(0xFF0F1724)
-private val TextPrimary = Color(0xFFF5F9FF)
-private val TextSecondary = Color(0xFF9CB0C7)
-private val TrackColor = Color(0xFF252A2E)
-private val IndicatorColor = Color(0xFF8A9BB0)
+private val BgDark
+    @Composable get() = ThemeManager.colorBackground
+private val TextPrimary
+    @Composable get() = ThemeManager.colorTextPrimary
+private val TextSecondary
+    @Composable get() = ThemeManager.colorTextSecondary
+private val TrackColor
+    @Composable get() = ThemeManager.colorSurface
+private val IndicatorColor
+    @Composable get() = ThemeManager.colorAccent
 private val Scrim = Color(0x80000000)
 
 // Gradient: blue → cyan → blue (clean, no dark spots or white flash)
