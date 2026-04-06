@@ -74,15 +74,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 // Palette
-private val BgDark        = Color(0xFF0F1724)
-private val CardDark      = Color(0xFF1B2A3D)
-private val CardBorder    = Color(0xFF2D425A)
-private val IconBoxBg     = Color(0xFF1C2D42)
-private val SurfaceDark   = Color(0xFF141F30)
-private val Accent        = Color(0xFF1A9FFF)
-private val TextPrimary   = Color(0xFFF0F4FF)
-private val TextSecondary = Color(0xFF7A8FA8)
-private val Divider       = Color(0xFF2A2A2A)
+private val BgDark
+    @Composable get() = com.winlator.cmod.core.ThemeManager.colorBackground
+private val CardDark
+    @Composable get() = com.winlator.cmod.core.ThemeManager.colorSurface
+private val CardBorder
+    @Composable get() = com.winlator.cmod.core.ThemeManager.colorOutline
+private val IconBoxBg
+    @Composable get() = com.winlator.cmod.core.ThemeManager.colorSurfaceVariant
+private val SurfaceDark
+    @Composable get() = com.winlator.cmod.core.ThemeManager.colorSurface
+private val Accent = Color(0xFF1A9FFF)
+private val TextPrimary
+    @Composable get() = com.winlator.cmod.core.ThemeManager.colorTextPrimary
+private val TextSecondary
+    @Composable get() = com.winlator.cmod.core.ThemeManager.colorTextSecondary
+private val TrackInactive
+    @Composable get() = com.winlator.cmod.core.ThemeManager.colorSurfaceVariant
 private val DangerRed     = Color(0xFFFF7A88)
 private val StatusGreen   = Color(0xFF3FB950)
 

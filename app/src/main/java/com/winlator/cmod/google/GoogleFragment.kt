@@ -22,12 +22,8 @@ class GoogleFragment : Fragment() {
         val composeView = ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                MaterialTheme(
-                    colorScheme = darkColorScheme(
-                        primary = Color(0xFF1A9FFF),
-                        background = Color(0xFF0F1724),
-                        surface = Color(0xFF141F30),
-                    )
+                androidx.compose.material3.MaterialTheme(
+                    colorScheme = com.winlator.cmod.core.ThemeManager.getComposeColorScheme()
                 ) {
                     GoogleScreen()
                 }
@@ -50,7 +46,7 @@ class GoogleFragment : Fragment() {
         }
 
         return FrameLayout(requireContext()).apply {
-            setBackgroundColor(android.graphics.Color.parseColor("#0F1724"))
+            setBackgroundColor(com.winlator.cmod.core.ThemeManager.getBackgroundColor())
             addView(
                 scrollView,
                 FrameLayout.LayoutParams(

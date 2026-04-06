@@ -52,19 +52,28 @@ import com.winlator.cmod.steam.ui.data.UserLoginState
 import timber.log.Timber
 
 // Palette (matches Settings > Stores)
-private val BgDark        = Color(0xFF0F1724)
-private val CardDark      = Color(0xFF1B2A3D)
-private val CardBorder    = Color(0xFF2D425A)
-private val IconBoxBg     = Color(0xFF1C2D42)
-private val Accent        = Color(0xFF1A9FFF)
-private val TextPrimary   = Color(0xFFF0F4FF)
-private val TextSecondary = Color(0xFF7A8FA8)
-private val DangerRed     = Color(0xFFFF7A88)
+private val BgDark
+    @Composable get() = com.winlator.cmod.core.ThemeManager.colorBackground
+private val CardDark
+    @Composable get() = com.winlator.cmod.core.ThemeManager.colorSurface
+private val CardBorder
+    @Composable get() = com.winlator.cmod.core.ThemeManager.colorOutline
+private val IconBoxBg
+    @Composable get() = com.winlator.cmod.core.ThemeManager.colorSurfaceVariant
+private val Accent = Color(0xFF1A9FFF)
+private val TextPrimary
+    @Composable get() = com.winlator.cmod.core.ThemeManager.colorTextPrimary
+private val TextSecondary
+    @Composable get() = com.winlator.cmod.core.ThemeManager.colorTextSecondary
+private val TrackInactive
+    @Composable get() = com.winlator.cmod.core.ThemeManager.colorSurfaceVariant
 
 class SteamLoginActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        com.winlator.cmod.core.ThemeManager.init(this)
         super.onCreate(savedInstanceState)
+        com.winlator.cmod.core.ThemeManager.applySystemUiTheme(this)
 
         try {
             startForegroundService(android.content.Intent(this, com.winlator.cmod.steam.service.SteamService::class.java))
@@ -76,14 +85,7 @@ class SteamLoginActivity : ComponentActivity() {
 
         setContent {
             MaterialTheme(
-                colorScheme = darkColorScheme(
-                    primary   = Accent,
-                    background = BgDark,
-                    surface   = CardDark,
-                    onSurface = TextPrimary,
-                    secondary = TextSecondary,
-                    outline   = CardBorder,
-                ),
+                colorScheme = com.winlator.cmod.core.ThemeManager.getComposeColorScheme()
             ) {
                 val viewModel: SteamLoginViewModel = viewModel()
                 LoginContent(viewModel)

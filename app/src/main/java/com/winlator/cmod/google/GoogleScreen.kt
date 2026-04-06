@@ -62,14 +62,21 @@ import com.winlator.cmod.R
 import com.winlator.cmod.core.AppUtils
 import kotlinx.coroutines.launch
 
-private val BgDark = Color(0xFF0F1724)
-private val CardDark = Color(0xFF1B2A3D)
-private val CardBorder = Color(0xFF2D425A)
-private val IconBoxBg = Color(0xFF1C2D42)
+private val BgDark
+    @Composable get() = com.winlator.cmod.core.ThemeManager.colorBackground
+private val CardDark
+    @Composable get() = com.winlator.cmod.core.ThemeManager.colorSurface
+private val CardBorder
+    @Composable get() = com.winlator.cmod.core.ThemeManager.colorOutline
+private val IconBoxBg
+    @Composable get() = com.winlator.cmod.core.ThemeManager.colorSurfaceVariant
 private val Accent = Color(0xFF1A9FFF)
-private val TextPrimary = Color(0xFFF0F4FF)
-private val TextSecondary = Color(0xFF7A8FA8)
-private val StatusGreen = Color(0xFF3FB950)
+private val TextPrimary
+    @Composable get() = com.winlator.cmod.core.ThemeManager.colorTextPrimary
+private val TextSecondary
+    @Composable get() = com.winlator.cmod.core.ThemeManager.colorTextSecondary
+private val TrackInactive
+    @Composable get() = com.winlator.cmod.core.ThemeManager.colorSurfaceVariant
 private val WarningAmber = Color(0xFFFFC857)
 private val DangerRed = Color(0xFFFF6B6B)
 

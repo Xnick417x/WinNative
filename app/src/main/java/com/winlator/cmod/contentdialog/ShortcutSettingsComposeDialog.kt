@@ -144,10 +144,14 @@ class ShortcutSettingsComposeDialog private constructor(
             setViewTreeLifecycleOwner(activity as LifecycleOwner)
             setViewTreeSavedStateRegistryOwner(activity as SavedStateRegistryOwner)
             setContent {
-                GameSettingsContent(
-                    state = state,
-                    callbacks = createCallbacks()
-                )
+                androidx.compose.material3.MaterialTheme(
+                    colorScheme = com.winlator.cmod.core.ThemeManager.getComposeColorScheme()
+                ) {
+                    GameSettingsContent(
+                        state = state,
+                        callbacks = createCallbacks()
+                    )
+                }
             }
         }
         dialog.setContentView(composeView)

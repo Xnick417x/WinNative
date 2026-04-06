@@ -25,8 +25,69 @@
             android:paddingRight="16dp"
             android:paddingBottom="20dp">
 
+            <TextView
+                style="@style/OtherSettingsSectionLabel"
+                android:text="@string/settings_general_theme_title" />
+
             <LinearLayout
                 style="@style/OtherSettingsCard"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:layout_marginEnd="14dp"
+                        android:background="@drawable/content_icon_surface"
+                        android:padding="10dp"
+                        android:src="@drawable/icon_color_palette"
+                        app:tint="@color/settings_icon_tint" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            style="@style/OtherSettingsCardTitle"
+                            android:text="@string/settings_general_theme_title" />
+
+                        <TextView
+                            style="@style/OtherSettingsCardSummary"
+                            android:text="@string/settings_general_theme_summary" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/content_asset_row_surface"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingLeft="10dp"
+                    android:paddingTop="8dp"
+                    android:paddingRight="8dp"
+                    android:paddingBottom="8dp">
+
+                    <Spinner
+                        android:id="@+id/SAppTheme"
+                        style="@style/OtherSettingsSpinner"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/OtherSettingsCard"
+                android:layout_marginTop="16dp"
                 android:gravity="center_vertical"
                 android:minHeight="72dp"
                 android:orientation="horizontal">

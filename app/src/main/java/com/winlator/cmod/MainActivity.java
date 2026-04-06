@@ -84,6 +84,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        com.winlator.cmod.core.ThemeManager.INSTANCE.init(this);
         super.onCreate(savedInstanceState);
 
         // Apply the dark theme unconditionally, as the new unified UI is fully dark-themed
@@ -92,8 +93,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setTheme(R.style.AppTheme_Dark);
 
         AppUtils.showSystemUI(this);
-        getWindow().setNavigationBarColor(Color.parseColor("#121212"));
-        getWindow().setStatusBarColor(Color.parseColor("#121212"));
+        com.winlator.cmod.core.ThemeManager.INSTANCE.applySystemUiTheme(this);
 
         setContentView(R.layout.main_activity);
 

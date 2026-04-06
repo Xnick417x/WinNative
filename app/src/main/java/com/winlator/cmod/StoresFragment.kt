@@ -121,12 +121,8 @@ class StoresFragment : Fragment() {
         val composeView = ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                MaterialTheme(
-                    colorScheme = darkColorScheme(
-                        primary    = Color(0xFF1A9FFF),
-                        background = Color(0xFF0F1724),
-                        surface    = Color(0xFF141F30),
-                    )
+                androidx.compose.material3.MaterialTheme(
+                    colorScheme = com.winlator.cmod.core.ThemeManager.getComposeColorScheme()
                 ) {
                     StoresScreen(
                         state                = storeState,
@@ -193,7 +189,7 @@ class StoresFragment : Fragment() {
         // Outer FrameLayout with right margin so the scrollbar never touches the screen edge.
         // Background matches the content area so the gap is invisible.
         return FrameLayout(requireContext()).apply {
-            setBackgroundColor(android.graphics.Color.parseColor("#0F1724"))
+            setBackgroundColor(com.winlator.cmod.core.ThemeManager.getBackgroundColor())
             addView(
                 scrollView,
                 FrameLayout.LayoutParams(

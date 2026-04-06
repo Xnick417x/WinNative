@@ -200,12 +200,7 @@ fun setupXServerDrawerComposeView(
     composeView.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     composeView.setContent {
         MaterialTheme(
-            colorScheme = darkColorScheme(
-                primary = Color(0xFF1A9FFF),
-                background = Color(0xFF0F1724),
-                surface = Color(0xFF1B2A3D),
-                onSurface = Color(0xFFF5F9FF),
-            )
+            colorScheme = com.winlator.cmod.core.ThemeManager.getComposeColorScheme()
         ) {
             XServerDrawerContent(state = state, listener = listener)
         }
@@ -221,13 +216,13 @@ private fun XServerDrawerContent(
         modifier = Modifier
             .fillMaxHeight()
             .width(336.dp),
-        color = Color(0xFF0F1724),
+        color = com.winlator.cmod.core.ThemeManager.colorBackground,
         tonalElevation = 0.dp,
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFF0F1724))
+                .background(com.winlator.cmod.core.ThemeManager.colorBackground)
                 .padding(horizontal = 14.dp, vertical = 12.dp)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -247,9 +242,9 @@ private fun XServerHUDSettingsExpanded(
     state: XServerDrawerState,
     listener: XServerDrawerActionListener,
 ) {
-    val card = Color(0xFF1B2A3D)
+    val card = com.winlator.cmod.core.ThemeManager.colorSurface
     val accent = Color(0xFF1A9FFF)
-    val textSecondary = Color(0xFF9CB0C7)
+    val textSecondary = com.winlator.cmod.core.ThemeManager.colorTextSecondary
 
     Column(
         modifier = Modifier
@@ -352,26 +347,26 @@ private fun HUDCheckmarkToggle(
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val textPrimary = Color(0xFFF5F9FF)
+    val textPrimary = com.winlator.cmod.core.ThemeManager.colorTextPrimary
     val accent = Color(0xFF1A9FFF)
 
     Row(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
             .clickable { onCheckedChange(!checked) }
-            .padding(vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Start
+            .padding(vertical = 4.dp, horizontal = 2.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Checkbox(
             checked = checked,
-            onCheckedChange = onCheckedChange,
+            onCheckedChange = null,
             modifier = Modifier.size(24.dp),
             colors = CheckboxDefaults.colors(
                 checkedColor = accent,
-                uncheckedColor = Color(0xFF2D425A),
+                uncheckedColor = com.winlator.cmod.core.ThemeManager.colorOutline,
                 checkmarkColor = Color.White
             )
+        )
         )
         Spacer(Modifier.width(4.dp))
         Text(
@@ -390,11 +385,11 @@ private fun XServerDrawerRow(
     onClick: () -> Unit,
 ) {
     val accent = Color(0xFF1A9FFF)
-    val surface = Color(0xFF1C2D42)
-    val card = Color(0xFF1B2A3D)
-    val cardActive = Color(0xFF2A4066)
-    val textPrimary = Color(0xFFF5F9FF)
-    val textSecondary = Color(0xFF9CB0C7)
+    val surface = com.winlator.cmod.core.ThemeManager.colorSurfaceVariant
+    val card = com.winlator.cmod.core.ThemeManager.colorSurface
+    val cardActive = com.winlator.cmod.core.ThemeManager.colorSurfaceHighlight
+    val textPrimary = com.winlator.cmod.core.ThemeManager.colorTextPrimary
+    val textSecondary = com.winlator.cmod.core.ThemeManager.colorTextSecondary
 
     Row(
         modifier = Modifier

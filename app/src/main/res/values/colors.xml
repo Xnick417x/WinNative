@@ -39,6 +39,14 @@
     <color name="settings_popup_surface_edge">#2D425A</color>
     <color name="settings_input_outline_soft">#52F5F9FF</color>
 
+    <!-- Classic Dark Theme Variants -->
+    <color name="classic_dark_background">#000000</color>
+    <color name="classic_dark_surface">#14141E</color>
+    <color name="classic_dark_outline">#21212E</color>
+    <color name="classic_dark_action_surface">#1C1C28</color>
+    <color name="classic_dark_text_primary">#F0F4FF</color>
+    <color name="classic_dark_text_secondary">#7A8FA8</color>
+
     <color name="abc_decor_view_status_guard">#ff000000</color>
     <color name="abc_decor_view_status_guard_light">#ffffffff</color>
     <color name="abc_search_url_text_normal">#ff7fa87f</color>

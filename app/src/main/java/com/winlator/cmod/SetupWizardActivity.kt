@@ -490,7 +490,9 @@ class SetupWizardActivity : FragmentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        com.winlator.cmod.core.ThemeManager.init(this)
         super.onCreate(savedInstanceState)
+        com.winlator.cmod.core.ThemeManager.applySystemUiTheme(this)
 
         supportFragmentManager.setFragmentResultListener(
             SetupWizardDriversDialogFragment.RESULT_KEY,
@@ -511,12 +513,7 @@ class SetupWizardActivity : FragmentActivity() {
 
         setContent {
             MaterialTheme(
-                colorScheme = darkColorScheme(
-                    primary = Color(0xFF57CBDE),
-                    secondary = Color(0xFF3FB950),
-                    background = Color(0xFF0F1724),
-                    surface = Color(0xFF141F30)
-                )
+                colorScheme = com.winlator.cmod.core.ThemeManager.getComposeColorScheme()
             ) {
                 SetupWizardScreen()
             }
