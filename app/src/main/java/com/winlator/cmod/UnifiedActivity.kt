@@ -1809,9 +1809,9 @@ class UnifiedActivity : ComponentActivity() {
         action: GameSettingsActionItem,
         modifier: Modifier = Modifier,
     ) {
-        val isDanger = action.accentColor == DangerRed
-        val iconColor = if (isDanger) DangerRed else ThemeManager.colorTextSecondary
-        val textColor = if (isDanger) DangerRed else ThemeManager.colorTextPrimary
+        val isDanger = action.accentColor == ThemeManager.colorDangerRed
+        val iconColor = if (isDanger) ThemeManager.colorDangerRed else ThemeManager.colorTextSecondary
+        val textColor = if (isDanger) ThemeManager.colorDangerRed else ThemeManager.colorTextPrimary
 
         val interactionSource = remember { MutableInteractionSource() }
         val isPressed by interactionSource.collectIsPressedAsState()
@@ -1890,14 +1890,14 @@ class UnifiedActivity : ComponentActivity() {
     ) {
         var isUninstalling by remember { mutableStateOf(false) }
 
-        GameSettingsInfoCard(message = message, accentColor = DangerRed)
+        GameSettingsInfoCard(message = message, accentColor = ThemeManager.colorDangerRed)
 
         if (isUninstalling) {
             Box(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                CircularProgressIndicator(color = DangerRed)
+                CircularProgressIndicator(color = ThemeManager.colorDangerRed)
             }
         } else {
             Row(
@@ -1912,9 +1912,9 @@ class UnifiedActivity : ComponentActivity() {
                         isUninstalling = true
                         onConfirm()
                     },
-                    border = BorderStroke(1.dp, DangerRed.copy(alpha = 0.5f)),
+                    border = BorderStroke(1.dp, ThemeManager.colorDangerRed.copy(alpha = 0.5f)),
                     shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = DangerRed),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = ThemeManager.colorDangerRed),
                 ) {
                     Text(
                         confirmLabel,
@@ -2174,7 +2174,7 @@ class UnifiedActivity : ComponentActivity() {
                         GameSettingsActionItem(
                             title = if (isCustom) stringResource(R.string.common_ui_remove) else stringResource(R.string.common_ui_uninstall),
                             icon = Icons.Default.Delete,
-                            accentColor = DangerRed,
+                            accentColor = ThemeManager.colorDangerRed,
                             onClick = { currentTab = GameSettingsScreen.Uninstall },
                         ),
                     )
@@ -2393,7 +2393,7 @@ class UnifiedActivity : ComponentActivity() {
                             GameSettingsActionItem(
                                 title = stringResource(R.string.common_ui_uninstall),
                                 icon = Icons.Default.Delete,
-                                accentColor = DangerRed,
+                                accentColor = ThemeManager.colorDangerRed,
                                 onClick = { currentTab = GameSettingsScreen.Uninstall },
                             ),
                         ),
@@ -2968,8 +2968,8 @@ class UnifiedActivity : ComponentActivity() {
                                             CompactActionButton(
                                                 icon = Icons.Default.Delete,
                                                 label = if (isCustom) stringResource(R.string.common_ui_remove) else stringResource(R.string.common_ui_uninstall),
-                                                tint = DangerRed,
-                                                bgColor = DangerRed.copy(alpha = 0.12f),
+                                                tint = ThemeManager.colorDangerRed,
+                                                bgColor = ThemeManager.colorDangerRed.copy(alpha = 0.12f),
                                                 modifier = Modifier.weight(1f),
                                                 onClick = { currentScreen = LibraryDetailScreen.Uninstall },
                                             )
@@ -3871,7 +3871,7 @@ class UnifiedActivity : ComponentActivity() {
                         Box(
                             Modifier.align(Alignment.BottomEnd).padding(4.dp).background(ThemeManager.colorSurface.copy(alpha=0.7f), RoundedCornerShape(6.dp)).padding(3.dp)
                         ) {
-                            Text(stringResource(R.string.library_games_installed_badge), color = StatusOnline, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.library_games_installed_badge), color = ThemeManager.colorStatusGreen, fontSize = 8.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -3922,7 +3922,7 @@ class UnifiedActivity : ComponentActivity() {
                         Box(
                             Modifier.align(Alignment.BottomEnd).padding(8.dp).background(ThemeManager.colorSurface.copy(alpha=0.7f), RoundedCornerShape(8.dp)).padding(4.dp)
                         ) {
-                            Text(stringResource(R.string.library_games_installed_badge), color = StatusOnline, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.library_games_installed_badge), color = ThemeManager.colorStatusGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -4185,7 +4185,7 @@ class UnifiedActivity : ComponentActivity() {
                     DetailCard(
                         label = stringResource(R.string.common_ui_status),
                         value = stringResource(R.string.common_ui_installed),
-                        valueColor = StatusOnline,
+                        valueColor = ThemeManager.colorStatusGreen,
                     )
                 } else {
                     DetailCard(
@@ -4195,7 +4195,7 @@ class UnifiedActivity : ComponentActivity() {
                     DetailCard(
                         stringResource(R.string.library_games_download_slash_install),
                         stringResource(R.string.library_games_download_install_available, StorageUtils.formatBinarySize(totalDownloadSize), StorageUtils.formatBinarySize(totalInstallSize), StorageUtils.formatBinarySize(availableBytes)),
-                        valueColor = if (!isInstallEnabled) DangerRed else null,
+                        valueColor = if (!isInstallEnabled) ThemeManager.colorDangerRed else null,
                     )
                 }
             }
@@ -4221,8 +4221,8 @@ class UnifiedActivity : ComponentActivity() {
                 CompactActionButton(
                     icon = Icons.Default.Delete,
                     label = stringResource(R.string.common_ui_uninstall),
-                    tint = DangerRed,
-                    bgColor = DangerRed.copy(alpha = 0.12f),
+                    tint = ThemeManager.colorDangerRed,
+                    bgColor = ThemeManager.colorDangerRed.copy(alpha = 0.12f),
                     onClick = {
                         scope.launch(Dispatchers.IO) {
                             EpicService.deleteGame(context, app.id)
@@ -4351,7 +4351,7 @@ class UnifiedActivity : ComponentActivity() {
                             Icon(
                                 Icons.Default.CheckCircle,
                                 contentDescription = "Installed",
-                                tint = StatusOnline,
+                                tint = ThemeManager.colorStatusGreen,
                                 modifier = Modifier.align(Alignment.BottomEnd).padding(4.dp).size(18.dp)
                             )
                         }
@@ -4420,7 +4420,7 @@ class UnifiedActivity : ComponentActivity() {
                             Icon(
                                 Icons.Default.CheckCircle,
                                 contentDescription = "Installed",
-                                tint = StatusOnline,
+                                tint = ThemeManager.colorStatusGreen,
                                 modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp).size(24.dp)
                             )
                         }
@@ -4498,7 +4498,7 @@ class UnifiedActivity : ComponentActivity() {
                     DetailCard(
                         label = stringResource(R.string.common_ui_status),
                         value = stringResource(R.string.common_ui_installed),
-                        valueColor = StatusOnline,
+                        valueColor = ThemeManager.colorStatusGreen,
                     )
                 } else {
                     DetailCard(
@@ -4508,7 +4508,7 @@ class UnifiedActivity : ComponentActivity() {
                     DetailCard(
                         stringResource(R.string.library_games_download_slash_install),
                         stringResource(R.string.library_games_download_install_available, StorageUtils.formatBinarySize(app.downloadSize), StorageUtils.formatBinarySize(app.installSize), StorageUtils.formatBinarySize(availableBytes)),
-                        valueColor = if (!isInstallEnabled) DangerRed else null,
+                        valueColor = if (!isInstallEnabled) ThemeManager.colorDangerRed else null,
                     )
                 }
             }
@@ -4532,8 +4532,8 @@ class UnifiedActivity : ComponentActivity() {
                 CompactActionButton(
                     icon = Icons.Default.Delete,
                     label = stringResource(R.string.common_ui_uninstall),
-                    tint = DangerRed,
-                    bgColor = DangerRed.copy(alpha = 0.12f),
+                    tint = ThemeManager.colorDangerRed,
+                    bgColor = ThemeManager.colorDangerRed.copy(alpha = 0.12f),
                     onClick = {
                         scope.launch(Dispatchers.IO) {
                             GOGService.deleteGame(context, LibraryItem("GOG_${app.id}", app.title, com.winlator.cmod.steam.enums.GameSource.GOG))
@@ -4720,7 +4720,7 @@ class UnifiedActivity : ComponentActivity() {
                             Icon(
                                 Icons.Default.CheckCircle,
                                 contentDescription = "Installed",
-                                tint = StatusOnline,
+                                tint = ThemeManager.colorStatusGreen,
                                 modifier = Modifier.align(Alignment.BottomEnd).padding(4.dp).size(18.dp)
                             )
                         }
@@ -4775,7 +4775,7 @@ class UnifiedActivity : ComponentActivity() {
                         Icon(
                             Icons.Default.CheckCircle,
                             contentDescription = "Installed",
-                            tint = StatusOnline,
+                            tint = ThemeManager.colorStatusGreen,
                             modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp).size(24.dp)
                         )
                     }
@@ -5354,7 +5354,7 @@ class UnifiedActivity : ComponentActivity() {
                     DetailCard(
                         stringResource(R.string.library_games_download_slash_install),
                         stringResource(R.string.library_games_download_install_available, StorageUtils.formatBinarySize(totalDownloadSize), StorageUtils.formatBinarySize(totalInstallSize), StorageUtils.formatBinarySize(availableBytes)),
-                        valueColor = if (!isInstallEnabled) DangerRed else null,
+                        valueColor = if (!isInstallEnabled) ThemeManager.colorDangerRed else null,
                     )
                 }
             }
@@ -6264,7 +6264,7 @@ class UnifiedActivity : ComponentActivity() {
                                     else -> stringResource(R.string.stores_accounts_status_offline)
                                 }
                                 val statusColor = when (currentState) {
-                                    EPersonaState.Online -> StatusOnline
+                                    EPersonaState.Online -> ThemeManager.colorStatusGreen
                                     EPersonaState.Away -> StatusAway
                                     else -> StatusOffline
                                 }
@@ -6299,7 +6299,7 @@ class UnifiedActivity : ComponentActivity() {
                                 Spacer(Modifier.height(8.dp))
 
                                 listOf(
-                                    Triple(EPersonaState.Online, stringResource(R.string.stores_accounts_status_online), StatusOnline),
+                                    Triple(EPersonaState.Online, stringResource(R.string.stores_accounts_status_online), ThemeManager.colorStatusGreen),
                                     Triple(EPersonaState.Away, stringResource(R.string.stores_accounts_status_away), StatusAway),
                                     Triple(EPersonaState.Invisible, stringResource(R.string.stores_accounts_status_invisible), StatusOffline)
                                 ).forEach { (state, label, color) ->
@@ -6676,7 +6676,7 @@ class UnifiedActivity : ComponentActivity() {
                                     .padding(horizontal = 10.dp, vertical = 6.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(Icons.Default.Folder, contentDescription = null, tint = StatusOnline.copy(alpha = 0.7f), modifier = Modifier.size(16.dp))
+                                Icon(Icons.Default.Folder, contentDescription = null, tint = ThemeManager.colorStatusGreen.copy(alpha = 0.7f), modifier = Modifier.size(16.dp))
                                 Spacer(Modifier.width(6.dp))
                                 Column(Modifier.weight(1f)) {
                                     Text("Game Folder (A: drive)", color = ThemeManager.colorTextSecondary, fontSize = 10.sp)
