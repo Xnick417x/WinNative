@@ -49,25 +49,8 @@ import com.winlator.cmod.steam.enums.LoginScreen
 import com.winlator.cmod.steam.ui.SteamLoginViewModel
 import com.winlator.cmod.steam.ui.components.QrCodeImage
 import com.winlator.cmod.steam.ui.data.UserLoginState
+import com.winlator.cmod.core.ThemeManager
 import timber.log.Timber
-
-// Palette (matches Settings > Stores)
-private val BgDark
-    @Composable get() = com.winlator.cmod.core.ThemeManager.colorBackground
-private val CardDark
-    @Composable get() = com.winlator.cmod.core.ThemeManager.colorSurface
-private val CardBorder
-    @Composable get() = com.winlator.cmod.core.ThemeManager.colorOutline
-private val IconBoxBg
-    @Composable get() = com.winlator.cmod.core.ThemeManager.colorSurfaceVariant
-private val Accent = Color(0xFF1A9FFF)
-private val TextPrimary
-    @Composable get() = com.winlator.cmod.core.ThemeManager.colorTextPrimary
-private val TextSecondary
-    @Composable get() = com.winlator.cmod.core.ThemeManager.colorTextSecondary
-private val TrackInactive
-    @Composable get() = com.winlator.cmod.core.ThemeManager.colorSurfaceVariant
-private val DangerRed @Composable get() = com.winlator.cmod.core.ThemeManager.colorDangerRed
 
 class SteamLoginActivity : ComponentActivity() {
 
@@ -119,7 +102,7 @@ class SteamLoginActivity : ComponentActivity() {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(BgDark)
+                .background(ThemeManager.colorBackground)
                 .windowInsetsPadding(WindowInsets.navigationBars)
                 .pointerInput(Unit) { detectTapGestures { focusManager.clearFocus() } },
         ) {
@@ -170,7 +153,7 @@ class SteamLoginActivity : ComponentActivity() {
                     .clip(CircleShape)
                     .background(CardDark.copy(alpha = 0.72f)),
             ) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = TextPrimary, modifier = Modifier.size(24.dp))
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = ThemeManager.colorTextPrimary, modifier = Modifier.size(24.dp))
             }
 
             // Left: credentials
@@ -189,18 +172,18 @@ class SteamLoginActivity : ComponentActivity() {
                         modifier = Modifier
                             .size(40.dp)
                             .clip(RoundedCornerShape(11.dp))
-                            .background(Accent.copy(alpha = 0.12f))
-                            .border(1.dp, Accent.copy(alpha = 0.3f), RoundedCornerShape(11.dp)),
+                            .background(Color(0xFF1A9FFF).copy(alpha = 0.12f))
+                            .border(1.dp, Color(0xFF1A9FFF).copy(alpha = 0.3f), RoundedCornerShape(11.dp)),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Icon(Icons.Filled.Gamepad, null, tint = Accent, modifier = Modifier.size(22.dp))
+                        Icon(Icons.Filled.Gamepad, null, tint = Color(0xFF1A9FFF), modifier = Modifier.size(22.dp))
                     }
                     Column {
-                        Text(stringResource(R.string.stores_accounts_steam_integration_title), color = TextPrimary, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.stores_accounts_steam_integration_title), color = ThemeManager.colorTextPrimary, fontSize = 17.sp, fontWeight = FontWeight.Bold)
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Text(stringResource(R.string.steam_login_sign_in_to_your_account), color = TextSecondary, fontSize = 11.sp)
+                            Text(stringResource(R.string.steam_login_sign_in_to_your_account), color = ThemeManager.colorTextSecondary, fontSize = 11.sp)
                             if (!state.isSteamConnected) {
-                                CircularProgressIndicator(modifier = Modifier.size(10.dp), color = Accent, strokeWidth = 1.5.dp)
+                                CircularProgressIndicator(modifier = Modifier.size(10.dp), color = Color(0xFF1A9FFF), strokeWidth = 1.5.dp)
                             }
                         }
                     }
@@ -210,7 +193,7 @@ class SteamLoginActivity : ComponentActivity() {
 
             // Thin divider
             Box(
-                modifier = Modifier.width(1.dp).fillMaxHeight().padding(vertical = 24.dp).background(CardBorder),
+                modifier = Modifier.width(1.dp).fillMaxHeight().padding(vertical = 24.dp).background(ThemeManager.colorOutline),
             )
 
             // Right: QR
@@ -266,7 +249,7 @@ class SteamLoginActivity : ComponentActivity() {
                             Icon(
                                 imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
                                 contentDescription = null,
-                                tint = TextSecondary,
+                                tint = ThemeManager.colorTextSecondary,
                             )
                         }
                     },
@@ -291,7 +274,7 @@ class SteamLoginActivity : ComponentActivity() {
                     exit = fadeOut(tween(150)),
                     modifier = Modifier.align(Alignment.BottomStart).offset(y = 8.dp),
                 ) {
-                    Text(stringResource(R.string.steam_login_invalid_username_or_password), color = DangerRed, fontSize = 11.sp)
+                    Text(stringResource(R.string.steam_login_invalid_username_or_password), color = ThemeManager.colorDangerRed, fontSize = 11.sp)
                 }
             }
 
@@ -301,7 +284,7 @@ class SteamLoginActivity : ComponentActivity() {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.End,
             ) {
-                Text(stringResource(R.string.steam_login_remember_me), color = TextSecondary, fontSize = 13.sp)
+                Text(stringResource(R.string.steam_login_remember_me), color = ThemeManager.colorTextSecondary, fontSize = 13.sp)
                 Spacer(Modifier.width(8.dp))
                 Switch(
                     checked = state.rememberSession,
@@ -312,10 +295,10 @@ class SteamLoginActivity : ComponentActivity() {
                     enabled = !state.isLoggingIn,
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = Color.White,
-                        checkedTrackColor = Accent,
-                        uncheckedThumbColor = TextSecondary,
-                        uncheckedTrackColor = CardBorder,
-                        uncheckedBorderColor = CardBorder,
+                        checkedTrackColor = Color(0xFF1A9FFF),
+                        uncheckedThumbColor = ThemeManager.colorTextSecondary,
+                        uncheckedTrackColor = ThemeManager.colorOutline,
+                        uncheckedBorderColor = ThemeManager.colorOutline,
                     ),
                 )
             }
@@ -347,8 +330,8 @@ class SteamLoginActivity : ComponentActivity() {
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(16.dp))
-                .background(CardDark)
-                .border(1.dp, if (isLoading) Accent.copy(alpha = borderAlpha) else CardBorder, RoundedCornerShape(16.dp))
+                .background(ThemeManager.colorSurface)
+                .border(1.dp, if (isLoading) Color(0xFF1A9FFF).copy(alpha = borderAlpha) else ThemeManager.colorOutline, RoundedCornerShape(16.dp))
                 .padding(if (isLandscape) 16.dp else 20.dp),
             contentAlignment = Alignment.Center,
         ) {
@@ -356,7 +339,7 @@ class SteamLoginActivity : ComponentActivity() {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                Text(stringResource(R.string.steam_login_sign_in_with_qr_code), color = TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.steam_login_sign_in_with_qr_code), color = ThemeManager.colorTextPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
 
                 when {
                     state.qrCode != null -> {
@@ -367,20 +350,20 @@ class SteamLoginActivity : ComponentActivity() {
                         }
                         Text(
                             stringResource(R.string.steam_login_open_steam_app_qr_hint),
-                            color = TextSecondary,
+                            color = ThemeManager.colorTextSecondary,
                             fontSize = 11.sp,
                             textAlign = TextAlign.Center,
                         )
                     }
                     state.isQrFailed -> {
                         Spacer(Modifier.height(4.dp))
-                        Text(stringResource(R.string.steam_login_failed_to_load_qr_code), color = DangerRed, fontSize = 13.sp)
+                        Text(stringResource(R.string.steam_login_failed_to_load_qr_code), color = ThemeManager.colorDangerRed, fontSize = 13.sp)
                         Spacer(Modifier.height(4.dp))
-                        SmallActionButton(stringResource(R.string.steam_login_retry), Accent) { viewModel.onQrRetry() }
+                        SmallActionButton(stringResource(R.string.steam_login_retry), Color(0xFF1A9FFF)) { viewModel.onQrRetry() }
                     }
                     else -> {
-                        CircularProgressIndicator(modifier = Modifier.size(28.dp), color = Accent, strokeWidth = 2.dp)
-                        Text(stringResource(R.string.steam_login_generating_code), color = TextSecondary, fontSize = 12.sp)
+                        CircularProgressIndicator(modifier = Modifier.size(28.dp), color = Color(0xFF1A9FFF), strokeWidth = 2.dp)
+                        Text(stringResource(R.string.steam_login_generating_code), color = ThemeManager.colorTextSecondary, fontSize = 12.sp)
                     }
                 }
             }
@@ -415,7 +398,7 @@ class SteamLoginActivity : ComponentActivity() {
                     modifier = Modifier
                         .width(280.dp)
                         .background(CardDark, RoundedCornerShape(16.dp))
-                        .border(1.dp, CardBorder, RoundedCornerShape(16.dp))
+                        .border(1.dp, ThemeManager.colorOutline, RoundedCornerShape(16.dp))
                         .padding(horizontal = 24.dp, vertical = 24.dp),
                 ) {
                         Column(
@@ -426,13 +409,13 @@ class SteamLoginActivity : ComponentActivity() {
 
                             Spacer(Modifier.height(14.dp))
 
-                            Text(stringResource(R.string.steam_login_two_factor_auth), color = TextPrimary, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.steam_login_two_factor_auth), color = ThemeManager.colorTextPrimary, fontSize = 17.sp, fontWeight = FontWeight.Bold)
                             Spacer(Modifier.height(6.dp))
 
                             if (isSteamGuard) {
                                 Text(
                                     stringResource(R.string.steam_login_approve_login_steam_app),
-                                    color = TextSecondary, fontSize = 12.sp,
+                                    color = ThemeManager.colorTextSecondary, fontSize = 12.sp,
                                     textAlign = TextAlign.Center, lineHeight = 18.sp,
                                 )
                             } else {
@@ -440,7 +423,7 @@ class SteamLoginActivity : ComponentActivity() {
                                     stringResource(R.string.steam_login_enter_code_sent_to, state.email ?: "")
                                 else stringResource(R.string.steam_login_enter_steam_guard_code)
                                 Text(
-                                    methodText, color = TextSecondary, fontSize = 12.sp,
+                                    methodText, color = ThemeManager.colorTextSecondary, fontSize = 12.sp,
                                     textAlign = TextAlign.Center, lineHeight = 18.sp,
                                 )
                                 Spacer(Modifier.height(12.dp))
@@ -479,7 +462,7 @@ class SteamLoginActivity : ComponentActivity() {
                             }
 
                             Spacer(Modifier.height(14.dp))
-                            SmallActionButton(stringResource(R.string.common_ui_cancel), TextSecondary) {
+                            SmallActionButton(stringResource(R.string.common_ui_cancel), ThemeManager.colorTextSecondary) {
                                 viewModel.onShowLoginScreen(LoginScreen.CREDENTIAL)
                             }
                     }
@@ -514,15 +497,15 @@ class SteamLoginActivity : ComponentActivity() {
         )
 
         Box(modifier = Modifier.size(72.dp), contentAlignment = Alignment.Center) {
-            Box(modifier = Modifier.size(52.dp).scale(scale1).clip(CircleShape).background(Accent.copy(alpha = alpha1)))
-            Box(modifier = Modifier.size(52.dp).scale(scale2).clip(CircleShape).background(Accent.copy(alpha = alpha2)))
+            Box(modifier = Modifier.size(52.dp).scale(scale1).clip(CircleShape).background(Color(0xFF1A9FFF).copy(alpha = alpha1)))
+            Box(modifier = Modifier.size(52.dp).scale(scale2).clip(CircleShape).background(Color(0xFF1A9FFF).copy(alpha = alpha2)))
             Box(
                 modifier = Modifier.size(52.dp).clip(CircleShape)
-                    .background(Accent.copy(alpha = 0.13f))
-                    .border(1.dp, Accent.copy(alpha = 0.4f), CircleShape),
+                    .background(Color(0xFF1A9FFF).copy(alpha = 0.13f))
+                    .border(1.dp, Color(0xFF1A9FFF).copy(alpha = 0.4f), CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(Icons.Filled.Lock, null, tint = Accent, modifier = Modifier.size(22.dp))
+                Icon(Icons.Filled.Lock, null, tint = Color(0xFF1A9FFF), modifier = Modifier.size(22.dp))
             }
         }
     }
@@ -549,7 +532,7 @@ class SteamLoginActivity : ComponentActivity() {
                 .scale(scale)
                 .height(48.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(Accent.copy(alpha = bgAlpha))
+                .background(Color(0xFF1A9FFF).copy(alpha = bgAlpha))
                 .then(
                     if (enabled) Modifier.pointerInput(onClick) {
                         detectTapGestures(
@@ -565,7 +548,7 @@ class SteamLoginActivity : ComponentActivity() {
             } else {
                 Text(
                     text = text,
-                    color = if (enabled) Color.White else TextSecondary,
+                    color = if (enabled) Color.White else ThemeManager.colorTextSecondary,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold,
                 )
@@ -597,8 +580,8 @@ class SteamLoginActivity : ComponentActivity() {
             modifier = Modifier
                 .scale(scale)
                 .clip(RoundedCornerShape(10.dp))
-                .background(Accent.copy(alpha = bgAlpha))
-                .border(1.dp, Accent.copy(alpha = borderAlpha), RoundedCornerShape(10.dp))
+                .background(Color(0xFF1A9FFF).copy(alpha = bgAlpha))
+                .border(1.dp, Color(0xFF1A9FFF).copy(alpha = borderAlpha), RoundedCornerShape(10.dp))
                 .padding(horizontal = 28.dp, vertical = 10.dp)
                 .then(
                     if (enabled) Modifier.pointerInput(onClick) {
@@ -611,11 +594,11 @@ class SteamLoginActivity : ComponentActivity() {
             contentAlignment = Alignment.Center,
         ) {
             if (loading) {
-                CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Accent, strokeWidth = 2.dp)
+                CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color(0xFF1A9FFF), strokeWidth = 2.dp)
             } else {
                 Text(
                     text = stringResource(R.string.common_ui_submit),
-                    color = if (enabled) Accent else TextSecondary.copy(alpha = 0.5f),
+                    color = if (enabled) Color(0xFF1A9FFF) else ThemeManager.colorTextSecondary.copy(alpha = 0.5f),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold,
                 )
@@ -666,8 +649,8 @@ class SteamLoginActivity : ComponentActivity() {
                 .scale(scale)
                 .height(42.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(CardBorder.copy(alpha = 0.5f))
-                .border(1.dp, CardBorder, RoundedCornerShape(12.dp))
+                .background(ThemeManager.colorOutline.copy(alpha = 0.5f))
+                .border(1.dp, ThemeManager.colorOutline, RoundedCornerShape(12.dp))
                 .pointerInput(onClick) {
                     detectTapGestures(
                         onPress = { pressed = true; tryAwaitRelease(); pressed = false },
@@ -676,7 +659,7 @@ class SteamLoginActivity : ComponentActivity() {
                 },
             contentAlignment = Alignment.Center,
         ) {
-            Text(stringResource(R.string.common_ui_cancel), color = TextSecondary, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+            Text(stringResource(R.string.common_ui_cancel), color = ThemeManager.colorTextSecondary, fontSize = 14.sp, fontWeight = FontWeight.Medium)
         }
     }
 
@@ -686,15 +669,15 @@ class SteamLoginActivity : ComponentActivity() {
         focusedContainerColor   = Color.Transparent,
         unfocusedContainerColor = Color.Transparent,
         disabledContainerColor  = Color.Transparent,
-        focusedBorderColor      = Accent,
-        unfocusedBorderColor    = CardBorder,
-        disabledBorderColor     = CardBorder.copy(alpha = 0.4f),
-        focusedLabelColor       = Accent,
-        unfocusedLabelColor     = TextSecondary,
-        disabledLabelColor      = TextSecondary.copy(alpha = 0.5f),
-        focusedTextColor        = TextPrimary,
-        unfocusedTextColor      = TextPrimary,
-        disabledTextColor       = TextSecondary,
-        cursorColor             = Accent,
+        focusedBorderColor      = Color(0xFF1A9FFF),
+        unfocusedBorderColor    = ThemeManager.colorOutline,
+        disabledBorderColor     = ThemeManager.colorOutline.copy(alpha = 0.4f),
+        focusedLabelColor       = Color(0xFF1A9FFF),
+        unfocusedLabelColor     = ThemeManager.colorTextSecondary,
+        disabledLabelColor      = ThemeManager.colorTextSecondary.copy(alpha = 0.5f),
+        focusedTextColor        = ThemeManager.colorTextPrimary,
+        unfocusedTextColor      = ThemeManager.colorTextPrimary,
+        disabledTextColor       = ThemeManager.colorTextSecondary,
+        cursorColor             = Color(0xFF1A9FFF),
     )
 }
