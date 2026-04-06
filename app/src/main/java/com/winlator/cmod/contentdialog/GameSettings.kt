@@ -126,8 +126,10 @@ private val ChipSurface
     @Composable get() = com.winlator.cmod.core.ThemeManager.colorSurface
 private val ChipBorder
     @Composable get() = com.winlator.cmod.core.ThemeManager.colorOutline
-private val DangerRed = Color(0xFFFF6B6B)
-private val WarningAmber = Color(0xFFFFB74D)
+private val DangerRed
+    @Composable get() = com.winlator.cmod.core.ThemeManager.colorDangerRed
+private val WarningAmber
+    @Composable get() = com.winlator.cmod.core.ThemeManager.colorWarningAmber
 
 // ---------------------------------------------------------------------------
 // Data classes

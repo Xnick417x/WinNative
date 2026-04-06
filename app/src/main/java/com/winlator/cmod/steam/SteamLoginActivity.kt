@@ -67,7 +67,7 @@ private val TextSecondary
     @Composable get() = com.winlator.cmod.core.ThemeManager.colorTextSecondary
 private val TrackInactive
     @Composable get() = com.winlator.cmod.core.ThemeManager.colorSurfaceVariant
-private val DangerRed = Color(0xFFFF7A88)
+private val DangerRed get() = com.winlator.cmod.core.ThemeManager.colorDangerRed
 
 class SteamLoginActivity : ComponentActivity() {
 

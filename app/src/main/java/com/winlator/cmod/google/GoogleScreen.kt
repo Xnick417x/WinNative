@@ -77,9 +77,9 @@ private val TextSecondary
     @Composable get() = com.winlator.cmod.core.ThemeManager.colorTextSecondary
 private val TrackInactive
     @Composable get() = com.winlator.cmod.core.ThemeManager.colorSurfaceVariant
-private val WarningAmber = Color(0xFFFFC857)
-private val DangerRed = Color(0xFFFF6B6B)
-private val StatusGreen = Color(0xFF3FB950)
+private val WarningAmber get() = com.winlator.cmod.core.ThemeManager.colorWarningAmber
+private val DangerRed get() = com.winlator.cmod.core.ThemeManager.colorDangerRed
+private val StatusGreen get() = com.winlator.cmod.core.ThemeManager.colorStatusGreen
 
 @Composable
 fun GoogleScreen() {

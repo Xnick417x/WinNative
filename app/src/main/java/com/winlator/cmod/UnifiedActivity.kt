@@ -172,16 +172,16 @@ import androidx.core.view.WindowCompat
 import kotlin.math.roundToInt
 
 // Color palette
-private val BgDark = Color(0xFF0F0F12)
-private val SurfaceDark = Color(0xFF161B22)
-private val CardDark = Color(0xFF0A0A0F)
-private val CardBorder = Color(0xFF21212E)
+private val BgDark @Composable get() = com.winlator.cmod.core.ThemeManager.colorBackground
+private val SurfaceDark @Composable get() = com.winlator.cmod.core.ThemeManager.colorSurface
+private val CardDark @Composable get() = com.winlator.cmod.core.ThemeManager.colorSurfaceVariant
+private val CardBorder @Composable get() = com.winlator.cmod.core.ThemeManager.colorOutline
 private val Accent = Color(0xFF1A9FFF)
 private val AccentGlow = Color(0xFF58A6FF)
-private val TextPrimary = Color(0xFFF0F4FF)
-private val TextSecondary = Color(0xFF7A8FA8)
-private val DangerRed = Color(0xFFFF6B6B)
-private val StatusOnline = Color(0xFF3FB950)
+private val TextPrimary @Composable get() = com.winlator.cmod.core.ThemeManager.colorTextPrimary
+private val TextSecondary @Composable get() = com.winlator.cmod.core.ThemeManager.colorTextSecondary
+private val DangerRed @Composable get() = com.winlator.cmod.core.ThemeManager.colorDangerRed
+private val StatusOnline @Composable get() = com.winlator.cmod.core.ThemeManager.colorStatusGreen
 private val StatusAway = Color(0xFFF0C040)
 private val StatusOffline = Color(0xFF6E7681)
 

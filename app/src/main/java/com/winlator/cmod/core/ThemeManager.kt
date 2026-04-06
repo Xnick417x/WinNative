@@ -74,6 +74,10 @@ object ThemeManager {
     val colorTextSecondary: androidx.compose.ui.graphics.Color
         get() = if (isClassicDark()) androidx.compose.ui.graphics.Color(0xFF7A8FA8) else androidx.compose.ui.graphics.Color(0xFF9CB0C7)
 
+    val colorStatusGreen: androidx.compose.ui.graphics.Color = androidx.compose.ui.graphics.Color(0xFF3FB950)
+    val colorWarningAmber: androidx.compose.ui.graphics.Color = androidx.compose.ui.graphics.Color(0xFFFFC857)
+    val colorDangerRed: androidx.compose.ui.graphics.Color = androidx.compose.ui.graphics.Color(0xFFFF7A88)
+
     // --- Java/XML Colors ---
 
     fun getBackgroundColor(): Int {
