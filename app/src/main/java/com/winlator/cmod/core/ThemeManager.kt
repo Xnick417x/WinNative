@@ -18,17 +18,20 @@ object ThemeManager {
 
     private var currentTheme: Int = THEME_WINNATIVE_BLUE
 
+    @JvmStatic
     fun init(context: Context) {
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
         currentTheme = prefs.getInt(PREF_APP_THEME, THEME_WINNATIVE_BLUE)
     }
 
+    @JvmStatic
     fun setTheme(context: Context, themeId: Int) {
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
         prefs.edit().putInt(PREF_APP_THEME, themeId).apply()
         currentTheme = themeId
     }
 
+    @JvmStatic
     fun getCurrentTheme(): Int = currentTheme
 
     fun isClassicDark(): Boolean = currentTheme == THEME_CLASSIC_DARK
@@ -80,14 +83,17 @@ object ThemeManager {
 
     // --- Java/XML Colors ---
 
+    @JvmStatic
     fun getBackgroundColor(): Int {
         return if (isClassicDark()) Color.parseColor("#000000") else Color.parseColor("#0F1724")
     }
 
+    @JvmStatic
     fun getSurfaceColor(): Int {
         return if (isClassicDark()) Color.parseColor("#14141E") else Color.parseColor("#1B2A3D")
     }
 
+    @JvmStatic
     fun applySystemUiTheme(activity: Activity) {
         val window = activity.window
         window.statusBarColor = getBackgroundColor()
