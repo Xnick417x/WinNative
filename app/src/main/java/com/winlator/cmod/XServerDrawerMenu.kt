@@ -367,7 +367,6 @@ private fun HUDCheckmarkToggle(
                 checkmarkColor = Color.White
             )
         )
-        )
         Spacer(Modifier.width(4.dp))
         Text(
             text = label,
