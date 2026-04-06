@@ -71,7 +71,7 @@ public class OtherSettingsFragment extends Fragment {
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
 
         // Apply theme backgrounds dynamically to root/scrollview since attributes aren't globally switched yet
-        view.setBackgroundColor(ThemeManager.getBackgroundColor());
+        view.setBackgroundColor(ThemeManager.INSTANCE.getBackgroundColor());
 
         // Initialize Theme Spinner
         Spinner sAppTheme = view.findViewById(R.id.SAppTheme);
@@ -82,13 +82,13 @@ public class OtherSettingsFragment extends Fragment {
         ArrayAdapter<String> themeAdapter = new ArrayAdapter<>(context, R.layout.spinner_item_themed, themes);
         themeAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item_themed);
         sAppTheme.setAdapter(themeAdapter);
-        sAppTheme.setSelection(ThemeManager.getCurrentTheme());
+        sAppTheme.setSelection(ThemeManager.INSTANCE.getCurrentTheme());
         
         sAppTheme.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View selectedView, int position, long id) {
-                if (ThemeManager.getCurrentTheme() != position) {
-                    ThemeManager.setTheme(context, position);
+                if (ThemeManager.INSTANCE.getCurrentTheme() != position) {
+                    ThemeManager.INSTANCE.setTheme(context, position);
                     requireActivity().recreate();
                 }
             }
