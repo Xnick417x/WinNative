@@ -60,6 +60,9 @@ class PluviaApp : Application() {
 
         DownloadService.populateDownloadService(this)
 
+        // Initialize ThemeManager
+        com.winlator.cmod.core.ThemeManager.init(this)
+
         // Initialize process-wide reactive network state
         com.winlator.cmod.utils.NetworkMonitor.init(this)
         
@@ -97,14 +100,11 @@ class PluviaApp : Application() {
         var currentForegroundActivity: Activity? = null
             private set
             
-        DownloadService.populateDownloadService(this)
+        @JvmField
+        val events = EventDispatcher()
+    }
 
-        // Initialize ThemeManager
-        com.winlator.cmod.core.ThemeManager.init(this)
-
-        // Initialize process-wide reactive network state
-        ...
-        private fun registerRefreshRateLifecycleCallbacks() {
+    private fun registerRefreshRateLifecycleCallbacks() {
         registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
             override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
                 com.winlator.cmod.core.ThemeManager.applySystemUiTheme(activity)
