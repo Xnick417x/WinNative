@@ -89,6 +89,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.winlator.cmod.R
+import com.winlator.cmod.core.ThemeManager
 import com.winlator.cmod.widget.EnvVarsView
 import com.winlator.cmod.widget.chasingBorder
 import kotlin.math.roundToInt
@@ -97,39 +98,39 @@ import kotlin.math.roundToInt
 // Dark navy blue color scheme
 // ---------------------------------------------------------------------------
 private val BgDeep
-    @Composable get() = com.winlator.cmod.core.ThemeManager.colorBackground
+    @Composable get() = ThemeManager.colorBackground
 private val SidebarBg
-    @Composable get() = com.winlator.cmod.core.ThemeManager.colorSurface
+    @Composable get() = ThemeManager.colorSurface
 private val ContentBg
-    @Composable get() = com.winlator.cmod.core.ThemeManager.colorBackground
+    @Composable get() = ThemeManager.colorBackground
 private val CardSurface
-    @Composable get() = com.winlator.cmod.core.ThemeManager.colorSurface
+    @Composable get() = ThemeManager.colorSurface
 private val CardBorder
-    @Composable get() = com.winlator.cmod.core.ThemeManager.colorOutline
+    @Composable get() = ThemeManager.colorOutline
 private val InputSurface
-    @Composable get() = com.winlator.cmod.core.ThemeManager.colorSurfaceVariant
+    @Composable get() = ThemeManager.colorSurfaceVariant
 private val InputBorder
-    @Composable get() = com.winlator.cmod.core.ThemeManager.colorOutline
+    @Composable get() = ThemeManager.colorOutline
 private val AccentBlue = Color(0xFF1A9FFF)
 private val TextPrimary
-    @Composable get() = com.winlator.cmod.core.ThemeManager.colorTextPrimary
+    @Composable get() = ThemeManager.colorTextPrimary
 private val TextSecondary
-    @Composable get() = com.winlator.cmod.core.ThemeManager.colorTextSecondary
+    @Composable get() = ThemeManager.colorTextSecondary
 private val TextDim = Color(0xFF6E7681)
 private val DividerColor
-    @Composable get() = com.winlator.cmod.core.ThemeManager.colorOutline
+    @Composable get() = ThemeManager.colorOutline
 private val CheckBorder
-    @Composable get() = com.winlator.cmod.core.ThemeManager.colorOutline
+    @Composable get() = ThemeManager.colorOutline
 private val TrackInactive
-    @Composable get() = com.winlator.cmod.core.ThemeManager.colorSurface
+    @Composable get() = ThemeManager.colorSurface
 private val ChipSurface
-    @Composable get() = com.winlator.cmod.core.ThemeManager.colorSurface
+    @Composable get() = ThemeManager.colorSurface
 private val ChipBorder
-    @Composable get() = com.winlator.cmod.core.ThemeManager.colorOutline
+    @Composable get() = ThemeManager.colorOutline
 private val DangerRed
-    @Composable get() = com.winlator.cmod.core.ThemeManager.colorDangerRed
+    @Composable get() = ThemeManager.colorDangerRed
 private val WarningAmber
-    @Composable get() = com.winlator.cmod.core.ThemeManager.colorWarningAmber
+    @Composable get() = ThemeManager.colorWarningAmber
 
 // ---------------------------------------------------------------------------
 // Data classes
