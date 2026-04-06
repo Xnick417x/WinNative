@@ -48,6 +48,7 @@ import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxHeight
+import com.winlator.cmod.core.ThemeManager
 
 data class XServerDrawerItem(
     val itemId: Int,

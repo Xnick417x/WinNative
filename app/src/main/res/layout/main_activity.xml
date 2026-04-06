@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal"
-    android:background="#0F1724"
+    android:background="@color/window_background_color_dark"
     android:fitsSystemWindows="true">
 
     <!-- Sidebar: static header + scrollable nav -->

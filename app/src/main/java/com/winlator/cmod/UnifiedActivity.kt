@@ -875,9 +875,9 @@ class UnifiedActivity : ComponentActivity() {
                                 .align(Alignment.BottomEnd)
                                 .padding(16.dp)
                                 .size(52.dp)
-                                .shadow(10.dp, CircleShape, spotColor = ThemeManager.colorThemeManager.colorAccent.copy(alpha = 0.4f))
+                                .shadow(10.dp, CircleShape, spotColor = ThemeManager.colorAccent.copy(alpha = 0.4f))
                                 .clip(CircleShape)
-                                .background(ThemeManager.colorThemeManager.colorAccent)
+                                .background(ThemeManager.colorAccent)
                                 .focusProperties { canFocus = false } // No specific button for this, handle via long press or touch
                                 .clickable { showAddCustomGame = true },
                             contentAlignment = Alignment.Center
@@ -1298,7 +1298,7 @@ class UnifiedActivity : ComponentActivity() {
                             ),
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                             keyboardActions = KeyboardActions(onSearch = { keyboardController?.hide() }),
-                            cursorBrush = Brush.verticalGradient(listOf(ThemeManager.colorAccent, ThemeManager.colorThemeManager.colorAccent)),
+                            cursorBrush = Brush.verticalGradient(listOf(ThemeManager.colorAccent, ThemeManager.colorAccent)),
                             modifier = Modifier
                                 .weight(1f)
                                 .focusRequester(searchFocusRequester),
@@ -1471,7 +1471,7 @@ class UnifiedActivity : ComponentActivity() {
                     label = "loaderFade"
                 )
                 CircularProgressIndicator(
-                    color = ThemeManager.colorThemeManager.colorAccent,
+                    color = ThemeManager.colorAccent,
                     strokeWidth = 3.dp,
                     modifier = Modifier.size(48.dp).alpha(spinAlpha)
                 )
@@ -3522,7 +3522,7 @@ class UnifiedActivity : ComponentActivity() {
                 if (glowAlpha > 0f) Modifier.drawWithContent {
                     drawContent()
                     drawRoundRect(
-                        color = ThemeManager.colorThemeManager.colorAccent,
+                        color = ThemeManager.colorAccent,
                         alpha = glowAlpha * 0.25f,
                         cornerRadius = CornerRadius(12.dp.toPx()),
                     )
@@ -3844,7 +3844,7 @@ class UnifiedActivity : ComponentActivity() {
                     .then(
                         if (glowAlpha > 0f) Modifier.drawWithContent {
                             drawContent()
-                            drawRoundRect(color = ThemeManager.colorThemeManager.colorAccent, alpha = glowAlpha * 0.25f, cornerRadius = CornerRadius(14.dp.toPx()))
+                            drawRoundRect(color = ThemeManager.colorAccent, alpha = glowAlpha * 0.25f, cornerRadius = CornerRadius(14.dp.toPx()))
                         } else Modifier
                     )
                     .clickable(interactionSource = clickInteraction, indication = null, onClick = onClick)
@@ -3896,7 +3896,7 @@ class UnifiedActivity : ComponentActivity() {
                     .then(
                         if (glowAlpha > 0f) Modifier.drawWithContent {
                             drawContent()
-                            drawRoundRect(color = ThemeManager.colorThemeManager.colorAccent, alpha = glowAlpha * 0.25f, cornerRadius = CornerRadius(16.dp.toPx()))
+                            drawRoundRect(color = ThemeManager.colorAccent, alpha = glowAlpha * 0.25f, cornerRadius = CornerRadius(16.dp.toPx()))
                         } else Modifier
                     )
                     .clickable(interactionSource = clickInteraction, indication = null, onClick = onClick)
@@ -4675,7 +4675,7 @@ class UnifiedActivity : ComponentActivity() {
                     .then(
                         if (glowAlpha > 0f) Modifier.drawWithContent {
                             drawContent()
-                            drawRoundRect(color = ThemeManager.colorThemeManager.colorAccent, alpha = glowAlpha * 0.25f, cornerRadius = CornerRadius(14.dp.toPx()))
+                            drawRoundRect(color = ThemeManager.colorAccent, alpha = glowAlpha * 0.25f, cornerRadius = CornerRadius(14.dp.toPx()))
                         } else Modifier
                     )
                     .clickable(interactionSource = clickInteraction, indication = null, onClick = onClick)
@@ -4747,7 +4747,7 @@ class UnifiedActivity : ComponentActivity() {
                     .then(
                         if (glowAlpha > 0f) Modifier.drawWithContent {
                             drawContent()
-                            drawRoundRect(color = ThemeManager.colorThemeManager.colorAccent, alpha = glowAlpha * 0.25f, cornerRadius = CornerRadius(16.dp.toPx()))
+                            drawRoundRect(color = ThemeManager.colorAccent, alpha = glowAlpha * 0.25f, cornerRadius = CornerRadius(16.dp.toPx()))
                         } else Modifier
                     )
                     .clickable(interactionSource = clickInteraction, indication = null, onClick = onClick)

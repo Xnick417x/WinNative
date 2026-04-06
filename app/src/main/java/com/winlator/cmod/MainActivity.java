@@ -86,14 +86,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Apply the dark theme unconditionally, as the new unified UI is fully dark-themed
-        // and content_dialog_background defaults to a dark gradient.
-        isDarkMode = true;
+        // Apply the dark theme base
         setTheme(R.style.AppTheme_Dark);
-
         AppUtils.showSystemUI(this);
 
         setContentView(R.layout.main_activity);
+
+        // Dynamically apply ThemeManager colors to the XML layout
+        int bgColor = com.winlator.cmod.core.ThemeManager.getBackgroundColor();
+        int surfaceColor = com.winlator.cmod.core.ThemeManager.getSurfaceColor();
+        
+        findViewById(R.id.LLSidebar).setBackgroundColor(surfaceColor);
+        findViewById(R.id.FLFragmentContainer).setBackgroundColor(bgColor);
+        getWindow().getDecorView().setBackgroundColor(bgColor);
 
         findViewById(R.id.nav_header_back).setOnClickListener(v -> onBackPressed());
 
