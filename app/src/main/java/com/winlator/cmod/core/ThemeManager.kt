@@ -95,20 +95,24 @@ object ThemeManager {
 
     @JvmStatic
     fun applySystemUiTheme(activity: Activity) {
-        val window = activity.window
+        val window = activity.window ?: return
         window.statusBarColor = getBackgroundColor()
         window.navigationBarColor = getBackgroundColor()
+
+        val decorView = window.decorView ?: return
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             window.insetsController?.setSystemBarsAppearance(
                 0, // 0 for dark theme (light text)
                 WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS or WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
             )
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            var flags = window.decorView.systemUiVisibility
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            var flags = decorView.systemUiVisibility
             flags = flags and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
-            flags = flags and View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
-            window.decorView.systemUiVisibility = flags
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                flags = flags and View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
+            }
+            decorView.systemUiVisibility = flags
         }
     }
 }

@@ -31,6 +31,9 @@ class PluviaApp : Application() {
         // Initialize Play Games Services SDK (v2)
         PlayGamesSdk.initialize(this)
 
+        // Initialize ThemeManager early
+        com.winlator.cmod.core.ThemeManager.init(this)
+
         registerRefreshRateLifecycleCallbacks()
 
         // Replace Android's limited BouncyCastle provider with the full one
@@ -59,9 +62,6 @@ class PluviaApp : Application() {
         com.winlator.cmod.core.LogManager.startAppLogging(this)
 
         DownloadService.populateDownloadService(this)
-
-        // Initialize ThemeManager
-        com.winlator.cmod.core.ThemeManager.init(this)
 
         // Initialize process-wide reactive network state
         com.winlator.cmod.utils.NetworkMonitor.init(this)
