@@ -458,9 +458,7 @@ class UnifiedActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        ThemeManager.init(this)
         super.onCreate(savedInstanceState)
-        ThemeManager.applySystemUiTheme(this)
         db = PluviaDatabase.getInstance(this)
         EpicAuthManager.updateLoginStatus(this)
         GOGAuthManager.updateLoginStatus(this)

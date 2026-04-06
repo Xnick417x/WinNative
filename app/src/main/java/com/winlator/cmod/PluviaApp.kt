@@ -97,13 +97,17 @@ class PluviaApp : Application() {
         var currentForegroundActivity: Activity? = null
             private set
             
-        @JvmField
-        val events = EventDispatcher()
-    }
+        DownloadService.populateDownloadService(this)
 
-    private fun registerRefreshRateLifecycleCallbacks() {
+        // Initialize ThemeManager
+        com.winlator.cmod.core.ThemeManager.init(this)
+
+        // Initialize process-wide reactive network state
+        ...
+        private fun registerRefreshRateLifecycleCallbacks() {
         registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
             override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+                com.winlator.cmod.core.ThemeManager.applySystemUiTheme(activity)
                 if (activity !is XServerDisplayActivity) {
                     RefreshRateUtils.applyPreferredRefreshRate(activity)
                 }
@@ -111,6 +115,7 @@ class PluviaApp : Application() {
 
             override fun onActivityResumed(activity: Activity) {
                 currentForegroundActivity = activity
+                com.winlator.cmod.core.ThemeManager.applySystemUiTheme(activity)
                 if (activity !is XServerDisplayActivity) {
                     RefreshRateUtils.applyPreferredRefreshRate(activity)
                 }
