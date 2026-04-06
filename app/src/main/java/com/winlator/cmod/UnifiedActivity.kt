@@ -112,6 +112,7 @@ import coil.compose.AsyncImage
 import coil.imageLoader
 import coil.request.ImageRequest
 import com.winlator.cmod.core.UpdateChecker
+import com.winlator.cmod.core.ThemeManager
 import com.winlator.cmod.google.GameSaveBackupManager
 import com.winlator.cmod.steam.service.SteamService
 import com.winlator.cmod.steam.utils.PrefManager
@@ -457,9 +458,9 @@ class UnifiedActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        com.winlator.cmod.core.ThemeManager.init(this)
+        ThemeManager.init(this)
         super.onCreate(savedInstanceState)
-        com.winlator.cmod.core.ThemeManager.applySystemUiTheme(this)
+        ThemeManager.applySystemUiTheme(this)
         db = PluviaDatabase.getInstance(this)
         EpicAuthManager.updateLoginStatus(this)
         GOGAuthManager.updateLoginStatus(this)
@@ -495,7 +496,7 @@ class UnifiedActivity : ComponentActivity() {
         UpdateChecker.startBackgroundLoop(this)
 
         setContent {
-            MaterialTheme(colorScheme = com.winlator.cmod.core.ThemeManager.getComposeColorScheme()) {
+            MaterialTheme(colorScheme = ThemeManager.getComposeColorScheme()) {
                 UnifiedHub()
             }
         }
@@ -6560,7 +6561,7 @@ class UnifiedActivity : ComponentActivity() {
                     .fillMaxWidth(0.85f)
                     .heightIn(max = 320.dp),
                 shape = RoundedCornerShape(16.dp),
-                color = com.winlator.cmod.core.ThemeManager.colorBackground,
+                color = ThemeManager.colorBackground,
                 border = BorderStroke(1.dp, Accent.copy(alpha = 0.2f)), // Subtle accent border
                 shadowElevation = 16.dp
             ) {
@@ -6572,10 +6573,10 @@ class UnifiedActivity : ComponentActivity() {
                     ) {
                         Icon(Icons.Default.Add, contentDescription = null, tint = Accent, modifier = Modifier.size(22.dp))
                         Spacer(Modifier.width(8.dp))
-                        Text(stringResource(R.string.library_games_add_custom_game), style = MaterialTheme.typography.titleMedium, color = com.winlator.cmod.core.ThemeManager.colorThemeManager.colorTextPrimary, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.library_games_add_custom_game), style = MaterialTheme.typography.titleMedium, color = ThemeManager.colorTextPrimary, fontWeight = FontWeight.Bold)
                         Spacer(Modifier.weight(1f))
                         TextButton(onClick = onDismiss, modifier = Modifier.height(34.dp)) {
-                            Text(stringResource(R.string.common_ui_cancel), color = com.winlator.cmod.core.ThemeManager.colorThemeManager.colorTextSecondary, fontSize = 12.sp)
+                            Text(stringResource(R.string.common_ui_cancel), color = ThemeManager.colorTextSecondary, fontSize = 12.sp)
                         }
                         Spacer(Modifier.width(4.dp))
                         Button(
@@ -6624,21 +6625,21 @@ class UnifiedActivity : ComponentActivity() {
                             },
                             modifier = Modifier.fillMaxWidth().height(40.dp),
                             shape = RoundedCornerShape(10.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = com.winlator.cmod.core.ThemeManager.colorSurfaceVariant),
+                            colors = ButtonDefaults.buttonColors(containerColor = ThemeManager.colorSurfaceVariant),
                             contentPadding = PaddingValues(horizontal = 12.dp)
                         ) {
                             Icon(Icons.Default.FolderOpen, contentDescription = null, tint = Accent, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
                             Text(
                                 if (selectedExePath == null) "Select Executable (.exe)" else java.io.File(selectedExePath!!).name,
-                                color = if (selectedExePath == null) com.winlator.cmod.core.ThemeManager.colorThemeManager.colorTextSecondary else com.winlator.cmod.core.ThemeManager.colorThemeManager.colorTextPrimary,
+                                color = if (selectedExePath == null) ThemeManager.colorTextSecondary else ThemeManager.colorTextPrimary,
                                 maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 13.sp
                             )
                         }
 
                         if (selectedExePath != null) {
                             Spacer(Modifier.height(4.dp))
-                            Text(selectedExePath!!, color = com.winlator.cmod.core.ThemeManager.colorThemeManager.colorTextSecondary.copy(alpha = 0.6f), fontSize = 10.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text(selectedExePath!!, color = ThemeManager.colorTextSecondary.copy(alpha = 0.6f), fontSize = 10.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
 
                             Spacer(Modifier.height(10.dp))
 
@@ -6649,17 +6650,17 @@ class UnifiedActivity : ComponentActivity() {
                                 label = { Text(stringResource(R.string.library_games_game_name), fontSize = 12.sp) },
                                 singleLine = true,
                                 modifier = Modifier.fillMaxWidth().height(52.dp),
-                                textStyle = MaterialTheme.typography.bodyMedium.copy(color = com.winlator.cmod.core.ThemeManager.colorThemeManager.colorTextPrimary),
+                                textStyle = MaterialTheme.typography.bodyMedium.copy(color = ThemeManager.colorTextPrimary),
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = Accent,
-                                    unfocusedBorderColor = com.winlator.cmod.core.ThemeManager.colorThemeManager.colorTextSecondary.copy(alpha = 0.3f),
-                                    focusedTextColor = com.winlator.cmod.core.ThemeManager.colorThemeManager.colorTextPrimary,
-                                    unfocusedTextColor = com.winlator.cmod.core.ThemeManager.colorThemeManager.colorTextPrimary,
+                                    unfocusedBorderColor = ThemeManager.colorTextSecondary.copy(alpha = 0.3f),
+                                    focusedTextColor = ThemeManager.colorTextPrimary,
+                                    unfocusedTextColor = ThemeManager.colorTextPrimary,
                                     cursorColor = Accent,
                                     focusedLabelColor = Accent,
-                                    unfocusedLabelColor = com.winlator.cmod.core.ThemeManager.colorThemeManager.colorTextSecondary,
-                                    focusedContainerColor = com.winlator.cmod.core.ThemeManager.colorSurfaceVariant,
-                                    unfocusedContainerColor = com.winlator.cmod.core.ThemeManager.colorSurfaceVariant
+                                    unfocusedLabelColor = ThemeManager.colorTextSecondary,
+                                    focusedContainerColor = ThemeManager.colorSurfaceVariant,
+                                    unfocusedContainerColor = ThemeManager.colorSurfaceVariant
                                 ),
                                 shape = RoundedCornerShape(10.dp)
                             )
@@ -6671,17 +6672,17 @@ class UnifiedActivity : ComponentActivity() {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(10.dp))
-                                    .background(com.winlator.cmod.core.ThemeManager.colorSurfaceVariant)
+                                    .background(ThemeManager.colorSurfaceVariant)
                                     .padding(horizontal = 10.dp, vertical = 6.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(Icons.Default.Folder, contentDescription = null, tint = StatusOnline.copy(alpha = 0.7f), modifier = Modifier.size(16.dp))
                                 Spacer(Modifier.width(6.dp))
                                 Column(Modifier.weight(1f)) {
-                                    Text("Game Folder (A: drive)", color = com.winlator.cmod.core.ThemeManager.colorThemeManager.colorTextSecondary, fontSize = 10.sp)
+                                    Text("Game Folder (A: drive)", color = ThemeManager.colorTextSecondary, fontSize = 10.sp)
                                     Text(
                                         gameFolder ?: "Auto-detected",
-                                        color = if (gameFolder != null) com.winlator.cmod.core.ThemeManager.colorThemeManager.colorTextPrimary else com.winlator.cmod.core.ThemeManager.colorThemeManager.colorTextSecondary,
+                                        color = if (gameFolder != null) ThemeManager.colorTextPrimary else ThemeManager.colorTextSecondary,
                                         fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis
                                     )
                                 }

@@ -151,7 +151,7 @@ class SteamLoginActivity : ComponentActivity() {
                     .statusBarsPadding()
                     .size(44.dp)
                     .clip(CircleShape)
-                    .background(CardDark.copy(alpha = 0.72f)),
+                    .background(ThemeManager.colorSurface.copy(alpha = 0.72f)),
             ) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = ThemeManager.colorTextPrimary, modifier = Modifier.size(24.dp))
             }
@@ -397,7 +397,7 @@ class SteamLoginActivity : ComponentActivity() {
                 Box(
                     modifier = Modifier
                         .width(280.dp)
-                        .background(CardDark, RoundedCornerShape(16.dp))
+                        .background(ThemeManager.colorSurface, RoundedCornerShape(16.dp))
                         .border(1.dp, ThemeManager.colorOutline, RoundedCornerShape(16.dp))
                         .padding(horizontal = 24.dp, vertical = 24.dp),
                 ) {
