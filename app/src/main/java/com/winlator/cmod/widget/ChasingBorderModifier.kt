@@ -21,6 +21,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
+import androidx.compose.ui.graphics.toArgb
+import com.winlator.cmod.core.ThemeManager
+
 /**
  * Compose modifier that draws an animated chasing border using a rotating SweepGradient.
  * Uses Compose's [rememberInfiniteTransition] for smooth, frame-accurate animation.
@@ -33,6 +36,11 @@ fun Modifier.chasingBorder(
     animationDurationMs: Int = 5000
 ): Modifier = composed {
     if (!isFocused) return@composed this
+
+    val theme = ThemeManager.getComposeColorScheme()
+    val accentColor = theme.primary
+    val surfaceColor = theme.surface
+    val outlineColor = theme.outline
 
     val density = LocalDensity.current.density
     val cornerRadiusPx = cornerRadius.value * density
@@ -48,17 +56,15 @@ fun Modifier.chasingBorder(
         ),
         label = "borderRotation"
     )
-    // When paused, skip the animated state read so Compose stops invalidating
-    // the draw scope — the border renders once and stays static until resumed.
     val rotationDegrees = if (paused) 0f else animatedRotation
 
-    val gradientColors = remember {
+    val gradientColors = remember(accentColor) {
         intArrayOf(
-            0xFF2196F3.toInt(),  // blue
-            0xFF29B6F6.toInt(),  // sky blue
-            0xFF00E5FF.toInt(),  // electric cyan
-            0xFF29B6F6.toInt(),  // sky blue
-            0xFF2196F3.toInt()   // blue (seamless)
+            accentColor.toArgb(),
+            accentColor.copy(alpha = 0.6f).toArgb(),
+            outlineColor.toArgb(),
+            accentColor.copy(alpha = 0.6f).toArgb(),
+            accentColor.toArgb()
         )
     }
     val gradientStops = remember { floatArrayOf(0f, 0.25f, 0.50f, 0.75f, 1f) }
