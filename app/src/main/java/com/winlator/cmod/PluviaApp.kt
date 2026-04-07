@@ -31,6 +31,9 @@ class PluviaApp : Application() {
         // Initialize Play Games Services SDK (v2)
         PlayGamesSdk.initialize(this)
 
+        // Initialize ThemeManager early
+        com.winlator.cmod.core.ThemeManager.init(this)
+
         registerRefreshRateLifecycleCallbacks()
 
         // Replace Android's limited BouncyCastle provider with the full one
@@ -104,6 +107,7 @@ class PluviaApp : Application() {
     private fun registerRefreshRateLifecycleCallbacks() {
         registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
             override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+                com.winlator.cmod.core.ThemeManager.applySystemUiTheme(activity)
                 if (activity !is XServerDisplayActivity) {
                     RefreshRateUtils.applyPreferredRefreshRate(activity)
                 }
@@ -111,6 +115,7 @@ class PluviaApp : Application() {
 
             override fun onActivityResumed(activity: Activity) {
                 currentForegroundActivity = activity
+                com.winlator.cmod.core.ThemeManager.applySystemUiTheme(activity)
                 if (activity !is XServerDisplayActivity) {
                     RefreshRateUtils.applyPreferredRefreshRate(activity)
                 }

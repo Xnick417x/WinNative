@@ -41,18 +41,27 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.winlator.cmod.R
 import com.winlator.cmod.core.AppUtils
+import com.winlator.cmod.core.ThemeManager
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 
 // Color scheme matching updated UI
-private val BgDark        = Color(0xFF151E2A)
-private val SurfaceDark   = Color(0xFF1A2432)
-private val CardBorder    = Color(0xFF25364A)
-private val Accent        = Color(0xFF1A9FFF)
-private val TextPrimary   = Color(0xFFF5F9FF)
-private val TextSecondary = Color(0xFF9CB0C7)
-private val DividerColor  = Color(0xFF25364A)
-private val CheckBorder   = Color(0xFF2D425A)
+private val BgDark
+    @Composable get() = ThemeManager.colorBackground
+private val SurfaceDark
+    @Composable get() = ThemeManager.colorSurfaceVariant
+private val CardBorder
+    @Composable get() = ThemeManager.colorOutline
+private val Accent
+    @Composable get() = ThemeManager.colorAccent
+private val TextPrimary
+    @Composable get() = ThemeManager.colorTextPrimary
+private val TextSecondary
+    @Composable get() = ThemeManager.colorTextSecondary
+private val DividerColor
+    @Composable get() = ThemeManager.colorOutline
+private val CheckBorder
+    @Composable get() = ThemeManager.colorOutline
 
 data class InputControlsState(
     val profileNames: List<String> = emptyList(),

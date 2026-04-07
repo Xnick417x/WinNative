@@ -42,6 +42,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Extension
+import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.Monitor
 import androidx.compose.material.icons.outlined.Science
@@ -89,31 +90,50 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.winlator.cmod.R
+import com.winlator.cmod.core.ThemeManager
 import com.winlator.cmod.widget.EnvVarsView
 import com.winlator.cmod.widget.chasingBorder
 import kotlin.math.roundToInt
 
 // ---------------------------------------------------------------------------
-// Black / gray color scheme
+// Dark navy blue color scheme
 // ---------------------------------------------------------------------------
-private val BgDeep = Color(0xFF0F0F12)
-private val SidebarBg = Color(0xFF0F0F12)
-private val ContentBg = Color(0xFF0F0F12)
-private val CardSurface = Color(0xFF14141E)
-private val CardBorder = Color(0xFF21212E)
-private val InputSurface = Color(0xFF0F0F16)
-private val InputBorder = Color(0xFF21212E)
-private val AccentBlue = Color(0xFF1A9FFF)
-private val TextPrimary = Color(0xFFF0F4FF)
-private val TextSecondary = Color(0xFF7A8FA8)
-private val TextDim = Color(0xFF6E7681)
-private val DividerColor = Color(0xFF21212E)
-private val CheckBorder = Color(0xFF21212E)
-private val TrackInactive = Color(0xFF14141E)
-private val ChipSurface = Color(0xFF0F0F16)
-private val ChipBorder = Color(0xFF21212E)
-private val DangerRed = Color(0xFFFF6B6B)
-private val WarningAmber = Color(0xFFFFB74D)
+private val BgDeep
+    @Composable get() = ThemeManager.colorBackground
+private val SidebarBg
+    @Composable get() = ThemeManager.colorSurface
+private val ContentBg
+    @Composable get() = ThemeManager.colorBackground
+private val CardSurface
+    @Composable get() = ThemeManager.colorSurface
+private val CardBorder
+    @Composable get() = ThemeManager.colorOutline
+private val InputSurface
+    @Composable get() = ThemeManager.colorSurfaceVariant
+private val InputBorder
+    @Composable get() = ThemeManager.colorOutline
+private val AccentBlue
+    @Composable get() = ThemeManager.colorAccent
+private val TextPrimary
+    @Composable get() = ThemeManager.colorTextPrimary
+private val TextSecondary
+    @Composable get() = ThemeManager.colorTextSecondary
+private val TextDim
+    @Composable get() = ThemeManager.colorTextSecondary.copy(alpha = 0.7f)
+private val DividerColor
+    @Composable get() = ThemeManager.colorOutline
+private val CheckBorder
+    @Composable get() = ThemeManager.colorOutline
+private val TrackInactive
+    @Composable get() = ThemeManager.colorSurface
+private val ChipSurface
+    @Composable get() = ThemeManager.colorSurface
+private val ChipBorder
+    @Composable get() = ThemeManager.colorOutline
+private val DangerRed
+    @Composable get() = ThemeManager.colorDangerRed
+private val WarningAmber
+    @Composable get() = ThemeManager.colorWarningAmber
 
 // ---------------------------------------------------------------------------
 // Data classes
@@ -2644,7 +2664,7 @@ private fun InputSection(state: GameSettingsStateHolder) {
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        Icons.Outlined.HelpOutline,
+                        Icons.AutoMirrored.Outlined.HelpOutline,
                         contentDescription = null,
                         tint = TextPrimary,
                         modifier = Modifier.size(18.dp)
@@ -2696,7 +2716,7 @@ private fun InputSection(state: GameSettingsStateHolder) {
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        Icons.Outlined.HelpOutline,
+                        Icons.AutoMirrored.Outlined.HelpOutline,
                         contentDescription = null,
                         tint = TextPrimary,
                         modifier = Modifier.size(18.dp)

@@ -19,13 +19,63 @@
         <item name="android:dropDownListViewStyle">@style/SpinnerDropDownListView</item>
     </style>
 
-    <!-- Dark Theme -->
+    <!-- Dark Theme (Classic Dark) -->
     <style name="AppTheme.Dark" parent="@style/Theme.AppCompat.NoActionBar">
         <item name="colorAccent">@color/colorAccentDark</item>
         <item name="colorPrimary">@color/colorPrimaryDarkMode</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDarkModeDark</item>
         <item name="android:windowBackground">@color/window_background_color_dark</item>
         <item name="android:colorBackground">@color/window_background_color_dark</item>
+        
+        <item name="customWindowBackground">@color/window_background_color_dark</item>
+        <item name="customCardSurface">@color/settings_card_surface</item>
+        <item name="customOutline">@color/settings_outline</item>
+        <item name="customAccent">@color/colorAccentDark</item>
+        <item name="customTextPrimary">@color/settings_text_primary</item>
+        <item name="customTextSecondary">@color/settings_text_secondary</item>
+        <item name="customActionSurface">?attr/customCardSurface</item>
+        <item name="customActionSurfacePressed">?attr/customOutline</item>
+        <item name="customPopupSurface">@color/settings_popup_surface</item>
+        <item name="customPopupSurfaceEdge">@color/settings_popup_surface_edge</item>
+        <item name="customInputOutlineSoft">@color/settings_input_outline_soft</item>
+        <item name="customSurfaceVariant">@color/settings_chip_surface</item>
+        <item name="customChipSelected">@color/settings_chip_selected</item>
+        <item name="customChipSelectedStroke">@color/settings_chip_selected_stroke</item>
+        <item name="customChipSurface">@color/settings_chip_surface</item>
+
+        <item name="android:textViewStyle">@style/TextView.Dark</item>
+        <item name="android:checkboxStyle">@style/CheckBox.Dark</item>
+        <item name="android:listPopupWindowStyle">@style/ListPopupWindow.Dark</item>
+        <item name="listPopupWindowStyle">@style/ListPopupWindow.Dark</item>
+        <item name="android:popupWindowStyle">@style/PopupWindow.Dark</item>
+        <item name="popupWindowStyle">@style/PopupWindow.Dark</item>
+        <item name="android:popupMenuStyle">@style/PopupMenu.Dark</item>
+        <item name="popupMenuStyle">@style/PopupMenu.Dark</item>
+        <item name="android:spinnerDropDownItemStyle">@style/SpinnerDropDownItem.Dark</item>
+        <item name="spinnerDropDownItemStyle">@style/SpinnerDropDownItem.Dark</item>
+        <item name="android:dropDownListViewStyle">@style/SpinnerDropDownListView</item>
+    </style>
+
+    <!-- Blue Theme (WinNative Blue / SetupWizard Colors) -->
+    <style name="AppTheme.Blue" parent="@style/Theme.AppCompat.NoActionBar">
+        <item name="colorAccent">@color/settings_accent_blue</item>
+        <item name="colorPrimary">#3B82F6</item>
+        <item name="colorPrimaryDark">#0D1117</item>
+        <item name="android:windowBackground">@color/window_background_blue</item>
+        <item name="android:colorBackground">@color/window_background_blue</item>
+
+        <item name="customWindowBackground">@color/window_background_blue</item>
+        <item name="customCardSurface">@color/settings_background_blue</item>
+        <item name="customOutline">@color/settings_outline_blue</item>
+        <item name="customAccent">@color/settings_accent_blue</item>
+        <item name="customTextPrimary">@color/settings_text_primary</item>
+        <item name="customTextSecondary">@color/settings_text_secondary</item>
+        <item name="customActionSurface">?attr/customCardSurface</item>
+        <item name="customActionSurfacePressed">?attr/customOutline</item>
+        <item name="customPopupSurface">@color/settings_popup_surface_blue</item>
+        <item name="customPopupSurfaceEdge">@color/settings_popup_surface_edge_blue</item>
+        <item name="customInputOutlineSoft">@color/settings_input_outline_soft_blue</item>
+
         <item name="android:textViewStyle">@style/TextView.Dark</item>
         <item name="android:checkboxStyle">@style/CheckBox.Dark</item>
         <item name="android:listPopupWindowStyle">@style/ListPopupWindow.Dark</item>

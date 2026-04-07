@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/window_background_color_dark">
+    android:background="?attr/customWindowBackground">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -89,7 +89,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:background="@android:color/transparent"
-                    app:thumbTint="@color/settings_accent"
+                    app:thumbTint="?attr/customAccent"
                     app:trackTintMode="src_in" />
             </LinearLayout>
 
@@ -252,7 +252,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:background="@android:color/transparent"
-                    app:thumbTint="@color/settings_accent"
+                    app:thumbTint="?attr/customAccent"
                     app:trackTintMode="src_in" />
             </LinearLayout>
 
@@ -307,7 +307,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:background="@android:color/transparent"
-                    app:thumbTint="@color/settings_accent"
+                    app:thumbTint="?attr/customAccent"
                     app:trackTintMode="src_in" />
             </LinearLayout>
 
@@ -362,7 +362,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:background="@android:color/transparent"
-                    app:thumbTint="@color/settings_accent"
+                    app:thumbTint="?attr/customAccent"
                     app:trackTintMode="src_in" />
             </LinearLayout>
 
@@ -417,7 +417,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:background="@android:color/transparent"
-                    app:thumbTint="@color/settings_accent"
+                    app:thumbTint="?attr/customAccent"
                     app:trackTintMode="src_in" />
             </LinearLayout>
 
@@ -472,7 +472,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:background="@android:color/transparent"
-                    app:thumbTint="@color/settings_accent"
+                    app:thumbTint="?attr/customAccent"
                     app:trackTintMode="src_in" />
             </LinearLayout>
 
@@ -485,7 +485,7 @@
                 android:text="@string/settings_debug_share_logs"
                 android:textAllCaps="false"
                 android:textSize="14sp"
-                android:backgroundTint="@color/settings_accent" />
+                android:backgroundTint="?attr/customAccent" />
 
         </LinearLayout>
     </ScrollView>

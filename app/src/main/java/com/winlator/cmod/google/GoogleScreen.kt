@@ -60,18 +60,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.winlator.cmod.R
 import com.winlator.cmod.core.AppUtils
+import com.winlator.cmod.core.ThemeManager
 import kotlinx.coroutines.launch
-
-private val BgDark = Color(0xFF0F0F12)
-private val CardDark = Color(0xFF14141E)
-private val CardBorder = Color(0xFF21212E)
-private val IconBoxBg = Color(0xFF1C1C28)
-private val Accent = Color(0xFF1A9FFF)
-private val TextPrimary = Color(0xFFF0F4FF)
-private val TextSecondary = Color(0xFF7A8FA8)
-private val StatusGreen = Color(0xFF3FB950)
-private val WarningAmber = Color(0xFFFFC857)
-private val DangerRed = Color(0xFFFF6B6B)
 
 @Composable
 fun GoogleScreen() {
@@ -109,7 +99,7 @@ fun GoogleScreen() {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(BgDark)
+            .background(ThemeManager.colorBackground)
             .padding(horizontal = 16.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -222,8 +212,8 @@ private fun AutoBackupCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(CardDark)
-            .border(1.dp, CardBorder, RoundedCornerShape(12.dp))
+            .background(ThemeManager.colorSurface)
+            .border(1.dp, ThemeManager.colorOutline, RoundedCornerShape(12.dp))
             .clickable(enabled = !busy) { onToggle(!enabled) }
     ) {
         Row(
@@ -232,34 +222,26 @@ private fun AutoBackupCard(
                 .padding(horizontal = 14.dp, vertical = 11.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = Modifier
-                    .size(34.dp)
-                    .clip(RoundedCornerShape(9.dp))
-                    .background(IconBoxBg),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.CloudSync,
-                    contentDescription = null,
-                    tint = if (enabled && googleSignedIn) StatusGreen else TextSecondary,
-                    modifier = Modifier.size(17.dp)
-                )
-            }
+            Icon(
+                imageVector = Icons.Filled.CloudSync,
+                contentDescription = null,
+                tint = if (enabled && googleSignedIn) ThemeManager.colorStatusGreen else ThemeManager.colorTextSecondary,
+                modifier = Modifier.size(24.dp)
+            )
 
             Spacer(Modifier.width(13.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = stringResource(R.string.google_cloud_auto_backup),
-                    color = TextPrimary,
+                    color = ThemeManager.colorTextPrimary,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
                     text = stringResource(R.string.google_cloud_auto_backup_summary),
-                    color = TextSecondary,
+                    color = ThemeManager.colorTextSecondary,
                     fontSize = 11.sp
                 )
             }
@@ -272,10 +254,10 @@ private fun AutoBackupCard(
                 enabled = !busy,
                 modifier = Modifier.scale(0.78f),
                 colors = SwitchDefaults.colors(
-                    checkedThumbColor = StatusGreen,
-                    checkedTrackColor = StatusGreen.copy(alpha = 0.3f),
-                    uncheckedThumbColor = TextSecondary,
-                    uncheckedTrackColor = TextSecondary.copy(alpha = 0.2f)
+                    checkedThumbColor = ThemeManager.colorStatusGreen,
+                    checkedTrackColor = ThemeManager.colorStatusGreen.copy(alpha = 0.3f),
+                    uncheckedThumbColor = ThemeManager.colorTextSecondary,
+                    uncheckedTrackColor = ThemeManager.colorTextSecondary.copy(alpha = 0.2f)
                 )
             )
         }
@@ -286,7 +268,7 @@ private fun AutoBackupCard(
 private fun SectionLabel(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text.uppercase(),
-        color = TextSecondary,
+        color = ThemeManager.colorTextSecondary,
         fontSize = 10.sp,
         fontWeight = FontWeight.Bold,
         letterSpacing = 1.4.sp,
@@ -301,32 +283,12 @@ private fun GoogleAccountCard(
     onSignIn: () -> Unit,
     onSignOut: () -> Unit
 ) {
-    val pulse = rememberInfiniteTransition(label = "pulse_google")
-    val pulseScale by pulse.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.7f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "scale_google"
-    )
-    val pulseAlpha by pulse.animateFloat(
-        initialValue = 0.5f,
-        targetValue = 0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "alpha_google"
-    )
-
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .background(CardDark)
-            .border(1.dp, CardBorder, RoundedCornerShape(14.dp))
+            .background(ThemeManager.colorSurface)
+            .border(1.dp, ThemeManager.colorOutline, RoundedCornerShape(14.dp))
     ) {
         Row(
             modifier = Modifier
@@ -334,36 +296,30 @@ private fun GoogleAccountCard(
                 .padding(horizontal = 14.dp, vertical = 11.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconBox(icon = Icons.Filled.Gamepad, tint = Color(0xFF34A853))
+            Icon(
+                imageVector = Icons.Filled.Gamepad,
+                contentDescription = null,
+                tint = ThemeManager.colorAccent,
+                modifier = Modifier.size(24.dp)
+            )
 
             Spacer(Modifier.width(14.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = stringResource(R.string.google_cloud_play_games),
-                    color = TextPrimary,
+                    color = ThemeManager.colorTextPrimary,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold
                 )
                 Spacer(Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(contentAlignment = Alignment.Center) {
-                        if (isLoggedIn) {
-                            Box(
-                                modifier = Modifier
-                                    .size(10.dp)
-                                    .scale(pulseScale)
-                                    .clip(CircleShape)
-                                    .background(StatusGreen.copy(alpha = pulseAlpha))
-                            )
-                        }
-                        Box(
-                            modifier = Modifier
-                                .size(6.dp)
-                                .clip(CircleShape)
-                                .background(if (isLoggedIn) StatusGreen else TextSecondary.copy(alpha = 0.4f))
-                        )
-                    }
+                    Box(
+                        modifier = Modifier
+                            .size(6.dp)
+                            .clip(CircleShape)
+                            .background(if (isLoggedIn) ThemeManager.colorStatusGreen else ThemeManager.colorTextSecondary.copy(alpha = 0.4f))
+                    )
                     Spacer(Modifier.width(6.dp))
                     Text(
                         text = when {
@@ -371,7 +327,7 @@ private fun GoogleAccountCard(
                             isLoggedIn -> stringResource(R.string.google_cloud_status_connected)
                             else -> stringResource(R.string.google_cloud_status_not_signed_in)
                         },
-                        color = if (isLoggedIn) StatusGreen else TextSecondary,
+                        color = if (isLoggedIn) ThemeManager.colorStatusGreen else ThemeManager.colorTextSecondary,
                         fontSize = 12.sp
                     )
                 }
@@ -380,14 +336,14 @@ private fun GoogleAccountCard(
             if (!isLoggedIn) {
                 ActionButton(
                     label = if (busy) stringResource(R.string.google_cloud_working) else stringResource(R.string.google_cloud_sign_in),
-                    textColor = Color(0xFF34A853),
+                    textColor = ThemeManager.colorAccent,
                     enabled = !busy,
                     onClick = onSignIn
                 )
             } else {
                 ActionButton(
                     label = if (busy) stringResource(R.string.google_cloud_working) else stringResource(R.string.google_cloud_disable_sync),
-                    textColor = DangerRed,
+                    textColor = ThemeManager.colorDangerRed,
                     enabled = !busy,
                     onClick = onSignOut
                 )
@@ -404,12 +360,12 @@ private fun StoreLoginCard(
     onRestore: () -> Unit
 ) {
     val statusColor = when (state.status) {
-        CloudSyncManager.SyncStatus.SYNCED -> StatusGreen
-        CloudSyncManager.SyncStatus.RESTORE_AVAILABLE -> WarningAmber
-        CloudSyncManager.SyncStatus.BACKUP_PENDING -> WarningAmber
-        CloudSyncManager.SyncStatus.ERROR -> DangerRed
-        CloudSyncManager.SyncStatus.NOT_SIGNED_IN -> TextSecondary
-        CloudSyncManager.SyncStatus.EMPTY -> TextSecondary
+        CloudSyncManager.SyncStatus.SYNCED -> ThemeManager.colorStatusGreen
+        CloudSyncManager.SyncStatus.RESTORE_AVAILABLE -> ThemeManager.colorWarningAmber
+        CloudSyncManager.SyncStatus.BACKUP_PENDING -> ThemeManager.colorWarningAmber
+        CloudSyncManager.SyncStatus.ERROR -> ThemeManager.colorDangerRed
+        CloudSyncManager.SyncStatus.NOT_SIGNED_IN -> ThemeManager.colorTextSecondary
+        CloudSyncManager.SyncStatus.EMPTY -> ThemeManager.colorTextSecondary
     }
     val stores = remember(state.localStores, state.cloudStores) {
         state.localStores.union(state.cloudStores).toList().sorted()
@@ -422,25 +378,30 @@ private fun StoreLoginCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .background(CardDark)
-            .border(1.dp, CardBorder, RoundedCornerShape(14.dp))
+            .background(ThemeManager.colorSurface)
+            .border(1.dp, ThemeManager.colorOutline, RoundedCornerShape(14.dp))
             .padding(14.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                StatusIconBox(statusColor = statusColor)
+                Icon(
+                    imageVector = Icons.Filled.CloudSync,
+                    contentDescription = null,
+                    tint = statusColor,
+                    modifier = Modifier.size(24.dp)
+                )
                 Spacer(Modifier.width(14.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = stringResource(R.string.google_cloud_store_logins),
-                        color = TextPrimary,
+                        color = ThemeManager.colorTextPrimary,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold
                     )
                     Spacer(Modifier.height(4.dp))
                     Text(
                         text = if (busy) stringResource(R.string.google_cloud_store_login_sync_busy) else state.detail,
-                        color = TextSecondary,
+                        color = ThemeManager.colorTextSecondary,
                         fontSize = 12.sp
                     )
                 }
@@ -471,7 +432,7 @@ private fun StoreLoginCard(
                         Spacer(Modifier.height(2.dp))
                         Text(
                             text = stringResource(R.string.google_cloud_last_synced, lastSyncLabel),
-                            color = TextSecondary,
+                            color = ThemeManager.colorTextSecondary,
                             fontSize = 11.sp
                         )
                     }
@@ -480,14 +441,14 @@ private fun StoreLoginCard(
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     ActionButton(
                         label = if (busy) stringResource(R.string.google_cloud_working) else stringResource(R.string.google_cloud_backup),
-                        textColor = WarningAmber,
+                        textColor = ThemeManager.colorWarningAmber,
                         icon = Icons.Filled.Upload,
                         enabled = !busy && state.googleSignedIn && state.localStores.isNotEmpty(),
                         onClick = onBackup
                     )
                     ActionButton(
                         label = if (busy) stringResource(R.string.google_cloud_working) else stringResource(R.string.google_cloud_restore),
-                        textColor = Accent,
+                        textColor = ThemeManager.colorAccent,
                         icon = Icons.Filled.Restore,
                         enabled = !busy && state.googleSignedIn && state.cloudStores.isNotEmpty(),
                         onClick = onRestore
@@ -505,72 +466,15 @@ private fun StoreBadgeRow(stores: List<String>) {
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(999.dp))
-                    .background(IconBoxBg)
-                    .border(1.dp, CardBorder, RoundedCornerShape(999.dp))
+                    .background(ThemeManager.colorSurfaceVariant)
+                    .border(1.dp, ThemeManager.colorOutline, RoundedCornerShape(999.dp))
                     .padding(horizontal = 10.dp, vertical = 6.dp)
             ) {
                 Text(
                     text = store,
-                    color = TextPrimary,
+                    color = ThemeManager.colorTextPrimary,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Medium
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun IconBox(icon: ImageVector, tint: Color) {
-    Box(
-        modifier = Modifier
-            .size(38.dp)
-            .clip(RoundedCornerShape(11.dp))
-            .background(IconBoxBg),
-        contentAlignment = Alignment.Center
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = tint,
-            modifier = Modifier.size(21.dp)
-        )
-    }
-}
-
-@Composable
-private fun StatusIconBox(statusColor: Color) {
-    Box(
-        modifier = Modifier.size(38.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .clip(RoundedCornerShape(11.dp))
-                .background(IconBoxBg)
-        )
-        Icon(
-            imageVector = Icons.Filled.CloudSync,
-            contentDescription = null,
-            tint = statusColor,
-            modifier = Modifier.size(21.dp)
-        )
-        if (statusColor == DangerRed || statusColor == TextSecondary) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .size(16.dp)
-                    .clip(CircleShape)
-                    .background(DangerRed)
-                    .border(1.dp, CardDark, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Close,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(10.dp)
                 )
             }
         }
@@ -596,10 +500,10 @@ private fun ActionButton(
         modifier = Modifier
             .scale(scale)
             .clip(RoundedCornerShape(8.dp))
-            .background(Color(0xFF1A1A26))
+            .background(ThemeManager.colorSurface)
             .border(
                 1.dp,
-                if (enabled) textColor.copy(alpha = 0.30f) else TextSecondary.copy(alpha = 0.2f),
+                if (enabled) textColor.copy(alpha = 0.30f) else ThemeManager.colorTextSecondary.copy(alpha = 0.2f),
                 RoundedCornerShape(8.dp)
             )
             .pointerInput(onClick, enabled) {
@@ -625,14 +529,14 @@ private fun ActionButton(
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = if (enabled) textColor else TextSecondary,
+                    tint = if (enabled) textColor else ThemeManager.colorTextSecondary,
                     modifier = Modifier.size(14.dp)
                 )
                 Spacer(Modifier.width(6.dp))
             }
             Text(
                 text = label,
-                color = if (enabled) textColor else TextSecondary,
+                color = if (enabled) textColor else ThemeManager.colorTextSecondary,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold
             )

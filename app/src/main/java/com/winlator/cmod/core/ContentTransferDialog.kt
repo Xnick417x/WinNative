@@ -8,7 +8,9 @@ import android.view.Window
 import android.view.animation.LinearInterpolator
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.compose.ui.graphics.toArgb
 import com.winlator.cmod.R
+import com.winlator.cmod.core.ThemeManager
 
 class ContentTransferDialog(
     private val activity: Activity
@@ -67,6 +69,13 @@ class ContentTransferDialog(
 
             progressBar.max = PROGRESS_SCALE
             progressBar.isIndeterminate = indeterminate
+
+            // Dynamically apply accent tint from ThemeManager
+            val accentColor = ThemeManager.colorAccent
+            val colorStateList = android.content.res.ColorStateList.valueOf(accentColor.toArgb())
+            progressBar.progressTintList = colorStateList
+            progressBar.indeterminateTintList = colorStateList
+
             if (indeterminate || progress == null) {
                 progressAnimator?.cancel()
                 progressBar.progress = 0

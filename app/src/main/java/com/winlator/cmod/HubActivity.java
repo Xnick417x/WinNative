@@ -30,6 +30,7 @@ public class HubActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         // Force landscape and fullscreen is handled in AndroidManifest and AppThemeFullscreen
         setContentView(R.layout.activity_hub);
+        getWindow().getDecorView().setBackgroundColor(com.winlator.cmod.core.ThemeManager.getBackgroundColor());
 
         tabLibrary = findViewById(R.id.tab_library);
         tabStore = findViewById(R.id.tab_store);

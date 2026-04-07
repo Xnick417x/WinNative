@@ -73,18 +73,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Palette
-private val BgDark        = Color(0xFF0F0F12)
-private val CardDark      = Color(0xFF14141E)
-private val CardBorder    = Color(0xFF21212E)   
-private val IconBoxBg     = Color(0xFF1C1C28)   
-private val SurfaceDark   = Color(0xFF18181F)
-private val Accent        = Color(0xFF1A9FFF)
-private val TextPrimary   = Color(0xFFF0F4FF)
-private val TextSecondary = Color(0xFF7A8FA8)
-private val Divider       = Color(0xFF2A2A2A)
-private val DangerRed     = Color(0xFFFF7A88)
-private val StatusGreen   = Color(0xFF3FB950)
+import com.winlator.cmod.core.ThemeManager
 
 // State
 data class StoreState(
@@ -133,7 +122,7 @@ fun StoresScreen(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .background(BgDark)
+            .background(ThemeManager.colorBackground)
             .padding(horizontal = 16.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
@@ -245,7 +234,7 @@ fun StoresScreen(
 private fun SectionLabel(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text.uppercase(),
-        color = TextSecondary,
+        color = ThemeManager.colorTextSecondary,
         fontSize = 10.sp,
         fontWeight = FontWeight.Bold,
         letterSpacing = 1.4.sp,
@@ -261,21 +250,21 @@ private fun SignOutConfirmDialog(storeName: String, onConfirm: () -> Unit, onDis
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(18.dp))
-                .background(CardDark)
-                .border(1.dp, CardBorder, RoundedCornerShape(18.dp))
+                .background(ThemeManager.colorSurface)
+                .border(1.dp, ThemeManager.colorOutline, RoundedCornerShape(18.dp))
                 .padding(24.dp),
         ) {
             Column {
                 Text(
                     text = stringResource(R.string.stores_accounts_sign_out_confirm, storeName),
-                    color = TextPrimary,
+                    color = ThemeManager.colorTextPrimary,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
                     text = stringResource(R.string.stores_accounts_sign_out_message),
-                    color = TextSecondary,
+                    color = ThemeManager.colorTextSecondary,
                     fontSize = 13.sp,
                 )
                 Spacer(Modifier.height(24.dp))
@@ -283,8 +272,8 @@ private fun SignOutConfirmDialog(storeName: String, onConfirm: () -> Unit, onDis
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End),
                 ) {
-                    ActionButton(label = "Cancel", textColor = TextSecondary, onClick = onDismiss)
-                    ActionButton(label = "Sign Out", textColor = DangerRed, onClick = { onConfirm(); onDismiss() })
+                    ActionButton(label = "Cancel", textColor = ThemeManager.colorTextSecondary, onClick = onDismiss)
+                    ActionButton(label = "Sign Out", textColor = ThemeManager.colorDangerRed, onClick = { onConfirm(); onDismiss() })
                 }
             }
         }
@@ -311,30 +300,12 @@ private fun StoreCard(
         )
     }
 
-    val pulse = rememberInfiniteTransition(label = "pulse_$name")
-    val pulseScale by pulse.animateFloat(
-        initialValue = 1f, targetValue = 1.7f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1000, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "scale_$name",
-    )
-    val pulseAlpha by pulse.animateFloat(
-        initialValue = 0.5f, targetValue = 0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1000, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "alpha_$name",
-    )
-
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .background(CardDark)
-            .border(1.dp, CardBorder, RoundedCornerShape(14.dp)),
+            .background(ThemeManager.colorSurface)
+            .border(1.dp, ThemeManager.colorOutline, RoundedCornerShape(14.dp)),
     ) {
         Row(
             modifier = Modifier
@@ -342,60 +313,40 @@ private fun StoreCard(
                 .padding(horizontal = 14.dp, vertical = 11.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            // Icon box
-            Box(
-                modifier = Modifier
-                    .size(38.dp)
-                    .clip(RoundedCornerShape(11.dp))
-                    .background(IconBoxBg),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = name,
-                    tint = accentColor,
-                    modifier = Modifier.size(21.dp),
-                )
-            }
+            Icon(
+                imageVector = icon,
+                contentDescription = name,
+                tint = accentColor,
+                modifier = Modifier.size(24.dp),
+            )
 
             Spacer(Modifier.width(14.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = name,
-                    color = TextPrimary,
+                    color = ThemeManager.colorTextPrimary,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold,
                 )
                 Spacer(Modifier.height(4.dp))
                 if (isComingSoon) {
-                    Text(text = stringResource(R.string.common_ui_coming_soon), color = TextSecondary, fontSize = 12.sp)
+                    Text(text = stringResource(R.string.common_ui_coming_soon), color = ThemeManager.colorTextSecondary, fontSize = 12.sp)
                 } else {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(contentAlignment = Alignment.Center) {
-                            if (isLoggedIn) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(10.dp)
-                                        .scale(pulseScale)
-                                        .clip(CircleShape)
-                                        .background(StatusGreen.copy(alpha = pulseAlpha)),
-                                )
-                            }
-                            Box(
-                                modifier = Modifier
-                                    .size(6.dp)
-                                    .clip(CircleShape)
-                                    .background(
-                                        if (isLoggedIn) StatusGreen
-                                        else TextSecondary.copy(alpha = 0.4f)
-                                    ),
-                            )
-                        }
+                        Box(
+                            modifier = Modifier
+                                .size(6.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    if (isLoggedIn) ThemeManager.colorStatusGreen
+                                    else ThemeManager.colorTextSecondary.copy(alpha = 0.4f)
+                                ),
+                        )
                         Spacer(Modifier.width(6.dp))
                         Text(
                             text = if (isLoggedIn) stringResource(R.string.common_ui_signed_in) else stringResource(R.string.google_cloud_status_not_signed_in),
-                            color = if (isLoggedIn) StatusGreen else TextSecondary,
+                            color = if (isLoggedIn) ThemeManager.colorStatusGreen else ThemeManager.colorTextSecondary,
                             fontSize = 12.sp,
                         )
                     }
@@ -407,7 +358,7 @@ private fun StoreCard(
             } else {
                 ActionButton(
                     label = if (isLoggedIn) "Sign Out" else "Sign In",
-                    textColor = if (isLoggedIn) DangerRed else accentColor,
+                    textColor = if (isLoggedIn) ThemeManager.colorDangerRed else accentColor,
                     onClick = if (isLoggedIn) ({ showSignOutDialog = true }) else onSignIn,
                 )
             }
@@ -420,8 +371,8 @@ private fun ComingSoonBadge() {
     Row(
         modifier = Modifier
             .clip(RoundedCornerShape(6.dp))
-            .background(Color(0xFF1E1E2C))
-            .border(1.dp, Color(0xFF2E2E44), RoundedCornerShape(6.dp))
+            .background(ThemeManager.colorSurfaceVariant)
+            .border(1.dp, ThemeManager.colorOutline, RoundedCornerShape(6.dp))
             .padding(horizontal = 10.dp, vertical = 5.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -429,12 +380,12 @@ private fun ComingSoonBadge() {
         Icon(
             imageVector = Icons.Filled.Lock,
             contentDescription = null,
-            tint = TextSecondary,
+            tint = ThemeManager.colorTextSecondary,
             modifier = Modifier.size(10.dp),
         )
         Text(
             text = stringResource(R.string.common_ui_coming_soon).uppercase(),
-            color = TextSecondary,
+            color = ThemeManager.colorTextSecondary,
             fontSize = 10.sp,
             fontWeight = FontWeight.Bold,
             letterSpacing = 0.8.sp,
@@ -454,7 +405,7 @@ private fun ActionButton(label: String, textColor: Color, onClick: () -> Unit) {
         modifier = Modifier
             .scale(scale)
             .clip(RoundedCornerShape(8.dp))
-            .background(Color(0xFF1A1A26))
+            .background(ThemeManager.colorSurface)
             .border(1.dp, textColor.copy(alpha = 0.30f), RoundedCornerShape(8.dp))
             .pointerInput(onClick) {
                 detectTapGestures(
@@ -482,15 +433,15 @@ private fun SettingsToggleCard(
     icon: ImageVector,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
-    accentColor: Color = Accent,
-    cardColor: Color = CardDark,
+    accentColor: Color = ThemeManager.colorAccent,
+    cardColor: Color = ThemeManager.colorSurface,
 ) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
             .background(cardColor)
-            .border(1.dp, CardBorder, RoundedCornerShape(12.dp)),
+            .border(1.dp, ThemeManager.colorOutline, RoundedCornerShape(12.dp)),
     ) {
         Row(
             modifier = Modifier
@@ -498,24 +449,16 @@ private fun SettingsToggleCard(
                 .padding(horizontal = 14.dp, vertical = 11.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(
-                modifier = Modifier
-                    .size(34.dp)
-                    .clip(RoundedCornerShape(9.dp))
-                    .background(IconBoxBg),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = accentColor,
-                    modifier = Modifier.size(17.dp),
-                )
-            }
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = accentColor,
+                modifier = Modifier.size(24.dp),
+            )
             Spacer(Modifier.width(13.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(title, color = TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Medium)
-                Text(subtitle, color = TextSecondary, fontSize = 11.sp)
+                Text(title, color = ThemeManager.colorTextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                Text(subtitle, color = ThemeManager.colorTextSecondary, fontSize = 11.sp)
             }
             Spacer(Modifier.width(4.dp))
             Switch(
@@ -525,8 +468,8 @@ private fun SettingsToggleCard(
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = Color.White,
                     checkedTrackColor = accentColor,
-                    uncheckedThumbColor = TextSecondary.copy(alpha = 0.6f),
-                    uncheckedTrackColor = SurfaceDark,
+                    uncheckedThumbColor = ThemeManager.colorTextSecondary.copy(alpha = 0.6f),
+                    uncheckedTrackColor = ThemeManager.colorSurface,
                     uncheckedBorderColor = Color.Transparent,
                     checkedBorderColor = Color.Transparent,
                 ),
@@ -544,7 +487,7 @@ private fun SettingsDropdownCard(
     selectedValue: Int,
     options: List<Pair<Int, String>>,
     onOptionSelected: (Int) -> Unit,
-    accentColor: Color = Accent,
+    accentColor: Color = ThemeManager.colorAccent,
     highlightMaxValue: Boolean = false,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -556,8 +499,8 @@ private fun SettingsDropdownCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(CardDark)
-            .border(1.dp, CardBorder, RoundedCornerShape(12.dp)),
+            .background(ThemeManager.colorSurface)
+            .border(1.dp, ThemeManager.colorOutline, RoundedCornerShape(12.dp)),
     ) {
         Row(
             modifier = Modifier
@@ -565,24 +508,16 @@ private fun SettingsDropdownCard(
                 .padding(horizontal = 14.dp, vertical = 11.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(
-                modifier = Modifier
-                    .size(34.dp)
-                    .clip(RoundedCornerShape(9.dp))
-                    .background(IconBoxBg),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = accentColor,
-                    modifier = Modifier.size(17.dp),
-                )
-            }
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = accentColor,
+                modifier = Modifier.size(24.dp),
+            )
             Spacer(Modifier.width(13.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(title, color = TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Medium)
-                Text(subtitle, color = TextSecondary, fontSize = 11.sp)
+                Text(title, color = ThemeManager.colorTextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                Text(subtitle, color = ThemeManager.colorTextSecondary, fontSize = 11.sp)
             }
             Spacer(Modifier.width(8.dp))
             Box {
@@ -596,7 +531,7 @@ private fun SettingsDropdownCard(
                     modifier = Modifier
                         .scale(scale)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(Color(0xFF1A1A26))
+                        .background(ThemeManager.colorSurfaceVariant)
                         .border(1.dp, selectedColor.copy(alpha = 0.30f), RoundedCornerShape(8.dp))
                         .pointerInput(Unit) {
                             detectTapGestures(
@@ -625,8 +560,8 @@ private fun SettingsDropdownCard(
                     expanded = expanded,
                     onDismissRequest = { expanded = false },
                     shape = RoundedCornerShape(8.dp),
-                    containerColor = Color(0xFF1C1C2E),
-                    border = BorderStroke(1.dp, CardBorder),
+                    containerColor = ThemeManager.getBackgroundColor().let { Color(it) },
+                    border = BorderStroke(1.dp, ThemeManager.colorOutline),
                     modifier = Modifier.widthIn(max = 220.dp),
                 ) {
                     Column(
@@ -641,7 +576,7 @@ private fun SettingsDropdownCard(
                                 text = {
                                     Text(
                                         text = label,
-                                        color = if (isSelected) itemColor else TextPrimary,
+                                        color = if (isSelected) itemColor else ThemeManager.colorTextPrimary,
                                         fontSize = 13.sp,
                                         fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                                         softWrap = true,
@@ -668,9 +603,9 @@ private fun FolderPathCard(
     onBrowse: () -> Unit,
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth().border(1.dp, CardBorder, RoundedCornerShape(12.dp)),
+        modifier = Modifier.fillMaxWidth().border(1.dp, ThemeManager.colorOutline, RoundedCornerShape(12.dp)),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = CardDark),
+        colors = CardDefaults.cardColors(containerColor = ThemeManager.colorSurface),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Row(
@@ -679,26 +614,18 @@ private fun FolderPathCard(
                 .padding(horizontal = 14.dp, vertical = 11.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(
-                modifier = Modifier
-                    .size(34.dp)
-                    .clip(RoundedCornerShape(9.dp))
-                    .background(IconBoxBg),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Folder,
-                    contentDescription = null,
-                    tint = Accent,
-                    modifier = Modifier.size(17.dp),
-                )
-            }
+            Icon(
+                imageVector = Icons.Filled.Folder,
+                contentDescription = null,
+                tint = ThemeManager.colorAccent,
+                modifier = Modifier.size(24.dp),
+            )
             Spacer(Modifier.width(13.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(label, color = TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                Text(label, color = ThemeManager.colorTextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Medium)
                 Text(
                     text = path.ifEmpty { "Not configured" },
-                    color = TextSecondary,
+                    color = ThemeManager.colorTextSecondary,
                     fontSize = 11.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -722,7 +649,7 @@ private fun BrowseButton(onClick: () -> Unit) {
         modifier = Modifier
             .scale(scale)
             .clip(RoundedCornerShape(8.dp))
-            .background(Accent.copy(alpha = 0.12f))
+            .background(ThemeManager.colorAccent.copy(alpha = 0.12f))
             .pointerInput(onClick) {
                 detectTapGestures(
                     onPress = { isPressed = true; tryAwaitRelease(); isPressed = false },
@@ -734,7 +661,7 @@ private fun BrowseButton(onClick: () -> Unit) {
     ) {
         Text(
             text = stringResource(R.string.common_ui_browse),
-            color = Accent,
+            color = ThemeManager.colorAccent,
             fontSize = 12.sp,
             fontWeight = FontWeight.SemiBold,
         )

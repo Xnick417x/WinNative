@@ -102,7 +102,9 @@ class PresetsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        (activity as? AppCompatActivity)?.supportActionBar?.setTitle(R.string.container_presets_title)
+        view.setBackgroundColor(com.winlator.cmod.core.ThemeManager.getBackgroundColor())
+
+        (activity as? AppCompatActivity)?.supportActionBar?.setTitle(R.string.common_ui_settings)
 
         presetAdapter = PresetRowAdapter()
         val gridLayoutManager = GridLayoutManager(requireContext(), GRID_SPAN_COUNT).apply {

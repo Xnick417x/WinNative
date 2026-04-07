@@ -92,6 +92,8 @@ class AdrenotoolsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        view.setBackgroundColor(com.winlator.cmod.core.ThemeManager.getBackgroundColor())
+
         (activity as? AppCompatActivity)?.supportActionBar?.setTitle(R.string.settings_drivers_manager)
 
         driverAdapter = DriverRowAdapter()

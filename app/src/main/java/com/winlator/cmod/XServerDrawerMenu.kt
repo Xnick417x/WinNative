@@ -48,6 +48,7 @@ import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxHeight
+import com.winlator.cmod.core.ThemeManager
 
 data class XServerDrawerItem(
     val itemId: Int,
@@ -200,12 +201,7 @@ fun setupXServerDrawerComposeView(
     composeView.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     composeView.setContent {
         MaterialTheme(
-            colorScheme = darkColorScheme(
-                primary = Color(0xFF2F81F7),
-                background = Color(0xFF0D1117),
-                surface = Color(0xFF161B22),
-                onSurface = Color(0xFFE6EDF3),
-            )
+            colorScheme = com.winlator.cmod.core.ThemeManager.getComposeColorScheme()
         ) {
             XServerDrawerContent(state = state, listener = listener)
         }
@@ -221,13 +217,13 @@ private fun XServerDrawerContent(
         modifier = Modifier
             .fillMaxHeight()
             .width(336.dp),
-        color = Color(0xFF0D1117),
+        color = com.winlator.cmod.core.ThemeManager.colorBackground,
         tonalElevation = 0.dp,
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFF0D1117))
+                .background(com.winlator.cmod.core.ThemeManager.colorBackground)
                 .padding(horizontal = 14.dp, vertical = 12.dp)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -247,9 +243,9 @@ private fun XServerHUDSettingsExpanded(
     state: XServerDrawerState,
     listener: XServerDrawerActionListener,
 ) {
-    val card = Color(0xFF1C2333)
-    val accent = Color(0xFF2F81F7)
-    val textSecondary = Color(0xFF8B949E)
+    val card = com.winlator.cmod.core.ThemeManager.colorSurface
+    val accent = ThemeManager.colorAccent
+    val textSecondary = com.winlator.cmod.core.ThemeManager.colorTextSecondary
 
     Column(
         modifier = Modifier
@@ -352,24 +348,23 @@ private fun HUDCheckmarkToggle(
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val textPrimary = Color(0xFFE6EDF3)
-    val accent = Color(0xFF2F81F7)
+    val textPrimary = com.winlator.cmod.core.ThemeManager.colorTextPrimary
+    val accent = ThemeManager.colorAccent
 
     Row(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
             .clickable { onCheckedChange(!checked) }
-            .padding(vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Start
+            .padding(vertical = 4.dp, horizontal = 2.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Checkbox(
             checked = checked,
-            onCheckedChange = onCheckedChange,
+            onCheckedChange = null,
             modifier = Modifier.size(24.dp),
             colors = CheckboxDefaults.colors(
                 checkedColor = accent,
-                uncheckedColor = Color(0xFF30363D),
+                uncheckedColor = com.winlator.cmod.core.ThemeManager.colorOutline,
                 checkmarkColor = Color.White
             )
         )
@@ -389,20 +384,21 @@ private fun XServerDrawerRow(
     item: XServerDrawerItem,
     onClick: () -> Unit,
 ) {
-    val accent = Color(0xFF2F81F7)
-    val surface = Color(0xFF161B22)
-    val card = Color(0xFF1C2333)
-    val textPrimary = Color(0xFFE6EDF3)
-    val textSecondary = Color(0xFF8B949E)
+    val accent = ThemeManager.colorAccent
+    val surface = com.winlator.cmod.core.ThemeManager.colorSurfaceVariant
+    val card = com.winlator.cmod.core.ThemeManager.colorSurface
+    val cardActive = com.winlator.cmod.core.ThemeManager.colorSurfaceHighlight
+    val textPrimary = com.winlator.cmod.core.ThemeManager.colorTextPrimary
+    val textSecondary = com.winlator.cmod.core.ThemeManager.colorTextSecondary
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(18.dp))
-            .background(card)
+            .background(if (item.active) cardActive else card)
             .then(
                 if (item.active) Modifier.border(
-                    BorderStroke(1.dp, accent.copy(alpha = 0.45f)),
+                    BorderStroke(1.dp, accent.copy(alpha = 0.35f)),
                     RoundedCornerShape(18.dp)
                 ) else Modifier
             )

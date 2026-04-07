@@ -928,4 +928,10 @@ Installed path:
     <string name="saves_import_export_imported">Saves imported successfully</string>
     <string name="saves_import_export_imported_failed">Failed to import saves: %1$s</string>
 
+    <!-- Theme Settings -->
+    <string name="settings_general_theme_title">Application Theme</string>
+    <string name="settings_general_theme_summary">Choose the application color theme</string>
+    <string name="settings_general_theme_blue">Blue</string>
+    <string name="settings_general_theme_dark">Default</string>
+
 </resources>

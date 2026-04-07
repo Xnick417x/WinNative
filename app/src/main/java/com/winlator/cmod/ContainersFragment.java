@@ -72,6 +72,7 @@ public class ContainersFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.containers_fragment, container, false);
+        view.setBackgroundColor(com.winlator.cmod.core.ThemeManager.getBackgroundColor());
         recyclerView = view.findViewById(R.id.RecyclerView);
         emptyTextView = view.findViewById(R.id.TVEmptyText);
 

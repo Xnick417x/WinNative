@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <declare-styleable name="NumberPicker">
         <attr name="value" format="integer" />
         <attr name="minValue" format="integer|float" />
@@ -9,17 +8,33 @@
         <attr name="textSize" format="dimension" />
     </declare-styleable>
     <declare-styleable name="SeekBar">
-        <attr name="sbMinValue" format="float" /> <!-- Defines minValue attribute -->
-        <attr name="sbMaxValue" format="float" /> <!-- Defines maxValue attribute -->
-        <attr name="sbStep" format="float" /> <!-- Defines step attribute -->
-        <attr name="sbValue" format="float" /> <!-- Defines value attribute -->
-        <attr name="suffix" format="string" /> <!-- Defines suffix attribute -->
-        <attr name="sbTextSize" format="dimension" /> <!-- Defines textSize attribute -->
-        <attr name="colorSecondary" format="color" /> <!-- Defines colorSecondary attribute -->
+        <attr name="sbMinValue" format="float" />
+        <attr name="sbMaxValue" format="float" />
+        <attr name="sbStep" format="float" />
+        <attr name="sbValue" format="float" />
+        <attr name="suffix" format="string" />
+        <attr name="sbTextSize" format="dimension" />
+        <attr name="colorSecondary" format="color" />
     </declare-styleable>
 
     <attr name="extraKeysButtonTextColor" format="reference" />
     <attr name="extraKeysButtonActiveTextColor" format="reference" />
     <attr name="extraKeysButtonBackgroundColor" format="reference" />
     <attr name="extraKeysButtonActiveBackgroundColor" format="reference" />
+
+    <attr name="customWindowBackground" format="color" />
+    <attr name="customCardSurface" format="color" />
+    <attr name="customOutline" format="color" />
+    <attr name="customAccent" format="color" />
+    <attr name="customTextPrimary" format="color" />
+    <attr name="customTextSecondary" format="color" />
+    <attr name="customActionSurface" format="color" />
+    <attr name="customActionSurfacePressed" format="color" />
+    <attr name="customPopupSurface" format="color" />
+    <attr name="customPopupSurfaceEdge" format="color" />
+    <attr name="customInputOutlineSoft" format="color" />
+    <attr name="customSurfaceVariant" format="color" />
+    <attr name="customChipSelected" format="color" />
+    <attr name="customChipSelectedStroke" format="color" />
+    <attr name="customChipSurface" format="color" />
 </resources>

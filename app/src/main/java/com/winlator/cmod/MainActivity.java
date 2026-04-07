@@ -19,6 +19,7 @@ import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.IntRange;
@@ -37,6 +38,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.navigation.NavigationView;
 import com.winlator.cmod.R;
 import com.winlator.cmod.core.RefreshRateUtils;
+import com.winlator.cmod.core.ThemeManager;
 import com.winlator.cmod.contentdialog.ContentDialog;
 import com.winlator.cmod.core.Callback;
 import com.winlator.cmod.core.AppUtils;
@@ -79,23 +81,39 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     };
     private ContainerManager containerManager;
-    private boolean isDarkMode;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Apply the dark theme unconditionally, as the new unified UI is fully dark-themed
-        // and content_dialog_background defaults to a dark gradient.
-        isDarkMode = true;
-        setTheme(R.style.AppTheme_Dark);
-
+        // Apply the dynamic theme
+        setTheme(com.winlator.cmod.core.ThemeManager.getThemeId());
         AppUtils.showSystemUI(this);
-        getWindow().setNavigationBarColor(Color.parseColor("#121212"));
-        getWindow().setStatusBarColor(Color.parseColor("#121212"));
 
         setContentView(R.layout.main_activity);
+
+        // Dynamically apply ThemeManager colors to the XML layout
+        int bgColor = com.winlator.cmod.core.ThemeManager.getBackgroundColor();
+        int surfaceColor = com.winlator.cmod.core.ThemeManager.getSurfaceColor();
+        
+        findViewById(R.id.LLSidebar).setBackgroundColor(surfaceColor);
+        findViewById(R.id.FLFragmentContainer).setBackgroundColor(bgColor);
+        getWindow().getDecorView().setBackgroundColor(bgColor);
+
+        // Header text tint
+        TextView tvHeader = (TextView) ((ViewGroup)findViewById(R.id.LLSidebar)).getChildAt(0).findViewById(android.R.id.text1);
+        // Wait, I need to check the exact ID or position. In main_activity.xml it was a TextView without ID.
+        // Let's find it by looking for the TextView in the first child of LLSidebar.
+        ViewGroup header = (ViewGroup) ((ViewGroup)findViewById(R.id.LLSidebar)).getChildAt(0);
+        for (int i = 0; i < header.getChildCount(); i++) {
+            View child = header.getChildAt(i);
+            if (child instanceof TextView) {
+                ((TextView) child).setTextColor(com.winlator.cmod.core.ThemeManager.getBackgroundColor() == Color.parseColor("#0F0F12") ? Color.WHITE : Color.parseColor("#F5F9FF"));
+                // Actually colorTextPrimary is better
+                ((TextView) child).setTextColor(com.winlator.cmod.core.ThemeManager.getSurfaceColor() == Color.parseColor("#16171E") ? Color.parseColor("#F0F4FF") : Color.parseColor("#F5F9FF"));
+            }
+        }
 
         findViewById(R.id.nav_header_back).setOnClickListener(v -> onBackPressed());
 
@@ -302,7 +320,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         ContentDialog dialog = new ContentDialog(this, R.layout.about_dialog);
         dialog.findViewById(R.id.LLBottomBar).setVisibility(View.GONE);
 
-        if (isDarkMode) {
+        if (com.winlator.cmod.core.ThemeManager.isClassicDark()) {
             dialog.getWindow().setBackgroundDrawableResource(R.drawable.content_dialog_background_dark);
         } else {
             dialog.getWindow().setBackgroundDrawableResource(R.drawable.content_dialog_background);
@@ -366,22 +384,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         StateListDrawable states = new StateListDrawable();
         float density = getResources().getDisplayMetrics().density;
         int rightInset = (int) (10 * density);
+        int accentColor = ThemeManager.getAccentColor();
+        int accentTransparent = (accentColor & 0x00FFFFFF) | 0x50000000;
 
         // Only the selected item gets the animated outline.
-        ChasingBorderDrawable checkedDrawable = new ChasingBorderDrawable(8f, 1.5f, density);
+        int[] gradient = new int[]{accentColor, accentColor, accentColor};
+        ChasingBorderDrawable checkedDrawable = new ChasingBorderDrawable(8f, 1.5f, density, 8200L, gradient, new float[]{0f, 0.5f, 1f});
         states.addState(new int[]{android.R.attr.state_checked}, new InsetDrawable(checkedDrawable, 0, 0, rightInset, 0));
 
         // Controller/keyboard focus on an unselected item should be static, not animated.
         GradientDrawable focused = new GradientDrawable();
         focused.setColor(0x00000000);
-        focused.setStroke((int) (1.5f * density), 0x5000D7F5);
+        focused.setStroke((int) (1.5f * density), accentTransparent);
         focused.setCornerRadius(8 * density);
         states.addState(new int[]{android.R.attr.state_focused, -android.R.attr.state_checked}, new InsetDrawable(focused, 0, 0, rightInset, 0));
 
         // Hover uses the same static outline treatment.
         GradientDrawable hovered = new GradientDrawable();
         hovered.setColor(0x00000000);
-        hovered.setStroke((int) (1.5f * density), 0x5000D7F5);
+        hovered.setStroke((int) (1.5f * density), accentTransparent);
         hovered.setCornerRadius(8 * density);
         states.addState(new int[]{android.R.attr.state_hovered, -android.R.attr.state_checked}, new InsetDrawable(hovered, 0, 0, rightInset, 0));
 

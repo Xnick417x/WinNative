@@ -108,6 +108,8 @@ class InputControlsFragment(private val selectedProfileId: Int) : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        view.setBackgroundColor(com.winlator.cmod.core.ThemeManager.getBackgroundColor())
+
         (activity as? AppCompatActivity)?.supportActionBar?.setTitle(R.string.common_ui_input_controls)
 
         controlAdapter = ControlRowAdapter()

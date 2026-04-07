@@ -116,6 +116,7 @@ import coil.compose.AsyncImage
 import coil.imageLoader
 import coil.request.ImageRequest
 import com.winlator.cmod.core.UpdateChecker
+import com.winlator.cmod.core.ThemeManager
 import com.winlator.cmod.google.GameSaveBackupManager
 import com.winlator.cmod.steam.service.SteamService
 import com.winlator.cmod.steam.utils.PrefManager
@@ -176,16 +177,6 @@ import androidx.core.view.WindowCompat
 import kotlin.math.roundToInt
 
 // Color palette
-private val BgDark = Color(0xFF0F0F12)
-private val SurfaceDark = Color(0xFF161B22)
-private val CardDark = Color(0xFF0A0A0F)
-private val CardBorder = Color(0xFF21212E)
-private val Accent = Color(0xFF1A9FFF)
-private val AccentGlow = Color(0xFF58A6FF)
-private val TextPrimary = Color(0xFFF0F4FF)
-private val TextSecondary = Color(0xFF7A8FA8)
-private val DangerRed = Color(0xFFFF6B6B)
-private val StatusOnline = Color(0xFF3FB950)
 private val StatusAway = Color(0xFFF0C040)
 private val StatusOffline = Color(0xFF6E7681)
 
@@ -491,7 +482,6 @@ class UnifiedActivity : ComponentActivity() {
         }
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        window.navigationBarColor = 0xFF0D1117.toInt()
 
         // Exclude left edge from system back gesture so the drawer can capture swipes
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
@@ -506,12 +496,7 @@ class UnifiedActivity : ComponentActivity() {
         UpdateChecker.startBackgroundLoop(this)
 
         setContent {
-            MaterialTheme(colorScheme = darkColorScheme(
-                primary = Accent,
-                background = BgDark,
-                surface = SurfaceDark,
-                onSurface = TextPrimary
-            )) {
+            MaterialTheme(colorScheme = ThemeManager.getComposeColorScheme()) {
                 UnifiedHub()
             }
         }
@@ -805,9 +790,9 @@ class UnifiedActivity : ComponentActivity() {
             scrimColor = Color.Black.copy(alpha = 0.5f),
             gesturesEnabled = true
         ) {
-        Box(Modifier.fillMaxSize().background(BgDark)) {
+        Box(Modifier.fillMaxSize().background(Color.Black)) {
             Scaffold(
-                containerColor = BgDark,
+                containerColor = Color.Black,
                 topBar = { TopBar(tabs, selectedIdx, { selectedIdx = it }, persona, context, scope, isControllerConnected, isPS, isLibraryTab, searchQueryTfv, { searchQueryTfv = it }, onFilterClicked = { scope.launch { drawerState.open() } }) {
                     if (selectedLibrarySource == "GOG") {
                         globalSettingsGogGame = gogApps.find { it.id == selectedGogGameId }
@@ -841,7 +826,7 @@ class UnifiedActivity : ComponentActivity() {
                     storeItemClickCallback = null
                 }
 
-                Box(Modifier.padding(padding).fillMaxSize().background(BgDark)) {
+                Box(Modifier.padding(padding).fillMaxSize().background(Color.Black)) {
                     val key = tabs.getOrNull(selectedIdx)?.key ?: "library"
 
                     LaunchedEffect(key) { libraryTabActive.value = (key == "library") }
@@ -894,9 +879,9 @@ class UnifiedActivity : ComponentActivity() {
                                 .align(Alignment.BottomEnd)
                                 .padding(16.dp)
                                 .size(52.dp)
-                                .shadow(10.dp, CircleShape, spotColor = Accent.copy(alpha = 0.4f))
+                                .shadow(10.dp, CircleShape, spotColor = ThemeManager.colorAccent.copy(alpha = 0.4f))
                                 .clip(CircleShape)
-                                .background(Accent)
+                                .background(ThemeManager.colorAccent)
                                 .focusProperties { canFocus = false } // No specific button for this, handle via long press or touch
                                 .clickable { showAddCustomGame = true },
                             contentAlignment = Alignment.Center
@@ -958,8 +943,8 @@ class UnifiedActivity : ComponentActivity() {
                     modifier = Modifier
                         .width(320.dp)
                         .clip(RoundedCornerShape(20.dp))
-                        .background(SurfaceDark)
-                        .border(1.dp, Accent.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
+                        .background(ThemeManager.colorSurface)
+                        .border(1.dp, ThemeManager.colorAccent.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
                         .padding(28.dp),
                     contentAlignment = Alignment.Center
                 ) {
@@ -967,7 +952,7 @@ class UnifiedActivity : ComponentActivity() {
                         Text(
                             text = stringResource(R.string.common_ui_exit_app_confirm),
                             style = MaterialTheme.typography.titleLarge,
-                            color = TextPrimary,
+                            color = ThemeManager.colorTextPrimary,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(Modifier.height(24.dp))
@@ -977,8 +962,8 @@ class UnifiedActivity : ComponentActivity() {
                             // Cancel button
                             OutlinedButton(
                                 onClick = { showExitDialog = false },
-                                colors = ButtonDefaults.outlinedButtonColors(contentColor = TextSecondary),
-                                border = androidx.compose.foundation.BorderStroke(1.dp, TextSecondary.copy(alpha = 0.5f)),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = ThemeManager.colorTextSecondary),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, ThemeManager.colorTextSecondary.copy(alpha = 0.5f)),
                                 shape = RoundedCornerShape(12.dp),
                                 modifier = Modifier.weight(1f)
                             ) {
@@ -1083,8 +1068,8 @@ class UnifiedActivity : ComponentActivity() {
                             .height(44.dp)
                             .shadow(8.dp, RoundedCornerShape(24.dp), spotColor = Color.Black.copy(alpha = 0.5f))
                             .clip(RoundedCornerShape(24.dp))
-                            .background(CardDark)
-                            .border(1.dp, CardBorder, RoundedCornerShape(24.dp))
+                            .background(ThemeManager.colorSurfaceVariant)
+                            .border(1.dp, ThemeManager.colorOutline, RoundedCornerShape(24.dp))
                     ) {
                         LazyRow(
                             state = tabListState,
@@ -1104,7 +1089,7 @@ class UnifiedActivity : ComponentActivity() {
                                     label = "tabScale"
                                 )
                                 val textColor by animateColorAsState(
-                                    targetValue = if (selected) Accent else TextSecondary,
+                                    targetValue = if (selected) ThemeManager.colorAccent else ThemeManager.colorTextSecondary,
                                     animationSpec = tween(280),
                                     label = "tabTextColor"
                                 )
@@ -1154,7 +1139,7 @@ class UnifiedActivity : ComponentActivity() {
                         .size(44.dp)
                         .shadow(6.dp, CircleShape, spotColor = Color.Black.copy(alpha = 0.5f))
                         .clip(CircleShape)
-                        .background(SurfaceDark)
+                        .background(ThemeManager.colorSurface)
                         .focusProperties { canFocus = !isLibraryTab },
                     contentAlignment = Alignment.Center
                 ) {
@@ -1165,7 +1150,7 @@ class UnifiedActivity : ComponentActivity() {
                         val opts = ActivityOptionsCompat.makeCustomAnimation(context, R.anim.settings_enter, R.anim.settings_exit)
                         context.startActivity(intent, opts.toBundle())
                     }, modifier = Modifier.size(44.dp), enabled = true) {
-                        Icon(Icons.Outlined.Settings, contentDescription = "Menu", tint = TextPrimary, modifier = Modifier.size(24.dp))
+                        Icon(Icons.Outlined.Settings, contentDescription = "Menu", tint = ThemeManager.colorTextPrimary, modifier = Modifier.size(24.dp))
                     }
                 }
                 if (isControllerConnected) {
@@ -1191,9 +1176,9 @@ class UnifiedActivity : ComponentActivity() {
                         .shadow(6.dp, CircleShape, spotColor = Color.Black.copy(alpha = 0.5f))
                         .clip(CircleShape)
                         .background(
-                            if (isDownloadsTab) SurfaceDark.copy(alpha = 0.4f)
-                            else if (isSearchExpanded) Accent.copy(alpha = 0.15f)
-                            else SurfaceDark
+                            if (isDownloadsTab) ThemeManager.colorSurface.copy(alpha = 0.4f)
+                            else if (isSearchExpanded) ThemeManager.colorAccent.copy(alpha = 0.15f)
+                            else ThemeManager.colorSurface
                         )
                         .focusProperties { canFocus = !isLibraryTab },
                     contentAlignment = Alignment.Center
@@ -1215,9 +1200,9 @@ class UnifiedActivity : ComponentActivity() {
                         Icon(
                             Icons.Outlined.Search,
                             contentDescription = "Search",
-                            tint = if (isDownloadsTab) TextSecondary.copy(alpha = 0.4f)
-                                   else if (isSearchExpanded) Accent
-                                   else TextPrimary,
+                            tint = if (isDownloadsTab) ThemeManager.colorTextSecondary.copy(alpha = 0.4f)
+                                   else if (isSearchExpanded) ThemeManager.colorAccent
+                                   else ThemeManager.colorTextPrimary,
                             modifier = Modifier
                                 .size(24.dp)
                                 .graphicsLayer { rotationZ = searchIconRotation }
@@ -1246,12 +1231,12 @@ class UnifiedActivity : ComponentActivity() {
                         .size(44.dp)
                         .shadow(6.dp, CircleShape, spotColor = Color.Black.copy(alpha = 0.5f))
                         .clip(CircleShape)
-                        .background(SurfaceDark)
+                        .background(ThemeManager.colorSurface)
                         .focusProperties { canFocus = !isLibraryTab }
                         .clickable { onFilterClicked() },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Outlined.FilterList, contentDescription = "Filter", tint = TextPrimary, modifier = Modifier.size(24.dp))
+                    Icon(Icons.Outlined.FilterList, contentDescription = "Filter", tint = ThemeManager.colorTextPrimary, modifier = Modifier.size(24.dp))
                 }
                 if (isControllerConnected) {
                     Spacer(Modifier.width(8.dp))
@@ -1291,7 +1276,7 @@ class UnifiedActivity : ComponentActivity() {
                         .height(44.dp)
                         .shadow(8.dp, RoundedCornerShape(24.dp), spotColor = Color.Black.copy(alpha = 0.4f))
                         .clip(RoundedCornerShape(24.dp))
-                        .background(SurfaceDark),
+                        .background(ThemeManager.colorSurface),
                     contentAlignment = Alignment.CenterStart
                 ) {
                     Row(
@@ -1303,7 +1288,7 @@ class UnifiedActivity : ComponentActivity() {
                         Icon(
                             Icons.Outlined.Search,
                             contentDescription = null,
-                            tint = Accent,
+                            tint = ThemeManager.colorAccent,
                             modifier = Modifier.size(22.dp)
                         )
                         Spacer(Modifier.width(12.dp))
@@ -1312,12 +1297,12 @@ class UnifiedActivity : ComponentActivity() {
                             onValueChange = onSearchQueryChange,
                             singleLine = true,
                             textStyle = TextStyle(
-                                color = TextPrimary,
+                                color = ThemeManager.colorTextPrimary,
                                 fontSize = 15.sp
                             ),
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                             keyboardActions = KeyboardActions(onSearch = { keyboardController?.hide() }),
-                            cursorBrush = Brush.verticalGradient(listOf(Accent, AccentGlow)),
+                            cursorBrush = Brush.verticalGradient(listOf(ThemeManager.colorAccent, ThemeManager.colorAccent)),
                             modifier = Modifier
                                 .weight(1f)
                                 .focusRequester(searchFocusRequester),
@@ -1327,7 +1312,7 @@ class UnifiedActivity : ComponentActivity() {
                                         Text(
                                             "Search games...",
                                             style = TextStyle(
-                                                color = TextSecondary,
+                                                color = ThemeManager.colorTextSecondary,
                                                 fontSize = 15.sp
                                             )
                                         )
@@ -1344,7 +1329,7 @@ class UnifiedActivity : ComponentActivity() {
                                 Icon(
                                     Icons.Outlined.Close,
                                     contentDescription = "Clear",
-                                    tint = TextSecondary,
+                                    tint = ThemeManager.colorTextSecondary,
                                     modifier = Modifier.size(18.dp)
                                 )
                             }
@@ -1490,7 +1475,7 @@ class UnifiedActivity : ComponentActivity() {
                     label = "loaderFade"
                 )
                 CircularProgressIndicator(
-                    color = Accent,
+                    color = ThemeManager.colorAccent,
                     strokeWidth = 3.dp,
                     modifier = Modifier.size(48.dp).alpha(spinAlpha)
                 )
@@ -1758,7 +1743,7 @@ class UnifiedActivity : ComponentActivity() {
     private data class GameSettingsActionItem(
         val title: String,
         val icon: ImageVector,
-        val accentColor: Color = Accent,
+        val accentColor: Color = ThemeManager.colorAccent,
         val onClick: () -> Unit,
     )
 
@@ -1776,8 +1761,8 @@ class UnifiedActivity : ComponentActivity() {
                 modifier = Modifier
                     .widthIn(min = 200.dp, max = 280.dp),
                 shape = RoundedCornerShape(14.dp),
-                color = CardDark,
-                border = BorderStroke(1.dp, CardBorder),
+                color = ThemeManager.colorSurfaceVariant,
+                border = BorderStroke(1.dp, ThemeManager.colorOutline),
                 tonalElevation = 8.dp,
             ) {
                 Column(
@@ -1788,12 +1773,12 @@ class UnifiedActivity : ComponentActivity() {
                         text = title,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                         style = MaterialTheme.typography.titleSmall,
-                        color = TextPrimary,
+                        color = ThemeManager.colorTextPrimary,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
-                    Divider(color = CardBorder, thickness = 0.5.dp)
+                    Divider(color = ThemeManager.colorOutline, thickness = 0.5.dp)
                     content()
                 }
             }
@@ -1809,7 +1794,7 @@ class UnifiedActivity : ComponentActivity() {
             actions.forEachIndexed { index, action ->
                 if (index > 0) {
                     Divider(
-                        color = CardBorder.copy(alpha = 0.5f),
+                        color = ThemeManager.colorOutline.copy(alpha = 0.5f),
                         thickness = 0.5.dp,
                         modifier = Modifier.padding(horizontal = 16.dp),
                     )
@@ -1824,9 +1809,9 @@ class UnifiedActivity : ComponentActivity() {
         action: GameSettingsActionItem,
         modifier: Modifier = Modifier,
     ) {
-        val isDanger = action.accentColor == DangerRed
-        val iconColor = if (isDanger) DangerRed else TextSecondary
-        val textColor = if (isDanger) DangerRed else TextPrimary
+        val isDanger = action.accentColor == ThemeManager.colorDangerRed
+        val iconColor = if (isDanger) ThemeManager.colorDangerRed else ThemeManager.colorTextSecondary
+        val textColor = if (isDanger) ThemeManager.colorDangerRed else ThemeManager.colorTextPrimary
 
         val interactionSource = remember { MutableInteractionSource() }
         val isPressed by interactionSource.collectIsPressedAsState()
@@ -1867,7 +1852,7 @@ class UnifiedActivity : ComponentActivity() {
     @Composable
     private fun GameSettingsInfoCard(
         message: String,
-        accentColor: Color = Accent,
+        accentColor: Color = ThemeManager.colorAccent,
     ) {
         Column(
             modifier = Modifier
@@ -1885,7 +1870,7 @@ class UnifiedActivity : ComponentActivity() {
             Text(
                 text = message,
                 style = MaterialTheme.typography.bodySmall,
-                color = TextSecondary,
+                color = ThemeManager.colorTextSecondary,
                 lineHeight = 18.sp,
                 textAlign = TextAlign.Center,
             )
@@ -1905,14 +1890,14 @@ class UnifiedActivity : ComponentActivity() {
     ) {
         var isUninstalling by remember { mutableStateOf(false) }
 
-        GameSettingsInfoCard(message = message, accentColor = DangerRed)
+        GameSettingsInfoCard(message = message, accentColor = ThemeManager.colorDangerRed)
 
         if (isUninstalling) {
             Box(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                CircularProgressIndicator(color = DangerRed)
+                CircularProgressIndicator(color = ThemeManager.colorDangerRed)
             }
         } else {
             Row(
@@ -1927,9 +1912,9 @@ class UnifiedActivity : ComponentActivity() {
                         isUninstalling = true
                         onConfirm()
                     },
-                    border = BorderStroke(1.dp, DangerRed.copy(alpha = 0.5f)),
+                    border = BorderStroke(1.dp, ThemeManager.colorDangerRed.copy(alpha = 0.5f)),
                     shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = DangerRed),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = ThemeManager.colorDangerRed),
                 ) {
                     Text(
                         confirmLabel,
@@ -1939,7 +1924,7 @@ class UnifiedActivity : ComponentActivity() {
                 }
                 Spacer(Modifier.width(8.dp))
                 TextButton(onClick = onCancel) {
-                    Text(stringResource(R.string.common_ui_cancel), color = TextSecondary, style = MaterialTheme.typography.bodySmall)
+                    Text(stringResource(R.string.common_ui_cancel), color = ThemeManager.colorTextSecondary, style = MaterialTheme.typography.bodySmall)
                 }
             }
         }
@@ -2189,7 +2174,7 @@ class UnifiedActivity : ComponentActivity() {
                         GameSettingsActionItem(
                             title = if (isCustom) stringResource(R.string.common_ui_remove) else stringResource(R.string.common_ui_uninstall),
                             icon = Icons.Outlined.Delete,
-                            accentColor = DangerRed,
+                            accentColor = ThemeManager.colorDangerRed,
                             onClick = { currentTab = GameSettingsScreen.Uninstall },
                         ),
                     )
@@ -2408,7 +2393,7 @@ class UnifiedActivity : ComponentActivity() {
                             GameSettingsActionItem(
                                 title = stringResource(R.string.common_ui_uninstall),
                                 icon = Icons.Outlined.Delete,
-                                accentColor = DangerRed,
+                                accentColor = ThemeManager.colorDangerRed,
                                 onClick = { currentTab = GameSettingsScreen.Uninstall },
                             ),
                         ),
@@ -2751,7 +2736,7 @@ class UnifiedActivity : ComponentActivity() {
             Surface(
                 modifier = Modifier.fillMaxWidth(0.864f).fillMaxHeight(0.96f),
                 shape = RoundedCornerShape(20.dp),
-                color = CardDark,
+                color = ThemeManager.colorSurfaceVariant,
             ) {
                 Box(Modifier.fillMaxSize()) {
                     Column(Modifier.fillMaxSize()) {
@@ -2774,10 +2759,10 @@ class UnifiedActivity : ComponentActivity() {
                                 )
                             } else {
                                 Box(
-                                    Modifier.fillMaxSize().background(SurfaceDark),
+                                    Modifier.fillMaxSize().background(ThemeManager.colorSurface),
                                     contentAlignment = Alignment.Center,
                                 ) {
-                                    Icon(Icons.Outlined.SportsEsports, contentDescription = null, tint = Accent.copy(alpha = 0.4f), modifier = Modifier.size(72.dp))
+                                    Icon(Icons.Outlined.SportsEsports, contentDescription = null, tint = ThemeManager.colorAccent.copy(alpha = 0.4f), modifier = Modifier.size(72.dp))
                                 }
                             }
                             Box(
@@ -2786,8 +2771,8 @@ class UnifiedActivity : ComponentActivity() {
                                         colorStops = arrayOf(
                                             0.0f to Color.Transparent,
                                             0.45f to Color.Transparent,
-                                            0.72f to CardDark.copy(alpha = 0.72f),
-                                            1.0f to CardDark,
+                                            0.72f to ThemeManager.colorSurfaceVariant.copy(alpha = 0.72f),
+                                            1.0f to ThemeManager.colorSurfaceVariant,
                                         )
                                     )
                                 )
@@ -2800,7 +2785,7 @@ class UnifiedActivity : ComponentActivity() {
                                 Text(
                                     app.name,
                                     style = MaterialTheme.typography.headlineMedium,
-                                    color = TextPrimary,
+                                    color = ThemeManager.colorTextPrimary,
                                     fontWeight = FontWeight.Bold,
                                 )
                                 if (subtitle.isNotBlank()) {
@@ -2808,7 +2793,7 @@ class UnifiedActivity : ComponentActivity() {
                                     Text(
                                         subtitle,
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = TextSecondary,
+                                        color = ThemeManager.colorTextSecondary,
                                         maxLines = 2,
                                         overflow = TextOverflow.Ellipsis,
                                     )
@@ -2832,13 +2817,13 @@ class UnifiedActivity : ComponentActivity() {
                                     ) {
                                         // Source badge row
                                         Surface(
-                                            color = Accent.copy(alpha = 0.15f),
+                                            color = ThemeManager.colorAccent.copy(alpha = 0.15f),
                                             shape = RoundedCornerShape(8.dp),
                                         ) {
                                             Text(
                                                 sourceLabel,
                                                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                                                color = Accent,
+                                                color = ThemeManager.colorAccent,
                                                 fontSize = 12.sp,
                                                 fontWeight = FontWeight.Bold,
                                             )
@@ -2983,8 +2968,8 @@ class UnifiedActivity : ComponentActivity() {
                                             CompactActionButton(
                                                 icon = Icons.Outlined.Delete,
                                                 label = if (isCustom) stringResource(R.string.common_ui_remove) else stringResource(R.string.common_ui_uninstall),
-                                                tint = DangerRed,
-                                                bgColor = DangerRed.copy(alpha = 0.12f),
+                                                tint = ThemeManager.colorDangerRed,
+                                                bgColor = ThemeManager.colorDangerRed.copy(alpha = 0.12f),
                                                 modifier = Modifier.weight(1f),
                                                 onClick = { currentScreen = LibraryDetailScreen.Uninstall },
                                             )
@@ -3003,7 +2988,7 @@ class UnifiedActivity : ComponentActivity() {
                                     Text(
                                         stringResource(R.string.library_games_save_management),
                                         style = MaterialTheme.typography.labelMedium,
-                                        color = TextSecondary,
+                                        color = ThemeManager.colorTextSecondary,
                                         fontWeight = FontWeight.Bold,
                                         letterSpacing = 1.1.sp,
                                     )
@@ -3056,9 +3041,9 @@ class UnifiedActivity : ComponentActivity() {
 
                                     Spacer(Modifier.weight(1f))
                                     TextButton(onClick = { currentScreen = LibraryDetailScreen.Main }) {
-                                        Icon(Icons.Outlined.ArrowBack, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(18.dp))
+                                        Icon(Icons.Outlined.ArrowBack, contentDescription = null, tint = ThemeManager.colorTextSecondary, modifier = Modifier.size(18.dp))
                                         Spacer(Modifier.width(6.dp))
-                                        Text(stringResource(R.string.common_ui_back), color = TextSecondary)
+                                        Text(stringResource(R.string.common_ui_back), color = ThemeManager.colorTextSecondary)
                                     }
                                 }
                             }
@@ -3157,7 +3142,7 @@ class UnifiedActivity : ComponentActivity() {
                                     Text(
                                         stringResource(if (isCustom) R.string.library_games_remove_game else R.string.library_games_uninstall_game),
                                         style = MaterialTheme.typography.labelMedium,
-                                        color = TextSecondary,
+                                        color = ThemeManager.colorTextSecondary,
                                         fontWeight = FontWeight.Bold,
                                         letterSpacing = 1.1.sp,
                                     )
@@ -3227,9 +3212,9 @@ class UnifiedActivity : ComponentActivity() {
                             .size(42.dp)
                             .shadow(8.dp, CircleShape, spotColor = Color.Black.copy(alpha = 0.35f))
                             .clip(CircleShape)
-                            .background(BgDark.copy(alpha = 0.7f)),
+                            .background(ThemeManager.colorBackground.copy(alpha = 0.7f)),
                     ) {
-                        Icon(Icons.Outlined.Close, contentDescription = "Close", tint = TextPrimary)
+                        Icon(Icons.Outlined.Close, contentDescription = "Close", tint = ThemeManager.colorTextPrimary)
                     }
                 }
             }
@@ -3241,9 +3226,9 @@ class UnifiedActivity : ComponentActivity() {
         Surface(
             modifier = modifier
                 .then(if (onClick != null) Modifier.clip(RoundedCornerShape(10.dp)).clickable(onClick = onClick) else Modifier),
-            color = SurfaceDark,
+            color = ThemeManager.colorSurface,
             shape = RoundedCornerShape(10.dp),
-            border = BorderStroke(1.dp, if (onClick != null) Accent.copy(alpha = 0.25f) else CardBorder),
+            border = BorderStroke(1.dp, if (onClick != null) ThemeManager.colorAccent.copy(alpha = 0.25f) else ThemeManager.colorOutline),
         ) {
             Column(
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
@@ -3253,19 +3238,19 @@ class UnifiedActivity : ComponentActivity() {
                     Text(
                         label.uppercase(),
                         style = MaterialTheme.typography.labelSmall,
-                        color = TextSecondary,
+                        color = ThemeManager.colorTextSecondary,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 0.8.sp,
                         fontSize = 10.sp,
                     )
                     if (onClick != null) {
-                        Icon(Icons.Outlined.OpenInNew, contentDescription = null, modifier = Modifier.size(10.dp), tint = Accent.copy(alpha = 0.6f))
+                        Icon(Icons.Outlined.OpenInNew, contentDescription = null, modifier = Modifier.size(10.dp), tint = ThemeManager.colorAccent.copy(alpha = 0.6f))
                     }
                 }
                 Text(
                     value,
                     style = MaterialTheme.typography.bodySmall,
-                    color = valueColor ?: (if (onClick != null) Accent else TextPrimary),
+                    color = valueColor ?: (if (onClick != null) ThemeManager.colorAccent else ThemeManager.colorTextPrimary),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -3297,9 +3282,9 @@ class UnifiedActivity : ComponentActivity() {
 
         val baseGradient = Brush.horizontalGradient(
             colors = listOf(
-                Color(0xFF00B4D8),
-                Accent,
-                Color(0xFF7B2FF7),
+                ThemeManager.colorAccent.copy(alpha = 0.7f),
+                ThemeManager.colorAccent,
+                ThemeManager.colorAccent.copy(alpha = 0.9f),
             ),
         )
 
@@ -3314,8 +3299,8 @@ class UnifiedActivity : ComponentActivity() {
                 .shadow(
                     elevation = 12.dp,
                     shape = RoundedCornerShape(12.dp),
-                    ambientColor = Accent.copy(alpha = glowPulse),
-                    spotColor = Accent.copy(alpha = glowPulse),
+                    ambientColor = ThemeManager.colorAccent.copy(alpha = glowPulse),
+                    spotColor = ThemeManager.colorAccent.copy(alpha = glowPulse),
                 )
                 .clip(RoundedCornerShape(12.dp))
                 .background(baseGradient)
@@ -3369,9 +3354,9 @@ class UnifiedActivity : ComponentActivity() {
         )
         val baseGradient = Brush.horizontalGradient(
             colors = listOf(
-                Color(0xFF00B4D8),
-                Accent,
-                Color(0xFF7B2FF7),
+                ThemeManager.colorAccent.copy(alpha = 0.7f),
+                ThemeManager.colorAccent,
+                ThemeManager.colorAccent.copy(alpha = 0.9f),
             ),
         )
         Box(
@@ -3385,8 +3370,8 @@ class UnifiedActivity : ComponentActivity() {
                 .shadow(
                     elevation = 12.dp,
                     shape = RoundedCornerShape(12.dp),
-                    ambientColor = Accent.copy(alpha = glowPulse),
-                    spotColor = Accent.copy(alpha = glowPulse),
+                    ambientColor = ThemeManager.colorAccent.copy(alpha = glowPulse),
+                    spotColor = ThemeManager.colorAccent.copy(alpha = glowPulse),
                 )
                 .clip(RoundedCornerShape(12.dp))
                 .background(baseGradient)
@@ -3431,8 +3416,8 @@ class UnifiedActivity : ComponentActivity() {
     private fun CompactActionButton(
         icon: ImageVector,
         label: String,
-        tint: Color = TextPrimary,
-        bgColor: Color = SurfaceDark,
+        tint: Color = ThemeManager.colorTextPrimary,
+        bgColor: Color = ThemeManager.colorSurface,
         modifier: Modifier = Modifier,
         height: Dp = 36.dp,
         fontSize: TextUnit = 13.sp,
@@ -3541,7 +3526,7 @@ class UnifiedActivity : ComponentActivity() {
                 if (glowAlpha > 0f) Modifier.drawWithContent {
                     drawContent()
                     drawRoundRect(
-                        color = AccentGlow,
+                        color = ThemeManager.colorAccent,
                         alpha = glowAlpha * 0.25f,
                         cornerRadius = CornerRadius(12.dp.toPx()),
                     )
@@ -3589,10 +3574,10 @@ class UnifiedActivity : ComponentActivity() {
                     )
                 } else {
                     Box(
-                        modifier = artModifier.background(SurfaceDark),
+                        modifier = artModifier.background(ThemeManager.colorSurface),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Outlined.SportsEsports, contentDescription = app.name, tint = Accent.copy(alpha = 0.6f), modifier = Modifier.size(48.dp))
+                        Icon(Icons.Outlined.SportsEsports, contentDescription = app.name, tint = ThemeManager.colorAccent.copy(alpha = 0.6f), modifier = Modifier.size(48.dp))
                     }
                 }
             } else if (gogGame != null) {
@@ -3641,17 +3626,17 @@ class UnifiedActivity : ComponentActivity() {
                 modifier = modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .border(1.dp, if (isControllerActive) CardBorder else Color.Transparent, RoundedCornerShape(14.dp))
+                    .border(1.dp, if (isControllerActive) ThemeManager.colorOutline else Color.Transparent, RoundedCornerShape(14.dp))
                     .chasingBorder(
                         isFocused = isFocused,
                         paused = chasingBordersPaused.value || !libraryTabActive.value,
                         cornerRadius = 14.dp
                     )
-                    .background(CardDark, RoundedCornerShape(14.dp))
+                    .background(ThemeManager.colorSurfaceVariant, RoundedCornerShape(14.dp))
                     .focusable()
                     .then(clickModifier)
             ) {
-                // Hero background layer (falls back to CardDark if image fails)
+                // Hero background layer (falls back to ThemeManager.colorSurfaceVariant if image fails)
                 if (heroUrl != null) {
                     AsyncImage(
                         model = ImageRequest.Builder(context)
@@ -3690,7 +3675,7 @@ class UnifiedActivity : ComponentActivity() {
                         modifier = Modifier
                             .weight(1f)
                             .then(if (isFocused) Modifier.basicMarquee(iterations = Int.MAX_VALUE) else Modifier),
-                        color = TextPrimary,
+                        color = ThemeManager.colorTextPrimary,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold,
                         maxLines = 2,
@@ -3704,13 +3689,13 @@ class UnifiedActivity : ComponentActivity() {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = modifier
                     .fillMaxWidth()
-                    .border(1.dp, CardDark, RoundedCornerShape(12.dp))
+                    .border(1.dp, ThemeManager.colorSurfaceVariant, RoundedCornerShape(12.dp))
                     .chasingBorder(
                         isFocused = isFocused,
                         paused = chasingBordersPaused.value || !libraryTabActive.value,
                         cornerRadius = 12.dp
                     )
-                    .background(CardDark, RoundedCornerShape(12.dp))
+                    .background(ThemeManager.colorSurfaceVariant, RoundedCornerShape(12.dp))
                     .focusable()
                     .then(clickModifier)
             ) {
@@ -3730,7 +3715,7 @@ class UnifiedActivity : ComponentActivity() {
                         .padding(horizontal = 4.dp, vertical = 4.dp)
                         .then(if (isFocused) Modifier.basicMarquee(iterations = Int.MAX_VALUE) else Modifier),
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextPrimary,
+                    color = ThemeManager.colorTextPrimary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     textAlign = TextAlign.Center
@@ -3847,7 +3832,7 @@ class UnifiedActivity : ComponentActivity() {
         val isInstalled = app.installPath != null && java.io.File(app.installPath!!).exists()
         val imageUrl = app.primaryImageUrl ?: app.iconUrl
 
-        val borderColor = if (isControllerActive) CardBorder else Color.Transparent
+        val borderColor = if (isControllerActive) ThemeManager.colorOutline else Color.Transparent
 
         if (listMode) {
             Row(
@@ -3857,13 +3842,13 @@ class UnifiedActivity : ComponentActivity() {
                     .clip(RoundedCornerShape(14.dp))
                     .border(1.dp, borderColor, RoundedCornerShape(14.dp))
                     .chasingBorder(isFocused = effectiveFocus, paused = chasingBordersPaused.value, cornerRadius = 14.dp)
-                    .background(CardDark, RoundedCornerShape(14.dp))
+                    .background(ThemeManager.colorSurfaceVariant, RoundedCornerShape(14.dp))
                     .onFocusChanged { isFocused = it.isFocused }
                     .focusable()
                     .then(
                         if (glowAlpha > 0f) Modifier.drawWithContent {
                             drawContent()
-                            drawRoundRect(color = AccentGlow, alpha = glowAlpha * 0.25f, cornerRadius = CornerRadius(14.dp.toPx()))
+                            drawRoundRect(color = ThemeManager.colorAccent, alpha = glowAlpha * 0.25f, cornerRadius = CornerRadius(14.dp.toPx()))
                         } else Modifier
                     )
                     .clickable(interactionSource = clickInteraction, indication = null, onClick = onClick)
@@ -3884,9 +3869,9 @@ class UnifiedActivity : ComponentActivity() {
                     )
                     if (isInstalled) {
                         Box(
-                            Modifier.align(Alignment.BottomEnd).padding(4.dp).background(SurfaceDark.copy(alpha=0.7f), RoundedCornerShape(6.dp)).padding(3.dp)
+                            Modifier.align(Alignment.BottomEnd).padding(4.dp).background(ThemeManager.colorSurface.copy(alpha=0.7f), RoundedCornerShape(6.dp)).padding(3.dp)
                         ) {
-                            Text(stringResource(R.string.library_games_installed_badge), color = StatusOnline, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.library_games_installed_badge), color = ThemeManager.colorStatusGreen, fontSize = 8.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -3895,7 +3880,7 @@ class UnifiedActivity : ComponentActivity() {
                     app.title,
                     modifier = Modifier.weight(1f)
                         .then(if (effectiveFocus) Modifier.basicMarquee(iterations = Int.MAX_VALUE) else Modifier),
-                    color = TextPrimary,
+                    color = ThemeManager.colorTextPrimary,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 2,
@@ -3909,13 +3894,13 @@ class UnifiedActivity : ComponentActivity() {
                     .fillMaxSize()
                     .border(1.dp, borderColor, RoundedCornerShape(16.dp))
                     .chasingBorder(isFocused = effectiveFocus, paused = chasingBordersPaused.value, cornerRadius = 16.dp)
-                    .background(CardDark, RoundedCornerShape(16.dp))
+                    .background(ThemeManager.colorSurfaceVariant, RoundedCornerShape(16.dp))
                     .onFocusChanged { isFocused = it.isFocused }
                     .focusable()
                     .then(
                         if (glowAlpha > 0f) Modifier.drawWithContent {
                             drawContent()
-                            drawRoundRect(color = AccentGlow, alpha = glowAlpha * 0.25f, cornerRadius = CornerRadius(16.dp.toPx()))
+                            drawRoundRect(color = ThemeManager.colorAccent, alpha = glowAlpha * 0.25f, cornerRadius = CornerRadius(16.dp.toPx()))
                         } else Modifier
                     )
                     .clickable(interactionSource = clickInteraction, indication = null, onClick = onClick)
@@ -3935,9 +3920,9 @@ class UnifiedActivity : ComponentActivity() {
 
                     if (isInstalled) {
                         Box(
-                            Modifier.align(Alignment.BottomEnd).padding(8.dp).background(SurfaceDark.copy(alpha=0.7f), RoundedCornerShape(8.dp)).padding(4.dp)
+                            Modifier.align(Alignment.BottomEnd).padding(8.dp).background(ThemeManager.colorSurface.copy(alpha=0.7f), RoundedCornerShape(8.dp)).padding(4.dp)
                         ) {
-                            Text(stringResource(R.string.library_games_installed_badge), color = StatusOnline, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.library_games_installed_badge), color = ThemeManager.colorStatusGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -3947,7 +3932,7 @@ class UnifiedActivity : ComponentActivity() {
                     modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp).fillMaxWidth()
                         .then(if (effectiveFocus) Modifier.basicMarquee(iterations = Int.MAX_VALUE) else Modifier),
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextPrimary,
+                    color = ThemeManager.colorTextPrimary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     textAlign = TextAlign.Center
@@ -3970,7 +3955,7 @@ class UnifiedActivity : ComponentActivity() {
             Surface(
                 modifier = Modifier.fillMaxWidth(0.864f).fillMaxHeight(0.92f),
                 shape = RoundedCornerShape(20.dp),
-                color = CardDark
+                color = ThemeManager.colorSurfaceVariant
             ) {
                 Box(Modifier.fillMaxSize()) {
                     Column(Modifier.fillMaxSize()) {
@@ -3999,8 +3984,8 @@ class UnifiedActivity : ComponentActivity() {
                                             colorStops = arrayOf(
                                                 0.0f to Color.Transparent,
                                                 0.45f to Color.Transparent,
-                                                0.72f to CardDark.copy(alpha = 0.72f),
-                                                1.0f to CardDark
+                                                0.72f to ThemeManager.colorSurfaceVariant.copy(alpha = 0.72f),
+                                                1.0f to ThemeManager.colorSurfaceVariant
                                             )
                                         )
                                     )
@@ -4013,7 +3998,7 @@ class UnifiedActivity : ComponentActivity() {
                                 Text(
                                     title,
                                     style = MaterialTheme.typography.headlineMedium,
-                                    color = TextPrimary,
+                                    color = ThemeManager.colorTextPrimary,
                                     fontWeight = FontWeight.Bold
                                 )
                                 if (subtitle.isNotBlank()) {
@@ -4021,7 +4006,7 @@ class UnifiedActivity : ComponentActivity() {
                                     Text(
                                         subtitle,
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = TextSecondary,
+                                        color = ThemeManager.colorTextSecondary,
                                         maxLines = 2,
                                         overflow = TextOverflow.Ellipsis
                                     )
@@ -4043,13 +4028,13 @@ class UnifiedActivity : ComponentActivity() {
                             ) {
                                 if (sourceLabel.isNotBlank()) {
                                     Surface(
-                                        color = Accent.copy(alpha = 0.15f),
+                                        color = ThemeManager.colorAccent.copy(alpha = 0.15f),
                                         shape = RoundedCornerShape(8.dp),
                                     ) {
                                         Text(
                                             sourceLabel,
                                             modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                                            color = Accent,
+                                            color = ThemeManager.colorAccent,
                                             fontSize = 12.sp,
                                             fontWeight = FontWeight.Bold,
                                         )
@@ -4077,9 +4062,9 @@ class UnifiedActivity : ComponentActivity() {
                             .size(42.dp)
                             .shadow(8.dp, CircleShape, spotColor = Color.Black.copy(alpha = 0.35f))
                             .clip(CircleShape)
-                            .background(BgDark.copy(alpha = 0.7f))
+                            .background(ThemeManager.colorBackground.copy(alpha = 0.7f))
                     ) {
-                        Icon(Icons.Outlined.Close, contentDescription = "Close", tint = TextPrimary)
+                        Icon(Icons.Outlined.Close, contentDescription = "Close", tint = ThemeManager.colorTextPrimary)
                     }
                 }
             }
@@ -4127,7 +4112,7 @@ class UnifiedActivity : ComponentActivity() {
                     dlcApps.forEachIndexed { index, dlc ->
                         if (index > 0) {
                             Divider(
-                                color = CardBorder.copy(alpha = 0.5f),
+                                color = ThemeManager.colorOutline.copy(alpha = 0.5f),
                                 thickness = 0.5.dp,
                                 modifier = Modifier.padding(horizontal = 16.dp),
                             )
@@ -4149,12 +4134,12 @@ class UnifiedActivity : ComponentActivity() {
                                 checked = selectedDlcIds.contains(dlc.id),
                                 onCheckedChange = { if (it) selectedDlcIds.add(dlc.id) else selectedDlcIds.remove(dlc.id) },
                                 colors = CheckboxDefaults.colors(
-                                    checkedColor = Accent,
-                                    uncheckedColor = TextSecondary,
+                                    checkedColor = ThemeManager.colorAccent,
+                                    uncheckedColor = ThemeManager.colorTextSecondary,
                                     checkmarkColor = Color.White,
                                 ),
                             )
-                            Text(dlc.title, color = TextPrimary, fontSize = 13.sp)
+                            Text(dlc.title, color = ThemeManager.colorTextPrimary, fontSize = 13.sp)
                         }
                     }
                 }
@@ -4191,7 +4176,7 @@ class UnifiedActivity : ComponentActivity() {
             infoContent = {
                 if (isLoading && !installed) {
                     Spacer(Modifier.height(18.dp))
-                    CircularProgressIndicator(color = Accent)
+                    CircularProgressIndicator(color = ThemeManager.colorAccent)
                 } else if (installed) {
                     DetailCard(
                         label = stringResource(R.string.library_games_install_path),
@@ -4200,7 +4185,7 @@ class UnifiedActivity : ComponentActivity() {
                     DetailCard(
                         label = stringResource(R.string.common_ui_status),
                         value = stringResource(R.string.common_ui_installed),
-                        valueColor = StatusOnline,
+                        valueColor = ThemeManager.colorStatusGreen,
                     )
                 } else {
                     DetailCard(
@@ -4210,7 +4195,7 @@ class UnifiedActivity : ComponentActivity() {
                     DetailCard(
                         stringResource(R.string.library_games_download_slash_install),
                         stringResource(R.string.library_games_download_install_available, StorageUtils.formatBinarySize(totalDownloadSize), StorageUtils.formatBinarySize(totalInstallSize), StorageUtils.formatBinarySize(availableBytes)),
-                        valueColor = if (!isInstallEnabled) DangerRed else null,
+                        valueColor = if (!isInstallEnabled) ThemeManager.colorDangerRed else null,
                     )
                 }
             }
@@ -4236,8 +4221,8 @@ class UnifiedActivity : ComponentActivity() {
                 CompactActionButton(
                     icon = Icons.Outlined.Delete,
                     label = stringResource(R.string.common_ui_uninstall),
-                    tint = DangerRed,
-                    bgColor = DangerRed.copy(alpha = 0.12f),
+                    tint = ThemeManager.colorDangerRed,
+                    bgColor = ThemeManager.colorDangerRed.copy(alpha = 0.12f),
                     onClick = {
                         scope.launch(Dispatchers.IO) {
                             EpicService.deleteGame(context, app.id)
@@ -4325,7 +4310,7 @@ class UnifiedActivity : ComponentActivity() {
         }
 
         val isControllerActive = ControllerHelper.isControllerConnected()
-        val gogBorderColor = if (isControllerActive) CardBorder else Color.Transparent
+        val gogBorderColor = if (isControllerActive) ThemeManager.colorOutline else Color.Transparent
 
         if (layoutMode == LibraryLayoutMode.LIST) {
             val listViewState = rememberLazyListState()
@@ -4342,7 +4327,7 @@ class UnifiedActivity : ComponentActivity() {
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
                         .border(1.dp, gogBorderColor, RoundedCornerShape(14.dp))
-                        .background(CardDark, RoundedCornerShape(14.dp))
+                        .background(ThemeManager.colorSurfaceVariant, RoundedCornerShape(14.dp))
                         .clickable { selectedGameId.value = app.id }
                         .padding(horizontal = 14.dp, vertical = 11.dp),
                     horizontalArrangement = Arrangement.Center
@@ -4366,7 +4351,7 @@ class UnifiedActivity : ComponentActivity() {
                             Icon(
                                 Icons.Outlined.CheckCircle,
                                 contentDescription = "Installed",
-                                tint = StatusOnline,
+                                tint = ThemeManager.colorStatusGreen,
                                 modifier = Modifier.align(Alignment.BottomEnd).padding(4.dp).size(18.dp)
                             )
                         }
@@ -4375,7 +4360,7 @@ class UnifiedActivity : ComponentActivity() {
                     Text(
                         text = app.title,
                         modifier = Modifier.weight(1f),
-                        color = TextPrimary,
+                        color = ThemeManager.colorTextPrimary,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold,
                         maxLines = 2,
@@ -4413,7 +4398,7 @@ class UnifiedActivity : ComponentActivity() {
                         )
                         .border(1.dp, gogBorderColor, RoundedCornerShape(16.dp))
                         .chasingBorder(isFocused = isItemFocused, paused = chasingBordersPaused.value, cornerRadius = 16.dp)
-                        .background(CardDark, RoundedCornerShape(16.dp))
+                        .background(ThemeManager.colorSurfaceVariant, RoundedCornerShape(16.dp))
                         .clickable { selectedGameId.value = app.id }
                 ) {
                     Box(
@@ -4435,7 +4420,7 @@ class UnifiedActivity : ComponentActivity() {
                             Icon(
                                 Icons.Outlined.CheckCircle,
                                 contentDescription = "Installed",
-                                tint = StatusOnline,
+                                tint = ThemeManager.colorStatusGreen,
                                 modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp).size(24.dp)
                             )
                         }
@@ -4445,7 +4430,7 @@ class UnifiedActivity : ComponentActivity() {
                         text = app.title,
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 4.dp),
                         style = MaterialTheme.typography.bodySmall,
-                        color = TextPrimary,
+                        color = ThemeManager.colorTextPrimary,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         textAlign = TextAlign.Center
@@ -4513,7 +4498,7 @@ class UnifiedActivity : ComponentActivity() {
                     DetailCard(
                         label = stringResource(R.string.common_ui_status),
                         value = stringResource(R.string.common_ui_installed),
-                        valueColor = StatusOnline,
+                        valueColor = ThemeManager.colorStatusGreen,
                     )
                 } else {
                     DetailCard(
@@ -4523,7 +4508,7 @@ class UnifiedActivity : ComponentActivity() {
                     DetailCard(
                         stringResource(R.string.library_games_download_slash_install),
                         stringResource(R.string.library_games_download_install_available, StorageUtils.formatBinarySize(app.downloadSize), StorageUtils.formatBinarySize(app.installSize), StorageUtils.formatBinarySize(availableBytes)),
-                        valueColor = if (!isInstallEnabled) DangerRed else null,
+                        valueColor = if (!isInstallEnabled) ThemeManager.colorDangerRed else null,
                     )
                 }
             }
@@ -4547,8 +4532,8 @@ class UnifiedActivity : ComponentActivity() {
                 CompactActionButton(
                     icon = Icons.Outlined.Delete,
                     label = stringResource(R.string.common_ui_uninstall),
-                    tint = DangerRed,
-                    bgColor = DangerRed.copy(alpha = 0.12f),
+                    tint = ThemeManager.colorDangerRed,
+                    bgColor = ThemeManager.colorDangerRed.copy(alpha = 0.12f),
                     onClick = {
                         scope.launch(Dispatchers.IO) {
                             GOGService.deleteGame(context, LibraryItem("GOG_${app.id}", app.title, com.winlator.cmod.steam.enums.GameSource.GOG))
@@ -4679,7 +4664,7 @@ class UnifiedActivity : ComponentActivity() {
             label = "steamCapsuleGlow",
         )
         val effectiveFocus = isControllerActive && (isFocusedOverride || isFocused)
-        val borderColor = if (isControllerActive) CardBorder else Color.Transparent
+        val borderColor = if (isControllerActive) ThemeManager.colorOutline else Color.Transparent
 
         if (listMode) {
             Box(
@@ -4688,13 +4673,13 @@ class UnifiedActivity : ComponentActivity() {
                     .clip(RoundedCornerShape(14.dp))
                     .border(1.dp, borderColor, RoundedCornerShape(14.dp))
                     .chasingBorder(isFocused = effectiveFocus, paused = chasingBordersPaused.value, cornerRadius = 14.dp)
-                    .background(CardDark, RoundedCornerShape(14.dp))
+                    .background(ThemeManager.colorSurfaceVariant, RoundedCornerShape(14.dp))
                     .onFocusChanged { isFocused = it.isFocused }
                     .focusable()
                     .then(
                         if (glowAlpha > 0f) Modifier.drawWithContent {
                             drawContent()
-                            drawRoundRect(color = AccentGlow, alpha = glowAlpha * 0.25f, cornerRadius = CornerRadius(14.dp.toPx()))
+                            drawRoundRect(color = ThemeManager.colorAccent, alpha = glowAlpha * 0.25f, cornerRadius = CornerRadius(14.dp.toPx()))
                         } else Modifier
                     )
                     .clickable(interactionSource = clickInteraction, indication = null, onClick = onClick)
@@ -4735,7 +4720,7 @@ class UnifiedActivity : ComponentActivity() {
                             Icon(
                                 Icons.Outlined.CheckCircle,
                                 contentDescription = "Installed",
-                                tint = StatusOnline,
+                                tint = ThemeManager.colorStatusGreen,
                                 modifier = Modifier.align(Alignment.BottomEnd).padding(4.dp).size(18.dp)
                             )
                         }
@@ -4745,7 +4730,7 @@ class UnifiedActivity : ComponentActivity() {
                         text = app.name,
                         modifier = Modifier.weight(1f)
                             .then(if (effectiveFocus) Modifier.basicMarquee(iterations = Int.MAX_VALUE) else Modifier),
-                        color = TextPrimary,
+                        color = ThemeManager.colorTextPrimary,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold,
                         maxLines = 2,
@@ -4760,13 +4745,13 @@ class UnifiedActivity : ComponentActivity() {
                     .fillMaxSize()
                     .border(1.dp, borderColor, RoundedCornerShape(16.dp))
                     .chasingBorder(isFocused = effectiveFocus, paused = chasingBordersPaused.value, cornerRadius = 16.dp)
-                    .background(CardDark, RoundedCornerShape(16.dp))
+                    .background(ThemeManager.colorSurfaceVariant, RoundedCornerShape(16.dp))
                     .onFocusChanged { isFocused = it.isFocused }
                     .focusable()
                     .then(
                         if (glowAlpha > 0f) Modifier.drawWithContent {
                             drawContent()
-                            drawRoundRect(color = AccentGlow, alpha = glowAlpha * 0.25f, cornerRadius = CornerRadius(16.dp.toPx()))
+                            drawRoundRect(color = ThemeManager.colorAccent, alpha = glowAlpha * 0.25f, cornerRadius = CornerRadius(16.dp.toPx()))
                         } else Modifier
                     )
                     .clickable(interactionSource = clickInteraction, indication = null, onClick = onClick)
@@ -4790,7 +4775,7 @@ class UnifiedActivity : ComponentActivity() {
                         Icon(
                             Icons.Outlined.CheckCircle,
                             contentDescription = "Installed",
-                            tint = StatusOnline,
+                            tint = ThemeManager.colorStatusGreen,
                             modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp).size(24.dp)
                         )
                     }
@@ -4801,7 +4786,7 @@ class UnifiedActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 4.dp)
                         .then(if (effectiveFocus) Modifier.basicMarquee(iterations = Int.MAX_VALUE) else Modifier),
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextPrimary,
+                    color = ThemeManager.colorTextPrimary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     textAlign = TextAlign.Center
@@ -4886,19 +4871,19 @@ class UnifiedActivity : ComponentActivity() {
                     modifier = Modifier
                         .height(buttonHeight)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(SurfaceDark)
+                        .background(ThemeManager.colorSurface)
                         .padding(horizontal = 4.dp)
                 ) {
                     IconButton(
                         onClick = { if (queueSize > 1) { queueSize--; PrefManager.downloadQueueSize = queueSize } },
                         modifier = Modifier.size(24.dp)
                     ) {
-                        Icon(Icons.Outlined.KeyboardArrowLeft, contentDescription = "Decrease Queue", tint = TextPrimary, modifier = Modifier.size(18.dp))
+                        Icon(Icons.Outlined.KeyboardArrowLeft, contentDescription = "Decrease Queue", tint = ThemeManager.colorTextPrimary, modifier = Modifier.size(18.dp))
                     }
                     Text(
                         text = queueSize.toString(),
                         style = MaterialTheme.typography.titleSmall,
-                        color = TextPrimary,
+                        color = ThemeManager.colorTextPrimary,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(horizontal = 2.dp)
                     )
@@ -4906,7 +4891,7 @@ class UnifiedActivity : ComponentActivity() {
                         onClick = { queueSize++; PrefManager.downloadQueueSize = queueSize; com.winlator.cmod.steam.service.SteamService.checkQueue() },
                         modifier = Modifier.size(24.dp)
                     ) {
-                        Icon(Icons.Outlined.KeyboardArrowRight, contentDescription = "Increase Queue", tint = TextPrimary, modifier = Modifier.size(18.dp))
+                        Icon(Icons.Outlined.KeyboardArrowRight, contentDescription = "Increase Queue", tint = ThemeManager.colorTextPrimary, modifier = Modifier.size(18.dp))
                     }
                 }
 
@@ -4930,11 +4915,11 @@ class UnifiedActivity : ComponentActivity() {
                     },
                     enabled = pauseResumeEnabled,
                     modifier = Modifier.height(buttonHeight),
-                    colors = ButtonDefaults.buttonColors(containerColor = SurfaceDark),
+                    colors = ButtonDefaults.buttonColors(containerColor = ThemeManager.colorSurface),
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(pauseResumeLabel, color = TextPrimary, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(pauseResumeLabel, color = ThemeManager.colorTextPrimary, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         if (isController) {
                             Spacer(Modifier.width(8.dp))
                             ControllerBadge(if (isPS) "L2" else "LT")
@@ -4956,11 +4941,11 @@ class UnifiedActivity : ComponentActivity() {
                     },
                     enabled = cancelEnabled,
                     modifier = Modifier.height(buttonHeight),
-                    colors = ButtonDefaults.buttonColors(containerColor = SurfaceDark),
+                    colors = ButtonDefaults.buttonColors(containerColor = ThemeManager.colorSurface),
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(cancelLabel, color = TextPrimary, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(cancelLabel, color = ThemeManager.colorTextPrimary, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         if (isController) {
                             Spacer(Modifier.width(8.dp))
                             ControllerBadge(if (isPS) "R2" else "RT")
@@ -4982,10 +4967,10 @@ class UnifiedActivity : ComponentActivity() {
                     },
                     enabled = hasCompletedOrCancelled,
                     modifier = Modifier.height(buttonHeight),
-                    colors = ButtonDefaults.buttonColors(containerColor = SurfaceDark),
+                    colors = ButtonDefaults.buttonColors(containerColor = ThemeManager.colorSurface),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text(stringResource(R.string.downloads_queue_clear), color = TextPrimary, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(stringResource(R.string.downloads_queue_clear), color = ThemeManager.colorTextPrimary, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             }
 
@@ -5058,7 +5043,7 @@ class UnifiedActivity : ComponentActivity() {
         var gogGame by remember(gogId) { mutableStateOf<GOGGame?>(null) }
         val context = LocalContext.current
         var isFocused by remember { mutableStateOf(false) }
-        val borderColor = if (isFocused || isSelected) Accent.copy(alpha = 0.8f) else Color.Transparent
+        val borderColor = if (isFocused || isSelected) ThemeManager.colorAccent.copy(alpha = 0.8f) else Color.Transparent
 
         LaunchedEffect(appId, gogId, isSteam, isEpic, isGog) {
             withContext(Dispatchers.IO) { 
@@ -5076,7 +5061,7 @@ class UnifiedActivity : ComponentActivity() {
                            else null
 
         Surface(
-            color = if (isSelected) SurfaceDark else CardDark,
+            color = if (isSelected) ThemeManager.colorSurface else ThemeManager.colorSurfaceVariant,
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier
                 .fillMaxWidth()
@@ -5104,13 +5089,13 @@ class UnifiedActivity : ComponentActivity() {
                     val percentage = (progress * 100).toInt()
 
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                        Text(displayName ?: unknownGameLabel, fontWeight = FontWeight.Bold, color = TextPrimary, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(displayName ?: unknownGameLabel, fontWeight = FontWeight.Bold, color = ThemeManager.colorTextPrimary, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
                         
                         // Centered Size Info
                         Text(
                             text = "${StorageUtils.formatBinarySize(downloadedBytes)} / ${StorageUtils.formatBinarySize(totalBytes)}",
                             style = MaterialTheme.typography.labelMedium,
-                            color = TextSecondary,
+                            color = ThemeManager.colorTextSecondary,
                             modifier = Modifier.weight(1f),
                             textAlign = TextAlign.Center
                         )
@@ -5120,7 +5105,7 @@ class UnifiedActivity : ComponentActivity() {
                                 Text(
                                     text = "${StorageUtils.formatBinarySize(speed)}/s",
                                     style = MaterialTheme.typography.labelMedium,
-                                    color = Accent,
+                                    color = ThemeManager.colorAccent,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
@@ -5145,17 +5130,17 @@ class UnifiedActivity : ComponentActivity() {
                         else -> status.name.lowercase().replaceFirstChar { it.uppercase() }
                     }
 
-                    Text("Status: $statusText", style = MaterialTheme.typography.bodySmall, color = TextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text("Status: $statusText", style = MaterialTheme.typography.bodySmall, color = ThemeManager.colorTextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
 
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
                         LinearProgressIndicator(
                             progress = { progress },
                             modifier = Modifier.weight(1f).height(8.dp).clip(CircleShape),
                             color = when (status) {
-                                DownloadPhase.FAILED -> Color(0xFFFF6B6B)
-                                DownloadPhase.CANCELLED -> Color(0xFFFF6B6B)
-                                DownloadPhase.COMPLETE -> Color(0xFF4CAF50)
-                                else -> Accent
+                                DownloadPhase.FAILED -> ThemeManager.colorDangerRed
+                                DownloadPhase.CANCELLED -> ThemeManager.colorDangerRed
+                                DownloadPhase.COMPLETE -> ThemeManager.colorStatusGreen
+                                else -> ThemeManager.colorAccent
                             },
                             trackColor = Color.Black.copy(alpha = 0.3f)
                         )
@@ -5163,7 +5148,7 @@ class UnifiedActivity : ComponentActivity() {
                         Text(
                             text = "$percentage%",
                             style = MaterialTheme.typography.labelMedium,
-                            color = TextPrimary,
+                            color = ThemeManager.colorTextPrimary,
                             modifier = Modifier.width(40.dp)
                         )
                     }
@@ -5176,7 +5161,7 @@ class UnifiedActivity : ComponentActivity() {
                     Icon(
                         Icons.Outlined.Close,
                         contentDescription = "Cancel Download",
-                        tint = if (status != DownloadPhase.COMPLETE && status != DownloadPhase.CANCELLED) Color(0xFFFF6B6B) else TextSecondary
+                        tint = if (status != DownloadPhase.COMPLETE && status != DownloadPhase.CANCELLED) ThemeManager.colorDangerRed else ThemeManager.colorTextSecondary
                     )
                 }
                 if (ControllerHelper.isControllerConnected()) {
@@ -5193,16 +5178,16 @@ class UnifiedActivity : ComponentActivity() {
                 else null
             AlertDialog(
                 onDismissRequest = { showDeleteDialog = false },
-                containerColor = SurfaceDark,
-                title = { Text(stringResource(R.string.downloads_queue_cancel_download), color = TextPrimary) },
-                text = { Text("Cancel the download for ${gameName ?: "this game"} and delete all downloaded files?", color = TextSecondary) },
+                containerColor = ThemeManager.colorSurface,
+                title = { Text(stringResource(R.string.downloads_queue_cancel_download), color = ThemeManager.colorTextPrimary) },
+                text = { Text("Cancel the download for ${gameName ?: "this game"} and delete all downloaded files?", color = ThemeManager.colorTextSecondary) },
                 confirmButton = {
                     Button(
                         onClick = {
                             showDeleteDialog = false
                             DownloadService.cancelDownload(id)
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF6B6B))
+                        colors = ButtonDefaults.buttonColors(containerColor = ThemeManager.colorDangerRed)
                     ) {
                         Text(stringResource(R.string.downloads_queue_cancel_download), color = Color.White)
                     }
@@ -5210,9 +5195,9 @@ class UnifiedActivity : ComponentActivity() {
                 dismissButton = {
                     Button(
                         onClick = { showDeleteDialog = false },
-                        colors = ButtonDefaults.buttonColors(containerColor = CardDark)
+                        colors = ButtonDefaults.buttonColors(containerColor = ThemeManager.colorSurfaceVariant)
                     ) {
-                        Text(stringResource(R.string.common_ui_cancel), color = TextPrimary)
+                        Text(stringResource(R.string.common_ui_cancel), color = ThemeManager.colorTextPrimary)
                     }
                 }
             )
@@ -5227,17 +5212,17 @@ class UnifiedActivity : ComponentActivity() {
                 Icon(
                     Icons.Outlined.Store,
                     contentDescription = null,
-                    tint = TextSecondary,
+                    tint = ThemeManager.colorTextSecondary,
                     modifier = Modifier.size(64.dp)
                 )
                 Spacer(Modifier.height(16.dp))
-                Text("$storeName", style = MaterialTheme.typography.headlineSmall, color = TextPrimary, fontWeight = FontWeight.Bold)
+                Text("$storeName", style = MaterialTheme.typography.headlineSmall, color = ThemeManager.colorTextPrimary, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(8.dp))
-                Text(stringResource(R.string.common_ui_coming_soon), style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+                Text(stringResource(R.string.common_ui_coming_soon), style = MaterialTheme.typography.bodyMedium, color = ThemeManager.colorTextSecondary)
                 Spacer(Modifier.height(24.dp))
                 Button(
                     onClick = { /* TODO: Wire sign-in flow */ },
-                    colors = ButtonDefaults.buttonColors(containerColor = Accent),
+                    colors = ButtonDefaults.buttonColors(containerColor = ThemeManager.colorAccent),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text("Sign In to $storeName")
@@ -5286,7 +5271,7 @@ class UnifiedActivity : ComponentActivity() {
                     dlcApps.forEachIndexed { index, dlc ->
                         if (index > 0) {
                             Divider(
-                                color = CardBorder.copy(alpha = 0.5f),
+                                color = ThemeManager.colorOutline.copy(alpha = 0.5f),
                                 thickness = 0.5.dp,
                                 modifier = Modifier.padding(horizontal = 16.dp),
                             )
@@ -5308,12 +5293,12 @@ class UnifiedActivity : ComponentActivity() {
                                 checked = selectedDlcIds.contains(dlc.id),
                                 onCheckedChange = { if (it) selectedDlcIds.add(dlc.id) else selectedDlcIds.remove(dlc.id) },
                                 colors = CheckboxDefaults.colors(
-                                    checkedColor = Accent,
-                                    uncheckedColor = TextSecondary,
+                                    checkedColor = ThemeManager.colorAccent,
+                                    uncheckedColor = ThemeManager.colorTextSecondary,
                                     checkmarkColor = Color.White,
                                 ),
                             )
-                            Text(dlc.name, color = TextPrimary, fontSize = 13.sp)
+                            Text(dlc.name, color = ThemeManager.colorTextPrimary, fontSize = 13.sp)
                         }
                     }
                 }
@@ -5360,7 +5345,7 @@ class UnifiedActivity : ComponentActivity() {
             infoContent = {
                 if (isLoading) {
                     Spacer(Modifier.height(18.dp))
-                    CircularProgressIndicator(color = Accent)
+                    CircularProgressIndicator(color = ThemeManager.colorAccent)
                 } else {
                     DetailCard(
                         label = stringResource(R.string.library_games_install_path),
@@ -5369,7 +5354,7 @@ class UnifiedActivity : ComponentActivity() {
                     DetailCard(
                         stringResource(R.string.library_games_download_slash_install),
                         stringResource(R.string.library_games_download_install_available, StorageUtils.formatBinarySize(totalDownloadSize), StorageUtils.formatBinarySize(totalInstallSize), StorageUtils.formatBinarySize(availableBytes)),
-                        valueColor = if (!isInstallEnabled) DangerRed else null,
+                        valueColor = if (!isInstallEnabled) ThemeManager.colorDangerRed else null,
                     )
                 }
             }
@@ -5492,15 +5477,15 @@ class UnifiedActivity : ComponentActivity() {
             Text(
                 stringResource(R.string.cloud_saves_title),
                 style = MaterialTheme.typography.labelMedium,
-                color = TextSecondary,
+                color = ThemeManager.colorTextSecondary,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.1.sp,
             )
 
             Surface(
                 shape = RoundedCornerShape(14.dp),
-                color = SurfaceDark,
-                border = BorderStroke(1.dp, CardBorder),
+                color = ThemeManager.colorSurface,
+                border = BorderStroke(1.dp, ThemeManager.colorOutline),
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Row(
@@ -5514,7 +5499,7 @@ class UnifiedActivity : ComponentActivity() {
                         Text(
                             stringResource(R.string.cloud_sync_title),
                             style = MaterialTheme.typography.titleSmall,
-                            color = TextPrimary,
+                            color = ThemeManager.colorTextPrimary,
                             fontWeight = FontWeight.Bold,
                         )
                         Spacer(Modifier.height(4.dp))
@@ -5524,17 +5509,17 @@ class UnifiedActivity : ComponentActivity() {
                                 else R.string.cloud_sync_disabled_summary
                             ),
                             style = MaterialTheme.typography.bodySmall,
-                            color = TextSecondary,
+                            color = ThemeManager.colorTextSecondary,
                         )
                     }
                     Switch(
                         checked = cloudSyncEnabled,
                         onCheckedChange = onCloudSyncToggle,
                         colors = SwitchDefaults.colors(
-                            checkedThumbColor = TextPrimary,
-                            checkedTrackColor = Accent,
-                            uncheckedThumbColor = TextPrimary,
-                            uncheckedTrackColor = TextSecondary.copy(alpha = 0.5f),
+                            checkedThumbColor = ThemeManager.colorTextPrimary,
+                            checkedTrackColor = ThemeManager.colorAccent,
+                            uncheckedThumbColor = ThemeManager.colorTextPrimary,
+                            uncheckedTrackColor = ThemeManager.colorTextSecondary.copy(alpha = 0.5f),
                         )
                     )
                 }
@@ -5543,8 +5528,8 @@ class UnifiedActivity : ComponentActivity() {
             if (isWorking) {
                 LinearProgressIndicator(
                     modifier = Modifier.fillMaxWidth(),
-                    color = Accent,
-                    trackColor = CardBorder,
+                    color = ThemeManager.colorAccent,
+                    trackColor = ThemeManager.colorOutline,
                 )
             }
 
@@ -5568,9 +5553,9 @@ class UnifiedActivity : ComponentActivity() {
 
             Spacer(Modifier.height(4.dp))
             TextButton(onClick = onBack) {
-                Icon(Icons.Outlined.ArrowBack, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(18.dp))
+                Icon(Icons.Outlined.ArrowBack, contentDescription = null, tint = ThemeManager.colorTextSecondary, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(6.dp))
-                Text(stringResource(R.string.common_ui_back), color = TextSecondary)
+                Text(stringResource(R.string.common_ui_back), color = ThemeManager.colorTextSecondary)
             }
         }
     }
@@ -6183,7 +6168,7 @@ class UnifiedActivity : ComponentActivity() {
 
     @Composable
     fun EmptyStateMessage(message: String) {
-        Text(message, color = TextSecondary, modifier = Modifier.padding(16.dp))
+        Text(message, color = ThemeManager.colorTextSecondary, modifier = Modifier.padding(16.dp))
     }
 
     @Composable
@@ -6199,13 +6184,13 @@ class UnifiedActivity : ComponentActivity() {
                 Icon(
                     Icons.Outlined.Person,
                     contentDescription = null,
-                    tint = TextSecondary.copy(alpha = 0.5f),
+                    tint = ThemeManager.colorTextSecondary.copy(alpha = 0.5f),
                     modifier = Modifier.size(48.dp)
                 )
                 Spacer(Modifier.height(16.dp))
                 Text(
                     message,
-                    color = TextSecondary,
+                    color = ThemeManager.colorTextSecondary,
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                     lineHeight = 20.sp
@@ -6226,10 +6211,10 @@ class UnifiedActivity : ComponentActivity() {
                             indication = null,
                             onClick = onLoginClick
                         )
-                        .border(1.dp, Accent.copy(alpha = 0.5f), RoundedCornerShape(20.dp))
+                        .border(1.dp, ThemeManager.colorAccent.copy(alpha = 0.5f), RoundedCornerShape(20.dp))
                         .padding(horizontal = 20.dp, vertical = 10.dp)
                 ) {
-                    Text(buttonText, color = Accent, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                    Text(buttonText, color = ThemeManager.colorAccent, fontSize = 13.sp, fontWeight = FontWeight.Medium)
                 }
             }
         }
@@ -6251,8 +6236,8 @@ class UnifiedActivity : ComponentActivity() {
         var statusExpanded by remember { mutableStateOf(false) }
 
         ModalDrawerSheet(
-            drawerContainerColor = BgDark,
-            drawerContentColor = TextPrimary,
+            drawerContainerColor = ThemeManager.colorBackground,
+            drawerContentColor = ThemeManager.colorTextPrimary,
             modifier = Modifier.width(324.dp)
         ) {
             Column(
@@ -6264,8 +6249,8 @@ class UnifiedActivity : ComponentActivity() {
                 // ── Avatar Card ──
                 Surface(
                     shape = RoundedCornerShape(16.dp),
-                    color = SurfaceDark,
-                    border = BorderStroke(1.dp, CardBorder),
+                    color = ThemeManager.colorSurface,
+                    border = BorderStroke(1.dp, ThemeManager.colorOutline),
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable(
@@ -6298,7 +6283,7 @@ class UnifiedActivity : ComponentActivity() {
                                     text = persona?.name ?: stringResource(R.string.stores_accounts_not_signed_in),
                                     style = MaterialTheme.typography.titleSmall,
                                     fontWeight = FontWeight.Bold,
-                                    color = TextPrimary,
+                                    color = ThemeManager.colorTextPrimary,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
@@ -6308,14 +6293,14 @@ class UnifiedActivity : ComponentActivity() {
                                     else -> stringResource(R.string.stores_accounts_status_offline)
                                 }
                                 val statusColor = when (currentState) {
-                                    EPersonaState.Online -> StatusOnline
+                                    EPersonaState.Online -> ThemeManager.colorStatusGreen
                                     EPersonaState.Away -> StatusAway
                                     else -> StatusOffline
                                 }
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Box(Modifier.size(8.dp).background(statusColor, CircleShape))
                                     Spacer(Modifier.width(6.dp))
-                                    Text(statusLabel, style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                                    Text(statusLabel, style = MaterialTheme.typography.bodySmall, color = ThemeManager.colorTextSecondary)
                                 }
                             }
 
@@ -6327,7 +6312,7 @@ class UnifiedActivity : ComponentActivity() {
                             Icon(
                                 Icons.Outlined.ChevronRight,
                                 contentDescription = "Toggle status",
-                                tint = TextSecondary,
+                                tint = ThemeManager.colorTextSecondary,
                                 modifier = Modifier
                                     .size(20.dp)
                                     .graphicsLayer { rotationZ = chevronRotation }
@@ -6337,19 +6322,19 @@ class UnifiedActivity : ComponentActivity() {
                         // Expandable status options
                         AnimatedVisibility(visible = statusExpanded) {
                             Column(Modifier.padding(top = 12.dp)) {
-                                HorizontalDivider(color = TextSecondary.copy(alpha = 0.2f))
+                                HorizontalDivider(color = ThemeManager.colorTextSecondary.copy(alpha = 0.2f))
                                 Spacer(Modifier.height(8.dp))
-                                Text(stringResource(R.string.stores_accounts_status_header), style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                                Text(stringResource(R.string.stores_accounts_status_header), style = MaterialTheme.typography.labelSmall, color = ThemeManager.colorTextSecondary)
                                 Spacer(Modifier.height(8.dp))
 
                                 listOf(
-                                    Triple(EPersonaState.Online, stringResource(R.string.stores_accounts_status_online), StatusOnline),
+                                    Triple(EPersonaState.Online, stringResource(R.string.stores_accounts_status_online), ThemeManager.colorStatusGreen),
                                     Triple(EPersonaState.Away, stringResource(R.string.stores_accounts_status_away), StatusAway),
                                     Triple(EPersonaState.Invisible, stringResource(R.string.stores_accounts_status_invisible), StatusOffline)
                                 ).forEach { (state, label, color) ->
                                     val isSelected = currentState == state
                                     val rowBg by animateColorAsState(
-                                        targetValue = if (isSelected) Accent.copy(alpha = 0.12f) else Color.Transparent,
+                                        targetValue = if (isSelected) ThemeManager.colorAccent.copy(alpha = 0.12f) else Color.Transparent,
                                         animationSpec = tween(250),
                                         label = "statusRowBg"
                                     )
@@ -6371,7 +6356,7 @@ class UnifiedActivity : ComponentActivity() {
                                             .fillMaxWidth()
                                             .clip(RoundedCornerShape(8.dp))
                                             .background(rowBg)
-                                            .border(1.dp, Accent.copy(alpha = 0.4f * borderAlpha), RoundedCornerShape(8.dp))
+                                            .border(1.dp, ThemeManager.colorAccent.copy(alpha = 0.4f * borderAlpha), RoundedCornerShape(8.dp))
                                             .clickable(
                                                 interactionSource = remember { MutableInteractionSource() },
                                                 indication = null
@@ -6386,12 +6371,12 @@ class UnifiedActivity : ComponentActivity() {
                                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                                     ) {
                                         Box(Modifier.size(10.dp).background(color, CircleShape))
-                                        Text(label, color = TextPrimary, style = MaterialTheme.typography.bodyMedium)
+                                        Text(label, color = ThemeManager.colorTextPrimary, style = MaterialTheme.typography.bodyMedium)
                                         Spacer(Modifier.weight(1f))
                                         Icon(
                                             Icons.Outlined.Check,
                                             contentDescription = null,
-                                            tint = Accent,
+                                            tint = ThemeManager.colorAccent,
                                             modifier = Modifier
                                                 .size(16.dp)
                                                 .graphicsLayer {
@@ -6408,11 +6393,11 @@ class UnifiedActivity : ComponentActivity() {
                 }
 
                 Spacer(Modifier.height(20.dp))
-                HorizontalDivider(color = TextSecondary.copy(alpha = 0.15f))
+                HorizontalDivider(color = ThemeManager.colorTextSecondary.copy(alpha = 0.15f))
                 Spacer(Modifier.height(20.dp))
 
                 // ── Layouts ──
-                Text(stringResource(R.string.library_games_layouts_header), color = TextSecondary, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.4.sp, modifier = Modifier.padding(bottom = 4.dp))
+                Text(stringResource(R.string.library_games_layouts_header), color = ThemeManager.colorTextSecondary, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.4.sp, modifier = Modifier.padding(bottom = 4.dp))
                 Spacer(Modifier.height(8.dp))
 
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -6436,7 +6421,7 @@ class UnifiedActivity : ComponentActivity() {
                 Spacer(Modifier.height(16.dp))
 
                 // ── Stores ──
-                Text(stringResource(R.string.stores_accounts_stores_header), color = TextSecondary, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.4.sp, modifier = Modifier.padding(bottom = 4.dp))
+                Text(stringResource(R.string.stores_accounts_stores_header), color = ThemeManager.colorTextSecondary, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.4.sp, modifier = Modifier.padding(bottom = 4.dp))
                 Spacer(Modifier.height(8.dp))
 
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -6452,7 +6437,7 @@ class UnifiedActivity : ComponentActivity() {
                 Spacer(Modifier.height(16.dp))
 
                 // ── Content Types ──
-                Text(stringResource(R.string.settings_content_types_header), color = TextSecondary, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.4.sp, modifier = Modifier.padding(bottom = 4.dp))
+                Text(stringResource(R.string.settings_content_types_header), color = ThemeManager.colorTextSecondary, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.4.sp, modifier = Modifier.padding(bottom = 4.dp))
                 Spacer(Modifier.height(8.dp))
 
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -6474,17 +6459,17 @@ class UnifiedActivity : ComponentActivity() {
         val isPressed by interactionSource.collectIsPressedAsState()
 
         val bgColor by animateColorAsState(
-            targetValue = if (checked) Accent.copy(alpha = 0.2f) else CardDark,
+            targetValue = if (checked) ThemeManager.colorAccent.copy(alpha = 0.2f) else ThemeManager.colorSurfaceVariant,
             animationSpec = tween(200),
             label = "filterBg"
         )
         val borderColor by animateColorAsState(
-            targetValue = if (checked) Accent else CardBorder,
+            targetValue = if (checked) ThemeManager.colorAccent else ThemeManager.colorOutline,
             animationSpec = tween(200),
             label = "filterBorder"
         )
         val textColor by animateColorAsState(
-            targetValue = if (checked) Accent else TextSecondary,
+            targetValue = if (checked) ThemeManager.colorAccent else ThemeManager.colorTextSecondary,
             animationSpec = tween(200),
             label = "filterText"
         )
@@ -6609,13 +6594,13 @@ class UnifiedActivity : ComponentActivity() {
                     .widthIn(max = 360.dp)
                     .fillMaxWidth(0.9f),
                 shape = RoundedCornerShape(20.dp),
-                color = Color(0xFF0D1117)
+                color = ThemeManager.colorBackground
             ) {
                 Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {
                     // Title
                     Text(
                         stringResource(R.string.library_games_add_custom_game),
-                        color = TextPrimary,
+                        color = ThemeManager.colorTextPrimary,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 15.sp
                     )
@@ -6633,7 +6618,7 @@ class UnifiedActivity : ComponentActivity() {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Color.White.copy(alpha = 0.05f))
+                                .background(ThemeManager.colorSurfaceVariant)
                                 .clickable {
                                     if (!ensureAllFilesAccessForImports(context)) return@clickable
                                     exePickerLauncher.launch(arrayOf("application/octet-stream", "application/x-msdos-program", "application/x-msdownload", "*/*"))
@@ -6641,18 +6626,18 @@ class UnifiedActivity : ComponentActivity() {
                                 .padding(horizontal = 12.dp, vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(Icons.Outlined.FolderOpen, contentDescription = null, tint = Accent, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Outlined.FolderOpen, contentDescription = null, tint = ThemeManager.colorAccent, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(8.dp))
                             Text(
                                 if (selectedExePath == null) "Select Executable (.exe)" else java.io.File(selectedExePath!!).name,
-                                color = if (selectedExePath == null) TextSecondary else TextPrimary,
+                                color = if (selectedExePath == null) ThemeManager.colorTextSecondary else ThemeManager.colorTextPrimary,
                                 maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 12.sp
                             )
                         }
 
                         if (selectedExePath != null) {
                             Spacer(Modifier.height(4.dp))
-                            Text(selectedExePath!!, color = TextSecondary.copy(alpha = 0.6f), fontSize = 9.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text(selectedExePath!!, color = ThemeManager.colorTextSecondary.copy(alpha = 0.6f), fontSize = 9.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
 
                             Spacer(Modifier.height(8.dp))
 
@@ -6663,15 +6648,17 @@ class UnifiedActivity : ComponentActivity() {
                                 label = { Text(stringResource(R.string.library_games_game_name), fontSize = 11.sp) },
                                 singleLine = true,
                                 modifier = Modifier.fillMaxWidth(),
-                                textStyle = MaterialTheme.typography.bodySmall.copy(color = TextPrimary),
+                                textStyle = MaterialTheme.typography.bodySmall.copy(color = ThemeManager.colorTextPrimary),
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Accent,
-                                    unfocusedBorderColor = TextSecondary.copy(alpha = 0.3f),
-                                    focusedTextColor = TextPrimary,
-                                    unfocusedTextColor = TextPrimary,
-                                    cursorColor = Accent,
-                                    focusedLabelColor = Accent,
-                                    unfocusedLabelColor = TextSecondary
+                                    focusedBorderColor = ThemeManager.colorAccent,
+                                    unfocusedBorderColor = ThemeManager.colorTextSecondary.copy(alpha = 0.3f),
+                                    focusedTextColor = ThemeManager.colorTextPrimary,
+                                    unfocusedTextColor = ThemeManager.colorTextPrimary,
+                                    cursorColor = ThemeManager.colorAccent,
+                                    focusedLabelColor = ThemeManager.colorAccent,
+                                    unfocusedLabelColor = ThemeManager.colorTextSecondary,
+                                    focusedContainerColor = ThemeManager.colorSurfaceVariant,
+                                    unfocusedContainerColor = ThemeManager.colorSurfaceVariant
                                 ),
                                 shape = RoundedCornerShape(10.dp)
                             )
@@ -6683,17 +6670,17 @@ class UnifiedActivity : ComponentActivity() {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(10.dp))
-                                    .background(Color.White.copy(alpha = 0.05f))
+                                    .background(ThemeManager.colorSurfaceVariant)
                                     .padding(horizontal = 10.dp, vertical = 6.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(Icons.Outlined.Folder, contentDescription = null, tint = StatusOnline.copy(alpha = 0.7f), modifier = Modifier.size(14.dp))
+                                Icon(Icons.Outlined.Folder, contentDescription = null, tint = ThemeManager.colorStatusGreen.copy(alpha = 0.7f), modifier = Modifier.size(14.dp))
                                 Spacer(Modifier.width(6.dp))
                                 Column(Modifier.weight(1f)) {
-                                    Text("Game Folder (A: drive)", color = TextSecondary, fontSize = 9.sp)
+                                    Text("Game Folder (A: drive)", color = ThemeManager.colorTextSecondary, fontSize = 9.sp)
                                     Text(
                                         gameFolder ?: "Auto-detected",
-                                        color = if (gameFolder != null) TextPrimary else TextSecondary,
+                                        color = if (gameFolder != null) ThemeManager.colorTextPrimary else ThemeManager.colorTextSecondary,
                                         fontSize = 10.sp, maxLines = 1, overflow = TextOverflow.Ellipsis
                                     )
                                 }
@@ -6701,7 +6688,7 @@ class UnifiedActivity : ComponentActivity() {
                                     if (!ensureAllFilesAccessForImports(context)) return@IconButton
                                     folderPickerLauncher.launch(null)
                                 }, modifier = Modifier.size(28.dp)) {
-                                    Icon(Icons.Outlined.Edit, contentDescription = "Change", tint = Accent, modifier = Modifier.size(14.dp))
+                                    Icon(Icons.Outlined.Edit, contentDescription = "Change", tint = ThemeManager.colorAccent, modifier = Modifier.size(14.dp))
                                 }
                             }
                         }
@@ -6717,8 +6704,8 @@ class UnifiedActivity : ComponentActivity() {
                         OutlinedButton(
                             onClick = onDismiss,
                             shape = RoundedCornerShape(10.dp),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, TextSecondary.copy(alpha = 0.3f)),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = TextSecondary),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, ThemeManager.colorTextSecondary.copy(alpha = 0.3f)),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = ThemeManager.colorTextSecondary),
                             contentPadding = PaddingValues(horizontal = 14.dp, vertical = 0.dp),
                             modifier = Modifier.height(34.dp).widthIn(min = 72.dp)
                         ) {
@@ -6744,13 +6731,13 @@ class UnifiedActivity : ComponentActivity() {
                             },
                             enabled = addEnabled,
                             shape = RoundedCornerShape(10.dp),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, if (addEnabled) Accent.copy(alpha = 0.5f) else TextSecondary.copy(alpha = 0.2f)),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Accent),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, if (addEnabled) ThemeManager.colorAccent.copy(alpha = 0.5f) else ThemeManager.colorTextSecondary.copy(alpha = 0.2f)),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = ThemeManager.colorAccent),
                             contentPadding = PaddingValues(horizontal = 14.dp, vertical = 0.dp),
                             modifier = Modifier.height(34.dp).widthIn(min = 72.dp)
                         ) {
                             if (isAdding) {
-                                CircularProgressIndicator(color = Accent, modifier = Modifier.size(12.dp), strokeWidth = 2.dp)
+                                CircularProgressIndicator(color = ThemeManager.colorAccent, modifier = Modifier.size(12.dp), strokeWidth = 2.dp)
                             } else {
                                 Text(stringResource(R.string.common_ui_add), fontWeight = FontWeight.Medium, fontSize = 12.sp)
                             }
@@ -6931,8 +6918,8 @@ class UnifiedActivity : ComponentActivity() {
         ) {
             Surface(
                 shape = RoundedCornerShape(16.dp),
-                color = CardDark,
-                modifier = Modifier.width(340.dp).padding(16.dp).border(2.dp, Accent.copy(alpha=0.5f), RoundedCornerShape(16.dp))
+                color = ThemeManager.colorSurfaceVariant,
+                modifier = Modifier.width(340.dp).padding(16.dp).border(2.dp, ThemeManager.colorAccent.copy(alpha=0.5f), RoundedCornerShape(16.dp))
             ) {
                 Column(
                     modifier = Modifier.padding(24.dp),
@@ -6942,7 +6929,7 @@ class UnifiedActivity : ComponentActivity() {
                     Text(
                         text = title,
                         style = MaterialTheme.typography.titleMedium,
-                        color = TextPrimary,
+                        color = ThemeManager.colorTextPrimary,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(Modifier.height(16.dp))
@@ -6950,7 +6937,7 @@ class UnifiedActivity : ComponentActivity() {
                     Text(
                         text = status.message,
                         style = MaterialTheme.typography.bodySmall,
-                        color = TextSecondary,
+                        color = ThemeManager.colorTextSecondary,
                         textAlign = TextAlign.Center,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
@@ -6960,8 +6947,8 @@ class UnifiedActivity : ComponentActivity() {
                     androidx.compose.material3.LinearProgressIndicator(
                         progress = { status.progress.coerceIn(0f, 1f) },
                         modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
-                        color = Accent,
-                        trackColor = SurfaceDark
+                        color = ThemeManager.colorAccent,
+                        trackColor = ThemeManager.colorSurface
                     )
 
                     Spacer(Modifier.height(8.dp))
@@ -6969,7 +6956,7 @@ class UnifiedActivity : ComponentActivity() {
                     Text(
                         text = "$pct%",
                         style = MaterialTheme.typography.labelSmall,
-                        color = TextPrimary
+                        color = ThemeManager.colorTextPrimary
                     )
                 }
             }
@@ -6981,21 +6968,21 @@ class UnifiedActivity : ComponentActivity() {
         Dialog(onDismissRequest = onDismiss) {
             Surface(
                 shape = RoundedCornerShape(16.dp),
-                color = CardDark,
+                color = ThemeManager.colorSurfaceVariant,
                 modifier = Modifier.padding(16.dp)
             ) {
                 Column(modifier = Modifier.padding(24.dp)) {
                     Text(
                         text = stringResource(R.string.stores_accounts_custom_download_path),
                         style = MaterialTheme.typography.titleLarge,
-                        color = TextPrimary,
+                        color = ThemeManager.colorTextPrimary,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(Modifier.height(16.dp))
                     Text(
                         text = stringResource(R.string.stores_accounts_custom_download_path_description),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary
+                        color = ThemeManager.colorTextSecondary
                     )
                     Spacer(Modifier.height(24.dp))
                     Row(
@@ -7003,12 +6990,12 @@ class UnifiedActivity : ComponentActivity() {
                         horizontalArrangement = Arrangement.Center
                     ) {
                         TextButton(onClick = onDismiss) {
-                            Text(stringResource(R.string.common_ui_close), color = TextSecondary)
+                            Text(stringResource(R.string.common_ui_close), color = ThemeManager.colorTextSecondary)
                         }
                         Spacer(Modifier.width(8.dp))
                         Button(
                             onClick = onProceed,
-                            colors = ButtonDefaults.buttonColors(containerColor = Accent),
+                            colors = ButtonDefaults.buttonColors(containerColor = ThemeManager.colorAccent),
                             shape = RoundedCornerShape(8.dp)
                         ) {
                             Text(stringResource(R.string.common_ui_proceed))
@@ -7026,14 +7013,14 @@ fun ControllerBadge(text: String, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .defaultMinSize(minHeight = 22.dp)
-            .background(Color(0xFF30363D), RoundedCornerShape(15.dp))
-            .border(1.dp, Color(0xFF8B949E).copy(alpha = 0.5f), RoundedCornerShape(15.dp))
+            .background(ThemeManager.colorSurfaceHighlight, RoundedCornerShape(15.dp))
+            .border(1.dp, ThemeManager.colorOutline.copy(alpha = 0.5f), RoundedCornerShape(15.dp))
             .padding(horizontal = 10.dp, vertical = 3.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = text,
-            color = Color(0xFFE6EDF3),
+            color = ThemeManager.colorTextPrimary,
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
             lineHeight = 15.sp,

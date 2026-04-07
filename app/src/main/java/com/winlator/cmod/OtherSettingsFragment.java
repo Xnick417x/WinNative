@@ -29,6 +29,7 @@ import com.winlator.cmod.core.Callback;
 import com.winlator.cmod.core.FileUtils;
 import com.winlator.cmod.core.PreloaderDialog;
 import com.winlator.cmod.core.RefreshRateUtils;
+import com.winlator.cmod.core.ThemeManager;
 import com.winlator.cmod.midi.MidiManager;
 import com.winlator.cmod.xenvironment.ImageFsInstaller;
 
@@ -68,6 +69,33 @@ public class OtherSettingsFragment extends Fragment {
         View view = inflater.inflate(R.layout.other_settings_fragment, container, false);
         final Context context = requireContext();
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
+
+        // Apply theme backgrounds dynamically to root/scrollview since attributes aren't globally switched yet
+        view.setBackgroundColor(ThemeManager.getBackgroundColor());
+
+        // Initialize Theme Spinner
+        Spinner sAppTheme = view.findViewById(R.id.SAppTheme);
+        List<String> themes = new ArrayList<>();
+        themes.add(getString(R.string.settings_general_theme_blue));
+        themes.add(getString(R.string.settings_general_theme_dark));
+        
+        ArrayAdapter<String> themeAdapter = new ArrayAdapter<>(context, R.layout.spinner_item_themed, themes);
+        themeAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item_themed);
+        sAppTheme.setAdapter(themeAdapter);
+        sAppTheme.setSelection(ThemeManager.getCurrentTheme());
+        
+        sAppTheme.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View selectedView, int position, long id) {
+                if (ThemeManager.getCurrentTheme() != position) {
+                    ThemeManager.setTheme(context, position);
+                    requireActivity().recreate();
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
 
         // Initialize Refresh Rate Spinner
         sRefreshRate = view.findViewById(R.id.SRefreshRate);

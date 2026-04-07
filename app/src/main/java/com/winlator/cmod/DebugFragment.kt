@@ -48,6 +48,7 @@ class DebugFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         val view = inflater.inflate(R.layout.advanced_fragment, container, false)
+        view.setBackgroundColor(com.winlator.cmod.core.ThemeManager.getBackgroundColor())
         val context = requireContext()
         preferences = PreferenceManager.getDefaultSharedPreferences(context)
 
