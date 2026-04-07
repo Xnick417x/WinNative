@@ -222,20 +222,12 @@ private fun AutoBackupCard(
                 .padding(horizontal = 14.dp, vertical = 11.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = Modifier
-                    .size(34.dp)
-                    .clip(RoundedCornerShape(9.dp))
-                    .background(ThemeManager.colorSurfaceVariant),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.CloudSync,
-                    contentDescription = null,
-                    tint = if (enabled && googleSignedIn) ThemeManager.colorStatusGreen else ThemeManager.colorTextSecondary,
-                    modifier = Modifier.size(17.dp)
-                )
-            }
+            Icon(
+                imageVector = Icons.Filled.CloudSync,
+                contentDescription = null,
+                tint = if (enabled && googleSignedIn) ThemeManager.colorStatusGreen else ThemeManager.colorTextSecondary,
+                modifier = Modifier.size(24.dp)
+            )
 
             Spacer(Modifier.width(13.dp))
 
@@ -291,26 +283,6 @@ private fun GoogleAccountCard(
     onSignIn: () -> Unit,
     onSignOut: () -> Unit
 ) {
-    val pulse = rememberInfiniteTransition(label = "pulse_google")
-    val pulseScale by pulse.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.7f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "scale_google"
-    )
-    val pulseAlpha by pulse.animateFloat(
-        initialValue = 0.5f,
-        targetValue = 0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "alpha_google"
-    )
-
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -324,7 +296,12 @@ private fun GoogleAccountCard(
                 .padding(horizontal = 14.dp, vertical = 11.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconBox(icon = Icons.Filled.Gamepad, tint = ThemeManager.colorAccent)
+            Icon(
+                imageVector = Icons.Filled.Gamepad,
+                contentDescription = null,
+                tint = ThemeManager.colorAccent,
+                modifier = Modifier.size(24.dp)
+            )
 
             Spacer(Modifier.width(14.dp))
 
@@ -337,23 +314,12 @@ private fun GoogleAccountCard(
                 )
                 Spacer(Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(contentAlignment = Alignment.Center) {
-                        if (isLoggedIn) {
-                            Box(
-                                modifier = Modifier
-                                    .size(10.dp)
-                                    .scale(pulseScale)
-                                    .clip(CircleShape)
-                                    .background(ThemeManager.colorStatusGreen.copy(alpha = pulseAlpha))
-                            )
-                        }
-                        Box(
-                            modifier = Modifier
-                                .size(6.dp)
-                                .clip(CircleShape)
-                                .background(if (isLoggedIn) ThemeManager.colorStatusGreen else ThemeManager.colorTextSecondary.copy(alpha = 0.4f))
-                        )
-                    }
+                    Box(
+                        modifier = Modifier
+                            .size(6.dp)
+                            .clip(CircleShape)
+                            .background(if (isLoggedIn) ThemeManager.colorStatusGreen else ThemeManager.colorTextSecondary.copy(alpha = 0.4f))
+                    )
                     Spacer(Modifier.width(6.dp))
                     Text(
                         text = when {
@@ -418,7 +384,12 @@ private fun StoreLoginCard(
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                StatusIconBox(statusColor = statusColor)
+                Icon(
+                    imageVector = Icons.Filled.CloudSync,
+                    contentDescription = null,
+                    tint = statusColor,
+                    modifier = Modifier.size(24.dp)
+                )
                 Spacer(Modifier.width(14.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
@@ -504,63 +475,6 @@ private fun StoreBadgeRow(stores: List<String>) {
                     color = ThemeManager.colorTextPrimary,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Medium
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun IconBox(icon: ImageVector, tint: Color) {
-    Box(
-        modifier = Modifier
-            .size(38.dp)
-            .clip(RoundedCornerShape(11.dp))
-            .background(ThemeManager.colorSurfaceVariant),
-        contentAlignment = Alignment.Center
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = tint,
-            modifier = Modifier.size(21.dp)
-        )
-    }
-}
-
-@Composable
-private fun StatusIconBox(statusColor: Color) {
-    Box(
-        modifier = Modifier.size(38.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .clip(RoundedCornerShape(11.dp))
-                .background(ThemeManager.colorSurfaceVariant)
-        )
-        Icon(
-            imageVector = Icons.Filled.CloudSync,
-            contentDescription = null,
-            tint = statusColor,
-            modifier = Modifier.size(21.dp)
-        )
-        if (statusColor == ThemeManager.colorDangerRed || statusColor == ThemeManager.colorTextSecondary) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .size(16.dp)
-                    .clip(CircleShape)
-                    .background(ThemeManager.colorDangerRed)
-                    .border(1.dp, ThemeManager.colorSurface, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Close,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(10.dp)
                 )
             }
         }

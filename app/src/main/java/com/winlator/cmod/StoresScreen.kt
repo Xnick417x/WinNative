@@ -300,24 +300,6 @@ private fun StoreCard(
         )
     }
 
-    val pulse = rememberInfiniteTransition(label = "pulse_$name")
-    val pulseScale by pulse.animateFloat(
-        initialValue = 1f, targetValue = 1.7f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1000, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "scale_$name",
-    )
-    val pulseAlpha by pulse.animateFloat(
-        initialValue = 0.5f, targetValue = 0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1000, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "alpha_$name",
-    )
-
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -331,21 +313,12 @@ private fun StoreCard(
                 .padding(horizontal = 14.dp, vertical = 11.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            // Icon box
-            Box(
-                modifier = Modifier
-                    .size(38.dp)
-                    .clip(RoundedCornerShape(11.dp))
-                    .background(ThemeManager.colorSurfaceVariant),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = name,
-                    tint = accentColor,
-                    modifier = Modifier.size(21.dp),
-                )
-            }
+            Icon(
+                imageVector = icon,
+                contentDescription = name,
+                tint = accentColor,
+                modifier = Modifier.size(24.dp),
+            )
 
             Spacer(Modifier.width(14.dp))
 
@@ -361,26 +334,15 @@ private fun StoreCard(
                     Text(text = stringResource(R.string.common_ui_coming_soon), color = ThemeManager.colorTextSecondary, fontSize = 12.sp)
                 } else {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(contentAlignment = Alignment.Center) {
-                            if (isLoggedIn) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(10.dp)
-                                        .scale(pulseScale)
-                                        .clip(CircleShape)
-                                        .background(ThemeManager.colorStatusGreen.copy(alpha = pulseAlpha)),
-                                )
-                            }
-                            Box(
-                                modifier = Modifier
-                                    .size(6.dp)
-                                    .clip(CircleShape)
-                                    .background(
-                                        if (isLoggedIn) ThemeManager.colorStatusGreen
-                                        else ThemeManager.colorTextSecondary.copy(alpha = 0.4f)
-                                    ),
-                            )
-                        }
+                        Box(
+                            modifier = Modifier
+                                .size(6.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    if (isLoggedIn) ThemeManager.colorStatusGreen
+                                    else ThemeManager.colorTextSecondary.copy(alpha = 0.4f)
+                                ),
+                        )
                         Spacer(Modifier.width(6.dp))
                         Text(
                             text = if (isLoggedIn) stringResource(R.string.common_ui_signed_in) else stringResource(R.string.google_cloud_status_not_signed_in),
@@ -409,8 +371,8 @@ private fun ComingSoonBadge() {
     Row(
         modifier = Modifier
             .clip(RoundedCornerShape(6.dp))
-            .background(Color(0xFF1E1E2C))
-            .border(1.dp, Color(0xFF2E2E44), RoundedCornerShape(6.dp))
+            .background(ThemeManager.colorSurfaceVariant)
+            .border(1.dp, ThemeManager.colorOutline, RoundedCornerShape(6.dp))
             .padding(horizontal = 10.dp, vertical = 5.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -443,7 +405,7 @@ private fun ActionButton(label: String, textColor: Color, onClick: () -> Unit) {
         modifier = Modifier
             .scale(scale)
             .clip(RoundedCornerShape(8.dp))
-            .background(Color(0xFF1A1A26))
+            .background(ThemeManager.colorSurface)
             .border(1.dp, textColor.copy(alpha = 0.30f), RoundedCornerShape(8.dp))
             .pointerInput(onClick) {
                 detectTapGestures(
@@ -487,20 +449,12 @@ private fun SettingsToggleCard(
                 .padding(horizontal = 14.dp, vertical = 11.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(
-                modifier = Modifier
-                    .size(34.dp)
-                    .clip(RoundedCornerShape(9.dp))
-                    .background(ThemeManager.colorSurfaceVariant),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = accentColor,
-                    modifier = Modifier.size(17.dp),
-                )
-            }
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = accentColor,
+                modifier = Modifier.size(24.dp),
+            )
             Spacer(Modifier.width(13.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(title, color = ThemeManager.colorTextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Medium)
@@ -554,20 +508,12 @@ private fun SettingsDropdownCard(
                 .padding(horizontal = 14.dp, vertical = 11.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(
-                modifier = Modifier
-                    .size(34.dp)
-                    .clip(RoundedCornerShape(9.dp))
-                    .background(ThemeManager.colorSurfaceVariant),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = accentColor,
-                    modifier = Modifier.size(17.dp),
-                )
-            }
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = accentColor,
+                modifier = Modifier.size(24.dp),
+            )
             Spacer(Modifier.width(13.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(title, color = ThemeManager.colorTextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Medium)
@@ -585,7 +531,7 @@ private fun SettingsDropdownCard(
                     modifier = Modifier
                         .scale(scale)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(Color(0xFF1A1A26))
+                        .background(ThemeManager.colorSurfaceVariant)
                         .border(1.dp, selectedColor.copy(alpha = 0.30f), RoundedCornerShape(8.dp))
                         .pointerInput(Unit) {
                             detectTapGestures(
@@ -614,7 +560,7 @@ private fun SettingsDropdownCard(
                     expanded = expanded,
                     onDismissRequest = { expanded = false },
                     shape = RoundedCornerShape(8.dp),
-                    containerColor = Color(0xFF1C1C2E),
+                    containerColor = ThemeManager.getBackgroundColor().let { Color(it) },
                     border = BorderStroke(1.dp, ThemeManager.colorOutline),
                     modifier = Modifier.widthIn(max = 220.dp),
                 ) {
@@ -668,20 +614,12 @@ private fun FolderPathCard(
                 .padding(horizontal = 14.dp, vertical = 11.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(
-                modifier = Modifier
-                    .size(34.dp)
-                    .clip(RoundedCornerShape(9.dp))
-                    .background(ThemeManager.colorSurfaceVariant),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Folder,
-                    contentDescription = null,
-                    tint = ThemeManager.colorAccent,
-                    modifier = Modifier.size(17.dp),
-                )
-            }
+            Icon(
+                imageVector = Icons.Filled.Folder,
+                contentDescription = null,
+                tint = ThemeManager.colorAccent,
+                modifier = Modifier.size(24.dp),
+            )
             Spacer(Modifier.width(13.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(label, color = ThemeManager.colorTextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Medium)

@@ -79,7 +79,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     };
     private ContainerManager containerManager;
-    private boolean isDarkMode;
 
 
     @Override
@@ -305,7 +304,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         ContentDialog dialog = new ContentDialog(this, R.layout.about_dialog);
         dialog.findViewById(R.id.LLBottomBar).setVisibility(View.GONE);
 
-        if (isDarkMode) {
+        if (com.winlator.cmod.core.ThemeManager.isClassicDark()) {
             dialog.getWindow().setBackgroundDrawableResource(R.drawable.content_dialog_background_dark);
         } else {
             dialog.getWindow().setBackgroundDrawableResource(R.drawable.content_dialog_background);
