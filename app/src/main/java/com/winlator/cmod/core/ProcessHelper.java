@@ -254,7 +254,7 @@ public abstract class ProcessHelper {
 
     public static ArrayList<String> listRunningWineProcesses(){
         File proc = new File("/proc");
-        String[] filters = {"wine", "exe"};
+        String[] filters = {"wine", "exe", "box64", "fex"};
         String[] allPids;
         ArrayList<String> filteredPids = new ArrayList<String>();
         List<String> filterList = Arrays.asList(filters);
@@ -264,6 +264,8 @@ public abstract class ProcessHelper {
             }
         });
 
+        if (allPids == null) return filteredPids;
+
         for (int index = 0; index < allPids.length; index++){
             String data = "";
             try (FileInputStream fr = new FileInputStream(proc + "/" + allPids[index] + "/stat");
@@ -271,9 +273,13 @@ public abstract class ProcessHelper {
                 data = br.readLine();
             }
             catch (IOException e) {}
-            for (String filter : filterList) {
-                if (data.contains(filter))
-                    filteredPids.add(allPids[index]);
+            if (data != null) {
+                for (String filter : filterList) {
+                    if (data.contains(filter)) {
+                        filteredPids.add(allPids[index]);
+                        break;
+                    }
+                }
             }
         }
         return filteredPids;
