@@ -43,11 +43,11 @@ public class FakeInputWriter {
     public static final short BTN_Y = 308;
     public static final short BTN_TL = 310;
     public static final short BTN_TR = 311;
-    public static final short BTN_TL2 = 312;
-    public static final short BTN_TR2 = 313;
     public static final short BTN_SELECT = 314;
     public static final short BTN_START = 315;
-    private static final short[] BUTTON_MAP = {BTN_A, BTN_B, BTN_X, BTN_Y, BTN_TL, BTN_TR, BTN_SELECT, BTN_START, BTN_TL2, BTN_TR2};
+    public static final short BTN_THUMBL = 317;
+    public static final short BTN_THUMBR = 318;
+    private static final short[] BUTTON_MAP = {BTN_A, BTN_B, BTN_X, BTN_Y, BTN_TL, BTN_TR, BTN_SELECT, BTN_START, BTN_THUMBL, BTN_THUMBR};
     private boolean isOpen = false;
     private volatile boolean destroyed = false;
     private final boolean[] prevButtonStates = new boolean[12];
