@@ -199,7 +199,7 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
             Log.d("GuestProgramLauncherComponent", "Shell command is " + finalCommand);
             java.lang.Process process = Runtime.getRuntime().exec(
                     finalCommand,
-                    envVars.getEnvp(),
+                    envVars.toStringArray(),
                     workingDir != null ? workingDir : rootDir
             );
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
