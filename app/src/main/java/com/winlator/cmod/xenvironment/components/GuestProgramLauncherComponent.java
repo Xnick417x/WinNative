@@ -546,7 +546,7 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
             // --- Controller support: create shared memory files for all 4 slots ---
             // Pre-create all files to support hot-plug (controllers connected mid-game)
             final int MAX_PLAYERS = 4;
-            File tmpDir = new File(rootDir, "tmp");
+            File tmpDir = new File(rootDir, "usr/tmp");
             tmpDir.mkdirs();
             String tmpPath = tmpDir.getAbsolutePath();
             for (int i = 0; i < MAX_PLAYERS; i++) {
@@ -561,8 +561,8 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
                 }
             }
             envVars.put("EVSHIM_MAX_PLAYERS", String.valueOf(MAX_PLAYERS));
-            envVars.put("EVSHIM_DATA_PATH", "/tmp"); // Path inside the container
-            envVars.put("EVSHIM_WIN_PATH", "Z:\\tmp");
+            envVars.put("EVSHIM_DATA_PATH", tmpPath); // Absolute Android path for libfakeinput
+            envVars.put("EVSHIM_WIN_PATH", "Z:\\usr\\tmp");
         } else {
             Log.d("GuestProgramLauncher", "EVSHIM disabled for compatibility mode");
         }
@@ -583,7 +583,7 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
         // Setting up essential environment variables for Wine
         envVars.put("HOME", imageFs.home_path);
         envVars.put("USER", ImageFs.USER);
-        envVars.put("TMPDIR", rootDir.getPath() + "/tmp");
+        envVars.put("TMPDIR", rootDir.getPath() + "/usr/tmp");
         envVars.put("LD_LIBRARY_PATH", rootDir.getPath() + "/usr/lib" + ":" + "/system/lib64");
         envVars.put("XDG_DATA_DIRS", rootDir.getPath() + "/usr/share");
         envVars.put("XDG_CONFIG_DIRS", rootDir.getPath() + "/usr/etc/xdg");

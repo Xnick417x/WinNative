@@ -283,8 +283,9 @@ public class WinHandler {
         this.running = false;
         closeFakeInputWriter();
         if (this.socket != null) {
-            this.socket.close();
+            final DatagramSocket s = this.socket;
             this.socket = null;
+            new Thread(s::close).start();
         }
         synchronized (this.actions) {
             this.actions.notify();
@@ -367,13 +368,13 @@ public class WinHandler {
         GamepadState gamepadState = profile.getGamepadState();
         boolean useVirtualGamepad = profile.isVirtualGamepad() && this.activity.getInputControlsView().isShowTouchscreenControls();
         if (useVirtualGamepad) {
-            int slot = assignSlot(-1);
+            int slot = assignSlot(OSC_DEVICE_ID);
             if (slot >= 0 && this.writers[slot] != null) {
                 this.writers[slot].writeGamepadState(gamepadState);
                 return;
             }
         } else {
-            releaseSlot(-1);
+            releaseSlot(OSC_DEVICE_ID);
         }
     }
 
@@ -422,12 +423,12 @@ public class WinHandler {
     private void releaseSlot(int deviceId) {
         Integer slot = this.deviceToSlot.remove(deviceId);
         if (slot != null) {
-            // Do NOT close the writer here; instead, just zero out the state
             if (this.writers[slot] != null) {
-                this.writers[slot].writeGamepadState(new GamepadState()); // Zero out
+                this.writers[slot].softRelease();
             }
             this.usedSlots.remove(slot);
-            Log.d("WinHandler", "Device " + deviceId + " disconnected. Slot zeroed: " + slot);
+            this.controllers.remove(deviceId);
+            Log.d("WinHandler", "Device " + deviceId + " disconnected (or OSC disabled). Slot soft-released: " + slot);
         }
     }
 
@@ -449,7 +450,7 @@ public class WinHandler {
         }
         for (int i = 0; i < 4; i++) {
             if (this.writers[i] != null) {
-                this.writers[i].close();
+                this.writers[i].destroy();
                 this.writers[i] = null;
             }
         }

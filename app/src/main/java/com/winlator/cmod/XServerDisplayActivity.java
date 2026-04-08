@@ -464,7 +464,7 @@ public class XServerDisplayActivity extends AppCompatActivity {
 
         // Initialize the WinHandler after context is set up
         winHandler = new WinHandler(this);
-        File tmpDir = new File(ImageFs.find(this).getRootDir(), "tmp");
+        File tmpDir = new File(ImageFs.find(this).getRootDir(), "usr/tmp");
         tmpDir.mkdirs();
         winHandler.setFakeInputPath(tmpDir.getAbsolutePath());
 
