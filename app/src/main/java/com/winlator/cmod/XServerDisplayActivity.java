@@ -3787,8 +3787,10 @@ public class XServerDisplayActivity extends AppCompatActivity {
     }
 
     private String getWineStartCommand(GuestProgramLauncherComponent launcherComponent) {
-        // Initialize overrideEnvVars if not already done
-        EnvVars envVars = getOverrideEnvVars();
+        // Use the instance envVars which contains all necessary settings (icp-color, etc)
+        // Ensure override env vars from shortcut/container are also merged
+        EnvVars overrides = getOverrideEnvVars();
+        this.envVars.putAll(overrides);
 
         // Define default arguments
         String args = "";

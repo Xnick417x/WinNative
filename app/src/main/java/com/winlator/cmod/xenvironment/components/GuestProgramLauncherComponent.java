@@ -150,24 +150,27 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
         if (environment == null) return "";
 
         Context context = environment.getContext();
-        ImageFs imageFs = ImageFs.find(context);
+        ImageFs imageFs = environment.getImageFs();
         File rootDir = imageFs.getRootDir();
         StringBuilder output = new StringBuilder();
-        EnvVars envVars = new EnvVars();
+
+        // Use the instance envVars if available, otherwise new
+        EnvVars envVars = (this.envVars != null) ? new EnvVars(this.envVars.toString()) : new EnvVars();
+        
         envVars.put("HOME", imageFs.home_path);
         envVars.put("USER", ImageFs.USER);
-        envVars.put("TMPDIR", imageFs.getRootDir().getPath() + "/tmp");
+        envVars.put("TMPDIR", rootDir.getPath() + "/tmp");
         envVars.put("DISPLAY", ":0");
 
         String winePath = wineProfile == null ? imageFs.getWinePath() + "/bin"
                 : ContentsManager.getSourceFile(context, wineProfile, wineProfile.wineBinPath).getAbsolutePath();
         envVars.put("PATH", winePath + ":" +
-                imageFs.getRootDir().getPath() + "/usr/bin:" +
-                imageFs.getRootDir().getPath() + "/usr/local/bin");
-        envVars.put("LD_LIBRARY_PATH", imageFs.getRootDir().getPath() + "/usr/lib");
-        envVars.put("BOX64_LD_LIBRARY_PATH", imageFs.getRootDir().getPath() + "/usr/lib/x86_64-linux-gnu");
-        envVars.put("ANDROID_SYSVSHM_SERVER", imageFs.getRootDir().getPath() + UnixSocketConfig.SYSVSHM_SERVER_PATH);
-        envVars.put("FONTCONFIG_PATH", imageFs.getRootDir().getPath() + "/usr/etc/fonts");
+                rootDir.getPath() + "/usr/bin:" +
+                rootDir.getPath() + "/usr/local/bin");
+        envVars.put("LD_LIBRARY_PATH", rootDir.getPath() + "/usr/lib");
+        envVars.put("BOX64_LD_LIBRARY_PATH", rootDir.getPath() + "/usr/lib/x86_64-linux-gnu");
+        envVars.put("ANDROID_SYSVSHM_SERVER", rootDir.getPath() + UnixSocketConfig.SYSVSHM_SERVER_PATH);
+        envVars.put("FONTCONFIG_PATH", rootDir.getPath() + "/usr/etc/fonts");
 
         File libDir = imageFs.getLibDir();
         File sysvshm64 = ensureImageFsNativeLibrary(context, imageFs, "libandroid-sysvshm.so");
@@ -177,7 +180,7 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
             StringBuilder ldPreload = new StringBuilder();
             if (libredirect64.exists()) ldPreload.append(libredirect64.getPath());
             if (sysvshm64 != null && sysvshm64.exists()) {
-                if (ldPreload.length() > 0) ldPreload.append(" ");
+                if (ldPreload.length() > 0) ldPreload.append(":");
                 ldPreload.append(sysvshm64.getPath());
             }
             envVars.put("LD_PRELOAD", ldPreload.toString());
@@ -196,8 +199,8 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
             Log.d("GuestProgramLauncherComponent", "Shell command is " + finalCommand);
             java.lang.Process process = Runtime.getRuntime().exec(
                     finalCommand,
-                    envVars.toStringArray(),
-                    workingDir != null ? workingDir : imageFs.getRootDir()
+                    envVars.getEnvp(),
+                    workingDir != null ? workingDir : rootDir
             );
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                  BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
@@ -529,6 +532,7 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
         boolean openWithAndroidBrowser = preferences.getBoolean("open_with_android_browser", false);
         boolean shareAndroidClipboard = preferences.getBoolean("share_android_clipboard", false);
 
+        EnvVars envVars = new EnvVars();
         if (openWithAndroidBrowser)
             envVars.put("WINE_OPEN_WITH_ANDROID_BROWSER", "1");
         if (shareAndroidClipboard) {
@@ -536,7 +540,6 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
             envVars.put("WINE_TO_ANDROID_CLIPBOARD", "1");
         }
 
-        EnvVars envVars = new EnvVars();
         boolean enableEvshim = true;
 
         if (enableEvshim) {
@@ -580,8 +583,8 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
         // Setting up essential environment variables for Wine
         envVars.put("HOME", imageFs.home_path);
         envVars.put("USER", ImageFs.USER);
-        envVars.put("TMPDIR", "/tmp");
-        envVars.put("LD_LIBRARY_PATH", "/usr/lib:/usr/lib/aarch64-linux-gnu");
+        envVars.put("TMPDIR", rootDir.getPath() + "/tmp");
+        envVars.put("LD_LIBRARY_PATH", rootDir.getPath() + "/usr/lib" + ":" + "/system/lib64");
         envVars.put("XDG_DATA_DIRS", rootDir.getPath() + "/usr/share");
         envVars.put("XDG_CONFIG_DIRS", rootDir.getPath() + "/usr/etc/xdg");
         envVars.put("GST_PLUGIN_PATH", rootDir.getPath() + "/usr/lib/gstreamer-1.0");
@@ -590,7 +593,7 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
         envVars.put("WRAPPER_LAYER_PATH", rootDir.getPath() + "/usr/lib");
         envVars.put("WRAPPER_CACHE_PATH", rootDir.getPath() + "/usr/var/cache");
         envVars.put("WINE_NO_DUPLICATE_EXPLORER", "1");
-        envVars.put("PREFIX", "/usr");
+        envVars.put("PREFIX", rootDir.getPath() + "/usr");
         envVars.put("DISPLAY", ":0");
         envVars.put("WINE_DISABLE_FULLSCREEN_HACK", "1");
         envVars.put("ENABLE_UTIL_LAYER", "1");
@@ -611,7 +614,7 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
 
         Log.d("GuestProgramLauncherComponent", "WinePath is " + winePath);
 
-        envVars.put("PATH", "/usr/bin:/usr/local/bin:" + winePath);
+        envVars.put("PATH", winePath + ":" + rootDir.getPath() + "/usr/bin");
 
         envVars.put("ANDROID_SYSVSHM_SERVER", rootDir.getPath() + UnixSocketConfig.SYSVSHM_SERVER_PATH);
 
@@ -653,8 +656,6 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
         if (wineInfo.isArm64EC()) {
             // Do not preload libhook_impl.so or libfile_redirect_hook.so on Arm64EC.
         }
-
-        envVars.put("LD_PRELOAD", ld_preload);
 
         mergeExternalEnvVars(envVars, ld_preload, devInputDir.getAbsolutePath());
 
