@@ -2264,14 +2264,6 @@ public class XServerDisplayActivity extends AppCompatActivity {
         }
     }
 
-    private void extractInputDLLs() {
-        String inputAsset = "input_dlls.tzst";
-        File wineFolder = new File(imageFs.getWinePath() + "/lib/wine/");
-        boolean success = TarCompressorUtils.extract(TarCompressorUtils.Type.ZSTD, this, inputAsset, wineFolder);
-        if (!success)
-            Log.d("XServerDisplayActivity", "Failed to extract input dlls");
-    }
-
     private void setupWineSystemFiles() {
         Log.d("ContainerLaunch", "=== setupWineSystemFiles START === container=" + container.id +
                 " wine=" + wineVersion + " arch=" + (wineInfo != null ? wineInfo.getArch() : "null") +
@@ -2570,8 +2562,22 @@ public class XServerDisplayActivity extends AppCompatActivity {
         }
         WineUtils.createDosdevicesSymlinks(container, gameInstallPath);
 
-        // Keep Wine joystick defaults to avoid disabling DirectInput paths that some games need.
-        // This aligns behavior with the known-working Ludashi baseline.
+        int inputType = container.getInputType();
+        if (shortcut != null) {
+            String shortcutInputType = shortcut.getExtra("inputType");
+            if (!shortcutInputType.isEmpty()) {
+                inputType = Byte.parseByte(shortcutInputType);
+            }
+        }
+        boolean dinputEnabled = (inputType & 8) == 8;
+        boolean exclusiveXInput = container.isExclusiveXInput();
+        if (shortcut != null) {
+            String extra = shortcut.getExtra("exclusiveXInput");
+            if (!extra.isEmpty()) {
+                exclusiveXInput = extra.equals("1");
+            }
+        }
+        WineUtils.setJoystickRegistryKeys(container, dinputEnabled, exclusiveXInput);
 
         if (shortcut != null)
             startupSelection = getShortcutSetting("startupSelection", String.valueOf(container.getStartupSelection()));
@@ -2583,8 +2589,6 @@ public class XServerDisplayActivity extends AppCompatActivity {
             container.putExtra("startupSelection", startupSelection);
             containerDataChanged = true;
         }
-        
-        extractInputDLLs();
 
         if (containerDataChanged) {
             Log.d("XServerDisplayActivity", "Saving container data id=" + container.id +
@@ -2619,16 +2623,26 @@ public class XServerDisplayActivity extends AppCompatActivity {
         File devInputDir = new File(imageFs.getRootDir(), "dev/input");
         if (devInputDir.exists() || devInputDir.mkdirs()) {
             for (int i = 0; i < 4; i++) {
-                File eventFile = new File(devInputDir, "event" + i);
+                File eventFile = new File(devInputDir, NotificationCompat.CATEGORY_EVENT + i);
                 if (eventFile.exists()) eventFile.delete();
             }
             try {
-                new File(devInputDir, "event0").createNewFile();
+                new File(devInputDir, NotificationCompat.CATEGORY_EVENT + "0").createNewFile();
             } catch (IOException e) {}
         }
         winHandler.setFakeInputPath(devInputDir.getAbsolutePath());
         GuestProgramLauncherComponent.ensureImageFsNativeLibrary(this, imageFs, "libfakeinput.so");
         GuestProgramLauncherComponent.ensureImageFsNativeLibrary(this, imageFs, "libandroid-sysvshm.so");
+
+        // Sync input settings from container/shortcut
+        winHandler.setInputType((byte) container.getInputType());
+        if (shortcut != null) {
+            String inputType = shortcut.getExtra("inputType");
+            if (!inputType.isEmpty()) winHandler.setInputType(Byte.parseByte(inputType));
+
+            String xinputDisabledString = shortcut.getExtra("disableXinput", "false");
+            winHandler.setXInputDisabled(Boolean.parseBoolean(xinputDisabledString));
+        }
 
         // Exclusive Input Alignment
         boolean exclusiveXInput = container.isExclusiveXInput();
