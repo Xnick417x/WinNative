@@ -441,6 +441,13 @@ public class WinHandler {
         if (fakeInputPath != null && !fakeInputPath.isEmpty()) {
             this.fakeInputBasePath = fakeInputPath;
             Log.d("WinHandler", "FakeInputWriter base path set: " + fakeInputPath);
+            for (Map.Entry<Integer, Integer> entry : this.deviceToSlot.entrySet()) {
+                int slot = entry.getValue();
+                if (this.writers[slot] == null) {
+                    this.writers[slot] = new FakeInputWriter(fakeInputPath, slot);
+                    this.writers[slot].open();
+                }
+            }
         }
     }
 

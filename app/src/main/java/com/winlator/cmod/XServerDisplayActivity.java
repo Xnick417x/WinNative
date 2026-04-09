@@ -448,10 +448,6 @@ public class XServerDisplayActivity extends AppCompatActivity {
         
         setContentView(R.layout.xserver_display_activity);
 
-        // Initialize the WinHandler after context is set up
-        if (isOpenWithAndroidBrowser || isShareAndroidClipboard)
-            wineRequestHandler = new WineRequestHandler(this);
-
         // Initialize ControllerManager for multi-controller support
         ControllerManager.getInstance().init(this);
 
@@ -3567,8 +3563,11 @@ public class XServerDisplayActivity extends AppCompatActivity {
 
     @Override
     public boolean dispatchGenericMotionEvent(MotionEvent event) {
-        if (this.winHandler != null && this.winHandler.onGenericMotionEvent(event)) {
-            return true;
+        if (this.winHandler != null) {
+            this.winHandler.onGenericMotionEvent(event);
+        }
+        if (this.touchpadView != null) {
+            this.touchpadView.onExternalMouseEvent(event);
         }
         return super.dispatchGenericMotionEvent(event);
     }
