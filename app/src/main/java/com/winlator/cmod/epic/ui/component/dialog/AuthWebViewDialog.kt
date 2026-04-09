@@ -110,7 +110,9 @@ fun AuthWebViewDialog(
                                     // Secure defaults: no file/content access to limit OAuth surface
                                     allowFileAccess = false
                                     allowContentAccess = false
+                                    @Suppress("DEPRECATION")
                                     allowFileAccessFromFileURLs = false
+                                    @Suppress("DEPRECATION")
                                     allowUniversalAccessFromFileURLs = false
                                     mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
                                 }
@@ -130,6 +132,7 @@ fun AuthWebViewDialog(
                                         return super.shouldOverrideUrlLoading(view, request)
                                     }
 
+                                    @Suppress("DEPRECATION")
                                     override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
                                         handleUrl(url)
                                         return super.shouldOverrideUrlLoading(view, url)
@@ -143,6 +146,7 @@ fun AuthWebViewDialog(
                                         }
                                     }
 
+                                    @Suppress("DEPRECATION")
                                     override fun onReceivedError(
                                         view: WebView?,
                                         errorCode: Int,

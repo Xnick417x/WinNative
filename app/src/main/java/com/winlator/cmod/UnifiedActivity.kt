@@ -64,6 +64,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.LibraryBooks
+import androidx.compose.material.icons.automirrored.outlined.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -497,6 +498,7 @@ class UnifiedActivity : ComponentActivity() {
         }
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
+        @Suppress("DEPRECATION")
         window.navigationBarColor = 0xFF0D1117.toInt()
 
         // Exclude left edge from system back gesture so the drawer can capture swipes
@@ -1814,7 +1816,7 @@ class UnifiedActivity : ComponentActivity() {
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
-                    Divider(color = CardBorder, thickness = 0.5.dp)
+                    HorizontalDivider(color = CardBorder, thickness = 0.5.dp)
                     content()
                 }
             }
@@ -1829,7 +1831,7 @@ class UnifiedActivity : ComponentActivity() {
         Column(modifier = modifier) {
             actions.forEachIndexed { index, action ->
                 if (index > 0) {
-                    Divider(
+                    HorizontalDivider(
                         color = CardBorder.copy(alpha = 0.5f),
                         thickness = 0.5.dp,
                         modifier = Modifier.padding(horizontal = 16.dp),
@@ -2237,7 +2239,7 @@ class UnifiedActivity : ComponentActivity() {
                             ),
                             GameSettingsActionItem(
                                 title = stringResource(R.string.common_ui_back),
-                                icon = Icons.Outlined.ArrowBack,
+                                icon = Icons.AutoMirrored.Outlined.ArrowBack,
                                 onClick = { currentTab = GameSettingsScreen.Menu },
                             ),
                         ),
@@ -2458,7 +2460,7 @@ class UnifiedActivity : ComponentActivity() {
                             ),
                             GameSettingsActionItem(
                                 title = stringResource(R.string.common_ui_back),
-                                icon = Icons.Outlined.ArrowBack,
+                                icon = Icons.AutoMirrored.Outlined.ArrowBack,
                                 onClick = { currentTab = GameSettingsScreen.Menu },
                             ),
                         ),
@@ -3080,7 +3082,7 @@ class UnifiedActivity : ComponentActivity() {
 
                                     Spacer(Modifier.weight(1f))
                                     TextButton(onClick = { currentScreen = LibraryDetailScreen.Main }) {
-                                        Icon(Icons.Outlined.ArrowBack, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(18.dp))
+                                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(18.dp))
                                         Spacer(Modifier.width(6.dp))
                                         Text(stringResource(R.string.common_ui_back), color = TextSecondary)
                                     }
@@ -3287,7 +3289,7 @@ class UnifiedActivity : ComponentActivity() {
                         fontSize = 10.sp,
                     )
                     if (onClick != null) {
-                        Icon(Icons.Outlined.OpenInNew, contentDescription = null, modifier = Modifier.size(10.dp), tint = Accent.copy(alpha = 0.6f))
+                        Icon(Icons.AutoMirrored.Outlined.OpenInNew, contentDescription = null, modifier = Modifier.size(10.dp), tint = Accent.copy(alpha = 0.6f))
                     }
                 }
                 Text(
@@ -4154,7 +4156,7 @@ class UnifiedActivity : ComponentActivity() {
                 ) {
                     dlcApps.forEachIndexed { index, dlc ->
                         if (index > 0) {
-                            Divider(
+                            HorizontalDivider(
                                 color = CardBorder.copy(alpha = 0.5f),
                                 thickness = 0.5.dp,
                                 modifier = Modifier.padding(horizontal = 16.dp),
@@ -4921,7 +4923,7 @@ class UnifiedActivity : ComponentActivity() {
                         onClick = { if (queueSize > 1) { queueSize--; PrefManager.downloadQueueSize = queueSize } },
                         modifier = Modifier.size(24.dp)
                     ) {
-                        Icon(Icons.Outlined.KeyboardArrowLeft, contentDescription = "Decrease Queue", tint = TextPrimary, modifier = Modifier.size(18.dp))
+                        Icon(Icons.AutoMirrored.Outlined.KeyboardArrowLeft, contentDescription = "Decrease Queue", tint = TextPrimary, modifier = Modifier.size(18.dp))
                     }
                     Text(
                         text = queueSize.toString(),
@@ -4934,7 +4936,7 @@ class UnifiedActivity : ComponentActivity() {
                         onClick = { queueSize++; PrefManager.downloadQueueSize = queueSize; com.winlator.cmod.steam.service.SteamService.checkQueue() },
                         modifier = Modifier.size(24.dp)
                     ) {
-                        Icon(Icons.Outlined.KeyboardArrowRight, contentDescription = "Increase Queue", tint = TextPrimary, modifier = Modifier.size(18.dp))
+                        Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = "Increase Queue", tint = TextPrimary, modifier = Modifier.size(18.dp))
                     }
                 }
 
@@ -5313,7 +5315,7 @@ class UnifiedActivity : ComponentActivity() {
                 ) {
                     dlcApps.forEachIndexed { index, dlc ->
                         if (index > 0) {
-                            Divider(
+                            HorizontalDivider(
                                 color = CardBorder.copy(alpha = 0.5f),
                                 thickness = 0.5.dp,
                                 modifier = Modifier.padding(horizontal = 16.dp),
@@ -5607,7 +5609,7 @@ class UnifiedActivity : ComponentActivity() {
 
             Spacer(Modifier.height(4.dp))
             TextButton(onClick = onBack) {
-                Icon(Icons.Outlined.ArrowBack, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(18.dp))
+                Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(6.dp))
                 Text(stringResource(R.string.common_ui_back), color = TextSecondary)
             }

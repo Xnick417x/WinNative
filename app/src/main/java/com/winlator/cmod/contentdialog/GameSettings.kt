@@ -40,6 +40,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Extension
 import androidx.compose.material.icons.outlined.HelpOutline
@@ -2644,7 +2645,7 @@ private fun InputSection(state: GameSettingsStateHolder) {
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        Icons.Outlined.HelpOutline,
+                        Icons.AutoMirrored.Outlined.HelpOutline,
                         contentDescription = null,
                         tint = TextPrimary,
                         modifier = Modifier.size(18.dp)
@@ -2696,7 +2697,7 @@ private fun InputSection(state: GameSettingsStateHolder) {
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        Icons.Outlined.HelpOutline,
+                        Icons.AutoMirrored.Outlined.HelpOutline,
                         contentDescription = null,
                         tint = TextPrimary,
                         modifier = Modifier.size(18.dp)

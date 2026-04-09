@@ -139,6 +139,7 @@ class InputControlsFragment(private val selectedProfileId: Int) : Fragment() {
     }
 
     @Suppress("deprecation")
+    @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == MainActivity.OPEN_FILE_REQUEST_CODE.toInt() && resultCode == Activity.RESULT_OK) {
             try {

@@ -630,13 +630,9 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
         File fakeinputSrc = new File(nativeLibDir, "libfakeinput.so");
 
         if (!fakeinputDest.exists()) {
-            try {
-                if (fakeinputSrc.exists()) {
-                    FileUtils.copy(fakeinputSrc, fakeinputDest);
-                    Log.d("GuestLauncher", "Copied libfakeinput.so to imagefs");
-                }
-            } catch (IOException e) {
-                Log.e("GuestLauncher", "Failed to copy libfakeinput.so", e);
+            if (fakeinputSrc.exists()) {
+                FileUtils.copy(fakeinputSrc, fakeinputDest);
+                Log.d("GuestLauncher", "Copied libfakeinput.so to imagefs");
             }
         }
 
