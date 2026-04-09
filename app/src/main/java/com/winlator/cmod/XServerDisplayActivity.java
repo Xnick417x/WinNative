@@ -448,6 +448,22 @@ public class XServerDisplayActivity extends AppCompatActivity {
         
         setContentView(R.layout.xserver_display_activity);
 
+        imageFs = ImageFs.find(this);
+        File devInputDir = new File(imageFs.getRootDir(), "dev/input");
+        if (devInputDir.exists() || devInputDir.mkdirs()) {
+            for (int i = 0; i < 4; i++) {
+                File eventFile = new File(devInputDir, "event" + i);
+                if (eventFile.exists()) eventFile.delete();
+            }
+            try {
+                new File(devInputDir, "event0").createNewFile();
+            } catch (IOException e) {}
+        }
+        winHandler = new WinHandler(this);
+        winHandler.setFakeInputPath(devInputDir.getAbsolutePath());
+        GuestProgramLauncherComponent.ensureImageFsNativeLibrary(this, imageFs, "libfakeinput.so");
+        GuestProgramLauncherComponent.ensureImageFsNativeLibrary(this, imageFs, "libandroid-sysvshm.so");
+
         // Initialize ControllerManager for multi-controller support
         ControllerManager.getInstance().init(this);
 
@@ -540,22 +556,6 @@ public class XServerDisplayActivity extends AppCompatActivity {
                 navigationComposeView.requestFocus();
             }
         });
-
-        imageFs = ImageFs.find(this);
-        File devInputDir = new File(imageFs.getRootDir(), "dev/input");
-        if (devInputDir.exists() || devInputDir.mkdirs()) {
-            for (int i = 0; i < 4; i++) {
-                File eventFile = new File(devInputDir, "event" + i);
-                if (eventFile.exists()) eventFile.delete();
-            }
-            try {
-                new File(devInputDir, "event0").createNewFile();
-            } catch (IOException e) {}
-        }
-        winHandler = new WinHandler(this);
-        winHandler.setFakeInputPath(devInputDir.getAbsolutePath());
-        GuestProgramLauncherComponent.ensureImageFsNativeLibrary(this, imageFs, "libfakeinput.so");
-        GuestProgramLauncherComponent.ensureImageFsNativeLibrary(this, imageFs, "libandroid-sysvshm.so");
 
         String screenSize = Container.DEFAULT_SCREEN_SIZE;
         containerManager = new ContainerManager(this);
@@ -1982,6 +1982,7 @@ public class XServerDisplayActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        if (!exitRequested.get()) exit();
         super.onDestroy();
         // Schedule a deferred update check 10 s after game exit
         com.winlator.cmod.core.UpdateChecker.INSTANCE.schedulePostGameCheck(this);
@@ -2636,18 +2637,6 @@ public class XServerDisplayActivity extends AppCompatActivity {
 
         boolean dinputEnabled = (container.getInputType() & WinHandler.FLAG_INPUT_TYPE_DINPUT) != 0;
         WineUtils.setJoystickRegistryKeys(container, dinputEnabled, exclusiveXInput);
-
-        File devInputDir = new File(imageFs.getRootDir(), "dev/input");
-        if (devInputDir.exists() || devInputDir.mkdirs()) {
-            File event0 = new File(devInputDir, "event0");
-            if (!event0.exists()) {
-                try {
-                    event0.createNewFile();
-                } catch (IOException e) {
-                }
-            }
-        }
-        winHandler.setFakeInputPath(devInputDir.getAbsolutePath());
 
         guestProgramLauncherComponent = new GuestProgramLauncherComponent(
                 contentsManager,
@@ -3575,16 +3564,10 @@ public class XServerDisplayActivity extends AppCompatActivity {
 
     @Override
     public boolean dispatchGenericMotionEvent(MotionEvent event) {
-        boolean handledByWinHandler = false;
-        boolean handledByTouchpadView = false;
-        if (this.winHandler != null) {
-            handledByWinHandler = this.winHandler.onGenericMotionEvent(event);
+        if (this.winHandler != null && this.winHandler.onGenericMotionEvent(event)) {
+            return true;
         }
-        if (this.touchpadView != null) {
-            handledByTouchpadView = this.touchpadView.onExternalMouseEvent(event);
-        }
-        boolean handledBySuper = super.dispatchGenericMotionEvent(event);
-        return handledByWinHandler || handledByTouchpadView || handledBySuper;
+        return super.dispatchGenericMotionEvent(event);
     }
 
 
@@ -3592,14 +3575,10 @@ public class XServerDisplayActivity extends AppCompatActivity {
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        boolean z = false;
-        if (event.getAction() != 0 || (event.getKeyCode() != 110 && event.getKeyCode() != 3 && event.getKeyCode() != 109)) {
-            return !(this.inputControlsView.onKeyEvent(event) || (this.winHandler != null && this.winHandler.onKeyEvent(event)) || (this.xServer != null && !this.xServer.keyboard.onKeyEvent(event))) || (!ExternalController.isGameController(event.getDevice()) && super.dispatchKeyEvent(event));
+        if ((this.inputControlsView.onKeyEvent(event) || (this.winHandler != null && this.winHandler.onKeyEvent(event))) || (this.xServer != null && !this.xServer.keyboard.onKeyEvent(event))) {
+            return true;
         }
-        if (this.inputControlsView.onKeyEvent(event) || (this.winHandler != null && this.winHandler.onKeyEvent(event) && this.xServer != null && this.xServer.keyboard.onKeyEvent(event))) {
-            z = true;
-        }
-        return true;
+        return !ExternalController.isGameController(event.getDevice()) && super.dispatchKeyEvent(event);
     }
 
     public InputControlsView getInputControlsView() {
