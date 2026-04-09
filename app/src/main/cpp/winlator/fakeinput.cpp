@@ -285,18 +285,14 @@ EXPORT int ioctl(int fd, int op, ...) {
         struct input_id id;
         memset(&id, 0, sizeof(id));
         id.bustype = 0x03;
-        id.vendor = 0x1234 + event_number;
-        id.product = 0x5678 + event_number;
+        id.vendor = 0x045e; // Microsoft
+        id.product = 0x028e; // Xbox 360 Controller
         id.version = 0x0110;
         memcpy(argp, (void *)&id, sizeof(id));
         return 0;
     } else if (type == 0x45 && number == 0x6) {
         Logger::log("Hooking ioctl EVIOCGNAME for event %s\n", event);
-        char *name;
-
-        asprintf(&name, "Generic HID Gamepad %d", event_number);
-
-        strcpy((char *)argp, name);
+        strcpy((char *)argp, "Microsoft X-Box 360 pad");
         return 0;
     } else if (type == 0x45 && number == 0x9) {
         Logger::log("Hooking ioctl EVIOCGPROP for event %s\n", event);
@@ -317,21 +313,9 @@ EXPORT int ioctl(int fd, int op, ...) {
     } else if (type == 0x45 && number == 0x21) {
         Logger::log("Hooking ioctl EVIOCGBIT(EV_KEY, len) for event %s\n", event);
         char bitmask[KEY_MAX / 8] = {0};
-        for (int i = 0x130; i <= 0x13e; i++) {
-            if (i == 0x130)
-                bitmask[BTN_A / 8] |= (1 << (BTN_A % 8));
-            else if (i == 0x131)
-                bitmask[BTN_B / 8] |= (1 << (BTN_B % 8));
-            else if (i == 0x132)
-                continue;
-            else if (i == 0x133)
-                bitmask[BTN_X / 8] |= (1 << (BTN_X % 8));
-            else if (i == 0x134)
-                bitmask[BTN_Y / 8] |= (1 << (BTN_Y % 8));
-            else if (i == 0x135)
-                continue;
-            else
-                bitmask[i / 8] |= (1 << (i % 8));
+        int buttons[] = {BTN_A, BTN_B, BTN_X, BTN_Y, BTN_TL, BTN_TR, BTN_SELECT, BTN_START, BTN_THUMBL, BTN_THUMBR, BTN_MODE};
+        for (int btn : buttons) {
+            bitmask[btn / 8] |= (1 << (btn % 8));
         }
         memcpy(argp, (void *)&bitmask, sizeof(bitmask));
         return 0;
@@ -343,35 +327,28 @@ EXPORT int ioctl(int fd, int op, ...) {
     } else if (type == 0x45 && number == 0x23) {
         Logger::log("Hooking ioctl EVIOCGBIT(EV_ABS, len) for event %s\n", event);
         char bitmask[ABS_MAX / 8] = {0};
-        bitmask[ABS_X / 8] |= (1 << (ABS_X % 8));
-        bitmask[ABS_Y / 8] |= (1 << (ABS_Y % 8));
-        bitmask[ABS_RX / 8] |= (1 << (ABS_RX % 8));
-        bitmask[ABS_RY / 8] |= (1 << (ABS_RY % 8));
-        bitmask[ABS_GAS / 8] |= (1 << (ABS_GAS % 8));
-        bitmask[ABS_BRAKE / 8] |= (1 << (ABS_BRAKE % 8));
-        bitmask[ABS_HAT0X / 8] |= (1 << (ABS_HAT0X % 8));
-        bitmask[ABS_HAT0Y / 8] |= (1 << (ABS_HAT0Y % 8));
+        short axes[] = {ABS_X, ABS_Y, ABS_RX, ABS_RY, ABS_Z, ABS_RZ, ABS_HAT0X, ABS_HAT0Y};
+        for (short axis : axes) {
+            bitmask[axis / 8] |= (1 << (axis % 8));
+        }
         memcpy(argp, (void *)&bitmask, sizeof(bitmask));
         return 0;
     } else if (type == 0x45 && number == 0x35) {
         Logger::log("Hooking ioctl EVIOCGBIT(EV_FF, len) for event %s\n", event);
-        char bitmask[FF_MAX / 8] = {0};
-        bitmask[FF_RUMBLE / 8] |= 0;
-        bitmask[FF_SINE / 8] |= 0;
         return 0;
     } else if (type == 0x45 && number >= 0x40 && number <= 0x51) {
         Logger::log("Hooking ioctl EVIOCGABS(ABS) for event %s\n", event);
         struct input_absinfo abs_info;
         memset(&abs_info, 0, sizeof(abs_info));
-        if (number >= 0x40 && number <= 0x44) {
+        if (number >= 0x40 && number <= 0x44) { // ABS_X to ABS_RY
             abs_info.value = 0;
             abs_info.minimum = -32768;
             abs_info.maximum = 32767;
-        } else if (number >= 0x49 && number <= 0x4A) {
+        } else if (number == 0x42 || number == 0x45) { // ABS_Z, ABS_RZ (Triggers)
             abs_info.value = 0;
             abs_info.minimum = 0;
             abs_info.maximum = 255;
-        } else if (number >= 0x50 && number <= 0x51) {
+        } else if (number >= 0x50 && number <= 0x51) { // ABS_HAT0X, ABS_HAT0Y
             abs_info.value = 0;
             abs_info.minimum = -1;
             abs_info.maximum = 1;
@@ -383,9 +360,7 @@ EXPORT int ioctl(int fd, int op, ...) {
         return 0;
     } else if (type == 0x6A && number == 0x13) {
         Logger::log("Hooking ioctl JSIOCGNAME(len) for event %s\n", event);
-        char *name;
-        asprintf(&name, "Generic HID Gamepad %d", event_number);
-        strcpy((char *)argp, name);
+        strcpy((char *)argp, "Microsoft X-Box 360 pad");
         return 0;
     } else {
         Logger::log("Unhandled evdev ioctl, type %d number %d\n", type, number);
