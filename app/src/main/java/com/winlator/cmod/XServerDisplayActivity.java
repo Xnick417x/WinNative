@@ -677,18 +677,6 @@ public class XServerDisplayActivity extends AppCompatActivity {
             }
         }
         numControllers = Math.max(1, Math.min(numControllers, 4));
-        for (int i = 0; i < numControllers; i++) {
-            try {
-                String memName = (i == 0) ? "gamepad.mem" : "gamepad" + i + ".mem";
-                File memFile = new File(tmpDir, memName);
-                if (!memFile.exists()) {
-                    try (java.io.RandomAccessFile raf = new java.io.RandomAccessFile(memFile, "rw")) {
-                        raf.setLength(64);
-                    }
-                }
-            } catch (Exception e) {
-            }
-        }
 
         String containerCpuList = container.getCPUList(true);
         String containerCpuListWoW64 = container.getCPUListWoW64(true);

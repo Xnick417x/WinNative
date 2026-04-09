@@ -96,8 +96,11 @@ const char *get_event(const char *pathname) {
 
 __attribute__((visibility("hidden")))
 int get_event_number(const char *event) {
-    int event_number = atoi(event + strlen(event) - 1);
-    return event_number;
+    // Correctly parse event number (e.g. "event10" -> 10)
+    if (strncmp(event, "event", 5) == 0) {
+        return atoi(event + 5);
+    }
+    return atoi(event + strlen(event) - 1);
 }
 
 EXPORT int open(const char *pathname, int flags, ...) {
@@ -411,16 +414,22 @@ EXPORT ssize_t read(int fd, void *buf, size_t count) {
         ssize_t bytes_read = 0;
         int flags = fcntl(fd, F_GETFL);
         bool isNonBlock = flags & O_NONBLOCK;
+        
         bytes_read = syscall(SYS_read, fd, buf, count);
-        while (bytes_read == 0 && !isNonBlock) {
+        
+        // Fix: Avoid infinite loop on regular files. 
+        // Regular files return 0 at EOF, they don't block.
+        // We should only retry if it's NOT a regular file or if we want to mock blocking.
+        // For now, let's add a small sleep to avoid 100% CPU and a retry limit.
+        int retries = 0;
+        while (bytes_read == 0 && !isNonBlock && retries < 100) {
             setup_signal_handler();
             if (stop_flag) {
-                bytes_read = -1;
-                errno = EINTR;
-                return bytes_read;
+                return -1;
             }
+            usleep(10000); // 10ms
             bytes_read = syscall(SYS_read, fd, buf, count);
-            continue;
+            retries++;
         }
 
         return bytes_read;

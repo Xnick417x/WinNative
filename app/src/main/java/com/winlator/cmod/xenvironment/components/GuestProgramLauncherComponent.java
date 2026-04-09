@@ -540,32 +540,20 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
             envVars.put("WINE_TO_ANDROID_CLIPBOARD", "1");
         }
 
-        boolean enableEvshim = true;
-
-        if (enableEvshim) {
-            // --- Controller support: create shared memory files in /dev/input ---
-            // libfakeinput.so/evshim will look here.
-            final int MAX_PLAYERS = 4;
-            File devInputDir = new File(imageFs.getRootDir(), "dev/input");
-            devInputDir.mkdirs();
-            String devInputPath = devInputDir.getAbsolutePath();
-            for (int i = 0; i < MAX_PLAYERS; i++) {
-                String memPath = (i == 0)
-                        ? devInputPath + "/gamepad.mem"
-                        : devInputPath + "/gamepad" + i + ".mem";
-                File memFile = new File(memPath);
-                try (java.io.RandomAccessFile raf = new java.io.RandomAccessFile(memFile, "rw")) {
-                    raf.setLength(64);
-                } catch (IOException e) {
-                    Log.e("GuestProgramLauncher", "Failed to create mem file for player " + i, e);
-                }
+        // Setup FAKE_EVDEV_DIR matching reference app exactly
+        // Controller support: create event device files in dev/input
+        // libfakeinput.so (reference app logic) expects eventX files.
+        final int MAX_PLAYERS = 4;
+        File devInputDir = new File(imageFs.getRootDir(), "dev/input");
+        devInputDir.mkdirs();
+        String devInputPath = devInputDir.getAbsolutePath();
+        for (int i = 0; i < MAX_PLAYERS; i++) {
+            File eventFile = new File(devInputDir, "event" + i);
+            try (java.io.RandomAccessFile raf = new java.io.RandomAccessFile(eventFile, "rw")) {
+                if (raf.length() == 0) raf.setLength(64); // Initialize if new
+            } catch (IOException e) {
+                Log.e("GuestProgramLauncher", "Failed to create event file for player " + i, e);
             }
-            envVars.put("EVSHIM_MAX_PLAYERS", String.valueOf(MAX_PLAYERS));
-            envVars.put("EVSHIM_DATA_PATH", "/dev/input"); // Path inside the container
-            envVars.put("EVSHIM_WIN_PATH", "Z:\\dev\\input");
-            envVars.put("FAKE_EVDEV_DIR", "/dev/input"); // For libfakeinput logic if it overlaps
-        } else {
-            Log.d("GuestProgramLauncher", "EVSHIM disabled for compatibility mode");
         }
 
         addBox64EnvVars(envVars, enableBox64Logs);
@@ -643,15 +631,8 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
         }
         envVars.put("LD_PRELOAD", ld_preload);
 
-        // Setup FAKE_EVDEV_DIR matching reference app exactly
-        File devInputDir = new File(imageFs.getRootDir(), "dev/input");
-        devInputDir.mkdirs();
-        File event0 = new File(devInputDir, "event0");
-        if (!event0.exists()) {
-            try { event0.createNewFile(); } catch (Exception e) {}
-        }
         // FAKE_EVDEV_DIR in reference app points to ABSOLUTE path for the library to read
-        envVars.put("FAKE_EVDEV_DIR", devInputDir.getAbsolutePath());
+        envVars.put("FAKE_EVDEV_DIR", devInputPath);
 
         // Winlator legacy hooks (libhook_impl.so, libfile_redirect_hook.so) break FEXCore rendering and stability.
         // Removed them for Arm64EC mode to match Bionic/Ludashi implementation.
@@ -659,7 +640,7 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
             // Do not preload libhook_impl.so or libfile_redirect_hook.so on Arm64EC.
         }
 
-        mergeExternalEnvVars(envVars, ld_preload, devInputDir.getAbsolutePath());
+        mergeExternalEnvVars(envVars, ld_preload, devInputPath);
 
         // Determine emulator based on Wine architecture
         String emulator = container != null ? container.getEmulator() : "box64";
