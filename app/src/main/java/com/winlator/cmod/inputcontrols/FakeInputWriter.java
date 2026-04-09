@@ -10,15 +10,13 @@ import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 
 public class FakeInputWriter {
-    public static final short ABS_BRAKE = 10;
-    public static final short ABS_GAS = 9;
     public static final short ABS_HAT0X = 16;
     public static final short ABS_HAT0Y = 17;
-    public static final short ABS_RX = 3;
-    public static final short ABS_RY = 4;
     public static final short ABS_X = 0;
     public static final short ABS_Y = 1;
     public static final short ABS_Z = 2;
+    public static final short ABS_RX = 3;
+    public static final short ABS_RY = 4;
     public static final short ABS_RZ = 5;
     private static final int BUFFER_SIZE = 1024;
     private static final int EVENT_SIZE = 24;
@@ -124,8 +122,8 @@ public class FakeInputWriter {
             if (this.prevThumbLY != 0) { this.prevThumbLY = 0; writeEvent(EV_ABS, ABS_Y, 0); }
             if (this.prevThumbRX != 0) { this.prevThumbRX = 0; writeEvent(EV_ABS, ABS_RX, 0); }
             if (this.prevThumbRY != 0) { this.prevThumbRY = 0; writeEvent(EV_ABS, ABS_RY, 0); }
-            if (this.prevTriggerL != 0) { this.prevTriggerL = 0; writeEvent(EV_ABS, ABS_BRAKE, 0); }
-            if (this.prevTriggerR != 0) { this.prevTriggerR = 0; writeEvent(EV_ABS, ABS_GAS, 0); }
+            if (this.prevTriggerL != 0) { this.prevTriggerL = 0; writeEvent(EV_ABS, ABS_Z, 0); }
+            if (this.prevTriggerR != 0) { this.prevTriggerR = 0; writeEvent(EV_ABS, ABS_RZ, 0); }
             if (this.prevHatX != 0) { this.prevHatX = 0; writeEvent(EV_ABS, ABS_HAT0X, 0); }
             if (this.prevHatY != 0) { this.prevHatY = 0; writeEvent(EV_ABS, ABS_HAT0Y, 0); }
             
@@ -195,8 +193,8 @@ public class FakeInputWriter {
         if (ry != this.prevThumbRY) { this.prevThumbRY = ry; writeEvent(EV_ABS, ABS_RY, ry); }
         int tl = (int) (state.triggerL * 255.0f);
         int tr = (int) (state.triggerR * 255.0f);
-        if (tl != this.prevTriggerL) { this.prevTriggerL = tl; writeEvent(EV_ABS, ABS_BRAKE, tl); }
-        if (tr != this.prevTriggerR) { this.prevTriggerR = tr; writeEvent(EV_ABS, ABS_GAS, tr); }
+        if (tl != this.prevTriggerL) { this.prevTriggerL = tl; writeEvent(EV_ABS, ABS_Z, tl); }
+        if (tr != this.prevTriggerR) { this.prevTriggerR = tr; writeEvent(EV_ABS, ABS_RZ, tr); }
         
         if (state.dpad[3]) {
             hatX = -1;
