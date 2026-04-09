@@ -448,6 +448,9 @@ public class XServerDisplayActivity extends AppCompatActivity {
         
         setContentView(R.layout.xserver_display_activity);
 
+        imageFs = ImageFs.find(this);
+        winHandler = new WinHandler(this);
+
         // Initialize ControllerManager for multi-controller support
         ControllerManager.getInstance().init(this);
 
