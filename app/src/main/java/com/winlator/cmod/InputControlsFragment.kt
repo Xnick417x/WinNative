@@ -74,7 +74,6 @@ class InputControlsFragment(private val selectedProfileId: Int) : Fragment() {
     private lateinit var controlAdapter: ControlRowAdapter
 
     private var currentProfile: ControlsProfile? = null
-    private var triggerTypeExpanded = false
     private var analogSticksExpanded = false
     private var gyroscopeExpanded = false
     private var gyroSensorManager: SensorManager? = null
@@ -289,10 +288,6 @@ class InputControlsFragment(private val selectedProfileId: Int) : Fragment() {
         // Gyroscope
         rows += ControlRow.SectionHeader(R.string.session_gyroscope_title)
         rows += ControlRow.GyroscopeCard(gyroscopeExpanded)
-
-        // Trigger
-        rows += ControlRow.SectionHeader(R.string.session_gamepad_trigger_type)
-        rows += ControlRow.TriggerType(triggerTypeExpanded)
 
         // Import / Export
         rows += ControlRow.SectionHeader(R.string.common_ui_profile)
@@ -725,7 +720,6 @@ class InputControlsFragment(private val selectedProfileId: Int) : Fragment() {
             is ControlRow.OverlayOpacity -> VIEW_TYPE_SLIDER
             is ControlRow.GyroscopeCard -> VIEW_TYPE_GYRO
             is ControlRow.AnalogSticksCard -> VIEW_TYPE_ANALOG
-            is ControlRow.TriggerType -> VIEW_TYPE_CHIPS
             is ControlRow.ActionCard -> VIEW_TYPE_ACTION
             is ControlRow.ExternalControllerRow -> VIEW_TYPE_CONTROLLER
             is ControlRow.EmptyState -> VIEW_TYPE_EMPTY
@@ -772,7 +766,6 @@ class InputControlsFragment(private val selectedProfileId: Int) : Fragment() {
                 is ControlRow.OverlayOpacity -> (holder as SliderViewHolder).bind()
                 is ControlRow.GyroscopeCard -> (holder as GyroViewHolder).bind(row.expanded)
             is ControlRow.AnalogSticksCard -> (holder as AnalogSticksViewHolder).bind(row.expanded)
-            is ControlRow.TriggerType -> (holder as ChipsViewHolder).bindTriggerType(row.expanded)
                 is ControlRow.ActionCard -> (holder as ActionViewHolder).bind(row)
                 is ControlRow.ExternalControllerRow -> (holder as ControllerViewHolder).bind(row)
                 is ControlRow.EmptyState -> (holder as EmptyViewHolder).bind(row)
@@ -1292,40 +1285,6 @@ class InputControlsFragment(private val selectedProfileId: Int) : Fragment() {
         private val itemBinding: ControlsSettingChipsCardBinding
     ) : RecyclerView.ViewHolder(itemBinding.root) {
 
-        fun bindTriggerType(expanded: Boolean) {
-            itemBinding.IVIcon.setImageResource(R.drawable.ic_controls_trigger)
-            itemBinding.TVLabel.setText(R.string.session_gamepad_trigger_type)
-
-            val descRaw = itemBinding.root.context.getString(R.string.session_gamepad_help_trigger_mode).trim()
-            itemBinding.TVDescription.text = android.text.Html.fromHtml(descRaw, android.text.Html.FROM_HTML_MODE_LEGACY)
-
-            ExpandableCardHelper.applyTransition(
-                itemRoot = itemBinding.root,
-                chevron = itemBinding.IVExpandChevron,
-                contentView = itemBinding.TVDescription,
-                expanded = expanded
-            )
-
-            ExpandableCardHelper.setupClickListeners(
-                itemBinding.LLDescriptionContainer,
-                itemBinding.FLChevronContainer,
-                itemBinding.IVExpandChevron
-            ) {
-                triggerTypeExpanded = !triggerTypeExpanded
-                submitRows()
-            }
-
-            val options = listOf(
-                getString(R.string.session_gamepad_as_button),
-                getString(R.string.session_gamepad_as_axis)
-            )
-            val selectedIndex = preferences.getInt("trigger_type", ExternalController.TRIGGER_IS_AXIS.toInt())
-
-            setupChips(options, selectedIndex) { index ->
-                preferences.edit().putInt("trigger_type", index).apply()
-            }
-        }
-
         private fun setupChips(options: List<String>, selectedIndex: Int, onSelected: (Int) -> Unit) {
             itemBinding.LLChips.removeAllViews()
             val inflater = LayoutInflater.from(itemBinding.root.context)
@@ -1598,7 +1557,6 @@ class InputControlsFragment(private val selectedProfileId: Int) : Fragment() {
                     oldItem is ControlRow.OverlayOpacity && newItem is ControlRow.OverlayOpacity -> true
                     oldItem is ControlRow.GyroscopeCard && newItem is ControlRow.GyroscopeCard -> true
                     oldItem is ControlRow.AnalogSticksCard && newItem is ControlRow.AnalogSticksCard -> true
-                    oldItem is ControlRow.TriggerType && newItem is ControlRow.TriggerType -> true
                     oldItem is ControlRow.ActionCard && newItem is ControlRow.ActionCard ->
                         oldItem.action == newItem.action
                     oldItem is ControlRow.ExternalControllerRow && newItem is ControlRow.ExternalControllerRow ->
@@ -1620,7 +1578,6 @@ class InputControlsFragment(private val selectedProfileId: Int) : Fragment() {
         data object OverlayOpacity : ControlRow
         data class GyroscopeCard(val expanded: Boolean) : ControlRow
         data class AnalogSticksCard(val expanded: Boolean) : ControlRow
-        data class TriggerType(val expanded: Boolean) : ControlRow
         data class ActionCard(
             val iconRes: Int,
             val labelResId: Int,
