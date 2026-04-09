@@ -626,14 +626,19 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
         }
 
         File fakeinputDest = new File(imageFs.getLibDir(), "libfakeinput.so");
+        File evshimDest = new File(imageFs.getLibDir(), "libevshim.so");
         String nativeLibDir = context.getApplicationInfo().nativeLibraryDir;
         File fakeinputSrc = new File(nativeLibDir, "libfakeinput.so");
+        File evshimSrc = new File(nativeLibDir, "libevshim.so");
 
-        if (!fakeinputDest.exists()) {
-            if (fakeinputSrc.exists()) {
-                FileUtils.copy(fakeinputSrc, fakeinputDest);
-                Log.d("GuestLauncher", "Copied libfakeinput.so to imagefs");
-            }
+        if (!fakeinputDest.exists() && fakeinputSrc.exists()) {
+            FileUtils.copy(fakeinputSrc, fakeinputDest);
+            Log.d("GuestLauncher", "Copied libfakeinput.so to imagefs");
+        }
+
+        if (!evshimDest.exists() && evshimSrc.exists()) {
+            FileUtils.copy(evshimSrc, evshimDest);
+            Log.d("GuestLauncher", "Copied libevshim.so to imagefs");
         }
 
         if (fakeinputDest.exists()) {
@@ -641,8 +646,14 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
             ld_preload += fakeinputDest.getAbsolutePath();
         }
 
+        if (evshimDest.exists()) {
+            if (!ld_preload.isEmpty()) ld_preload += ":";
+            ld_preload += evshimDest.getAbsolutePath();
+        }
+
         envVars.put("LD_PRELOAD", ld_preload);
         envVars.put("FAKE_EVDEV_DIR", devInputPath);
+        envVars.put("EVSHIM_DATA_PATH", rootDir.getPath() + "/tmp");
 
         mergeExternalEnvVars(envVars, ld_preload, devInputPath);
 
