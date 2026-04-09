@@ -1638,9 +1638,6 @@ public class XServerDisplayActivity extends AppCompatActivity {
                     }
 
                     // Definitive Wine process cleanup
-                    if (guestProgramLauncherComponent != null) {
-                        guestProgramLauncherComponent.execShellCommand("wineserver -k");
-                    }
                     ProcessHelper.terminateAllWineProcesses();
                     
                     /* Wait until all processes have gracefully terminated, forcefully killing them only after a certain amount of time */

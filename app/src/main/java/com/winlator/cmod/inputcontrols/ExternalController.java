@@ -325,10 +325,7 @@ public class ExternalController {
             return false;
         }
         int sources = device.getSources();
-        if (device.isVirtual()) {
-            return false;
-        }
-        return (sources & InputDevice.SOURCE_GAMEPAD) == 1025 || ((sources & InputDevice.SOURCE_JOYSTICK) == 16777232 && (sources & 8194) == 0);
+        return (sources & 16) == 16 || (sources & 16777232) == 16777232;
     }
 
     public float getCenteredAxis(MotionEvent event, int axis, int historyPos) {
