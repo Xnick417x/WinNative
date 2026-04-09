@@ -24,28 +24,16 @@ public class ExternalController {
     public static final byte IDX_BUTTON_START = 7;
     public static final byte IDX_BUTTON_X = 2;
     public static final byte IDX_BUTTON_Y = 3;
-    public static final byte TRIGGER_IS_BUTTON = 0;
-    public static final byte TRIGGER_IS_AXIS = 1;
-    public static final byte TRIGGER_IS_BOTH = 2;
     public static final HashMap<Byte, Byte> buttonMappings = new HashMap<>();
     private XServerDisplayActivity activity;
     private String id;
     private String name;
     private int deviceId = -1;
-    private byte triggerType = TRIGGER_IS_AXIS;
     private final ArrayList<ExternalControllerBinding> controllerBindings = new ArrayList<>();
     public final GamepadState state = new GamepadState();
     public final GamepadState remappedState = new GamepadState();
     private boolean triggerLPressedViaButton = false;
     private boolean triggerRPressedViaButton = false;
-
-    public byte getTriggerType() {
-        return this.triggerType;
-    }
-
-    public void setTriggerType(byte mode) {
-        this.triggerType = mode;
-    }
 
     public String getName() {
         return this.name;
@@ -228,7 +216,11 @@ public class ExternalController {
 
     public boolean updateStateFromMotionEvent(MotionEvent event) {
         if (isJoystickDevice(event)) {
-            processTriggerButton(event);
+            if (isXboxController()) {
+                processXboxTriggerButton(event);
+            } else {
+                processTriggerButton(event);
+            }
             int historySize = event.getHistorySize();
             for (int i = 0; i < historySize; i++) {
                 processJoystickInput(event, i);
