@@ -3,6 +3,7 @@ package com.winlator.cmod.inputcontrols;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import androidx.core.view.InputDeviceCompat;
 import com.winlator.cmod.XServerDisplayActivity;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -321,11 +322,11 @@ public class ExternalController {
     }
 
     public static boolean isGameController(InputDevice device) {
-        if (device == null) {
+        if (device == null || device.isVirtual()) {
             return false;
         }
         int sources = device.getSources();
-        return (sources & 16) == 16 || (sources & 16777232) == 16777232;
+        return (sources & InputDeviceCompat.SOURCE_GAMEPAD) == 1025 || ((sources & InputDeviceCompat.SOURCE_JOYSTICK) == 16777232 && (sources & 8194) == 0);
     }
 
     public float getCenteredAxis(MotionEvent event, int axis, int historyPos) {
@@ -353,7 +354,7 @@ public class ExternalController {
     }
 
     public static boolean isJoystickDevice(MotionEvent event) {
-        return (event.getSource() & InputDevice.SOURCE_JOYSTICK) == 16777232 && event.getAction() == 2;
+        return (event.getSource() & InputDeviceCompat.SOURCE_JOYSTICK) == 16777232 && event.getAction() == 2;
     }
 
     public static int getButtonIdxByKeyCode(int keyCode) {

@@ -543,16 +543,15 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
         // Setup FAKE_EVDEV_DIR matching reference app exactly
         // Controller support: create event device files in dev/input
         // libfakeinput.so (reference app logic) expects eventX files.
-        final int MAX_PLAYERS = 4;
         File devInputDir = new File(imageFs.getRootDir(), "dev/input");
         devInputDir.mkdirs();
         String devInputPath = devInputDir.getAbsolutePath();
-        for (int i = 0; i < MAX_PLAYERS; i++) {
-            File eventFile = new File(devInputDir, "event" + i);
-            try (java.io.RandomAccessFile raf = new java.io.RandomAccessFile(eventFile, "rw")) {
-                if (raf.length() == 0) raf.setLength(64); // Initialize if new
+        File event0 = new File(devInputDir, "event0");
+        if (!event0.exists()) {
+            try {
+                event0.createNewFile();
             } catch (IOException e) {
-                Log.e("GuestProgramLauncher", "Failed to create event file for player " + i, e);
+                Log.e("GuestProgramLauncher", "Failed to create event0 file", e);
             }
         }
 

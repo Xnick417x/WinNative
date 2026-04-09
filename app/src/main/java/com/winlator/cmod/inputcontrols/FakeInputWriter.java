@@ -163,7 +163,7 @@ public class FakeInputWriter {
         this.buffer.clear();
         this.hasChanges = false;
         for (int i = 0; i < 10; i++) {
-            writeButton(i, state.isPressed(i));
+            writeButton(i, state.isPressed((byte) i));
         }
         int lx = (int) (state.thumbLX * 32767.0f);
         int ly = (int) (state.thumbLY * 32767.0f);
@@ -178,8 +178,20 @@ public class FakeInputWriter {
         if (tl != this.prevTriggerL) { this.prevTriggerL = tl; writeEvent((short) 3, (short) 10, tl); }
         if (tr != this.prevTriggerR) { this.prevTriggerR = tr; writeEvent((short) 3, (short) 9, tr); }
         
-        hatX = state.dpad[1] ? 1 : (state.dpad[3] ? -1 : 0);
-        int hatY = state.dpad[2] ? 1 : (state.dpad[0] ? -1 : 0);
+        if (state.dpad[3]) {
+            hatX = -1;
+        } else {
+            hatX = state.dpad[1] ? 1 : 0;
+        }
+        
+        int hatY;
+        if (state.dpad[0]) {
+            hatY = -1;
+        } else if (!state.dpad[2]) {
+            hatY = 0;
+        } else {
+            hatY = 1;
+        }
         
         if (hatX != this.prevHatX) { this.prevHatX = hatX; writeEvent((short) 3, (short) 16, hatX); }
         if (hatY != this.prevHatY) { this.prevHatY = hatY; writeEvent((short) 3, (short) 17, hatY); }
