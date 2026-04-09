@@ -36,7 +36,9 @@ volatile sig_atomic_t stop_flag = 0;
 static int (*my_open)(const char *, int, ...) = nullptr;
 static int (*my_openat)(int, const char *, int, ...) = nullptr;
 static int (*my_stat)(const char *, struct stat *) = nullptr;
+static int (*my_lstat)(const char *, struct stat *) = nullptr;
 static int (*my_fstat)(int fd, struct stat *buf) = nullptr;
+static int (*my_access)(const char *, int) = nullptr;
 static int (*my_scandir)(const char *, struct dirent***, int(*)(const struct dirent *), int(*)(const struct dirent**, const struct dirent**));
 static int (*my_inotify_add_watch)(int, const char *, uint32_t);
 static int (*my_close)(int);
@@ -75,14 +77,16 @@ void setup_signal_handler() {
 __attribute__((constructor))
 static void library_init() {
     if (!hook_dir)
-        hook_dir = getenv("FAKE_EVDEV_DIR") ? getenv("FAKE_EVDEV_DIR") : "/data/data/com.termux/files/home/fake-input";
+        hook_dir = getenv("FAKE_EVDEV_DIR") ? strdup(getenv("FAKE_EVDEV_DIR")) : strdup("/data/data/com.winnative.cmod/files/imagefs/dev/input");
 
     Logger::init();
 }
 
 __attribute__((visibility("hidden")))
 char *from_real_to_fake_path(const char *pathname) {
-    const char *event = strrchr(pathname, '/') + 1;
+    const char *event = strrchr(pathname, '/');
+    if (!event) return nullptr;
+    event++; // skip slash
     char *fake_path;
     asprintf(&fake_path, "%s/%s", hook_dir, event);
     return fake_path;
@@ -90,103 +94,118 @@ char *from_real_to_fake_path(const char *pathname) {
 
 __attribute__((visibility("hidden")))
 const char *get_event(const char *pathname) {
-    const char *event = strrchr(pathname, '/') + 1;
-    return event;
+    const char *event = strrchr(pathname, '/');
+    return event ? event + 1 : pathname;
 }
 
 __attribute__((visibility("hidden")))
 int get_event_number(const char *event) {
-    // Correctly parse event number (e.g. "event10" -> 10)
-    if (strncmp(event, "event", 5) == 0) {
+    if (event && strncmp(event, "event", 5) == 0) {
         return atoi(event + 5);
     }
-    return atoi(event + strlen(event) - 1);
+    return -1;
 }
 
 EXPORT int open(const char *pathname, int flags, ...) {
-    va_list va;
-    mode_t mode;
-    int fd;
-    bool hasMode;
-    bool isFromInput;
-
-    va_start(va, flags);
-
-    hasMode = flags & O_CREAT;
-    isFromInput = false;
-
-    if (hasMode) {
-        mode = va_arg(va, mode_t);
-    }
-
-    va_end(va);
-
     if (!my_open)
         *(void **)&my_open = dlsym(RTLD_NEXT, "open");
 
+    bool isFromInput = false;
+    char *allocated_path = nullptr;
+    const char *final_path = pathname;
+
     if (pathname) {
         if (strstr(pathname, "/dev/input/event")) {
-            pathname = from_real_to_fake_path(pathname);
-            isFromInput = true;
+            allocated_path = from_real_to_fake_path(pathname);
+            if (allocated_path) {
+                final_path = allocated_path;
+                isFromInput = true;
+            }
         } else if (!strcmp(pathname, "/dev/input")) {
-            pathname = hook_dir;
+            final_path = hook_dir;
         }
     }
 
-    if (hasMode)
-        fd = my_open(pathname, flags, mode);
-    else
-        fd = my_open(pathname, flags);
-
-    if (isFromInput) {
-        Logger::log("Adding controller, fd %d event %s\n", fd, get_event(pathname));
-        controller_map[fd] = strdup(get_event(pathname));
+    int fd;
+    if (flags & O_CREAT) {
+        va_list va;
+        va_start(va, flags);
+        mode_t mode = va_arg(va, mode_t);
+        va_end(va);
+        fd = my_open(final_path, flags, mode);
+    } else {
+        fd = my_open(final_path, flags);
     }
 
+    if (isFromInput && fd >= 0) {
+        Logger::log("Adding controller, fd %d event %s\n", fd, get_event(final_path));
+        controller_map[fd] = strdup(get_event(final_path));
+    }
+
+    if (allocated_path) free(allocated_path);
     return fd;
 }
 
 EXPORT int openat(int dirfd, const char *pathname, int flags, ...) {
-    va_list va;
-    mode_t mode;
-    int fd;
-    bool hasMode;
-    bool isFromInput;
-
-    va_start(va, flags);
-
-    isFromInput = false;
-    hasMode = flags & O_CREAT;
-
-    if (hasMode) {
-        mode = va_arg(va, mode_t);
-    }
-
-    va_end(va);
-
     if (!my_openat)
         *(void **)&my_openat = dlsym(RTLD_NEXT, "openat");
 
+    bool isFromInput = false;
+    char *allocated_path = nullptr;
+    const char *final_path = pathname;
+
     if (pathname) {
         if (strstr(pathname, "/dev/input/event")) {
-            pathname = from_real_to_fake_path(pathname);
-            isFromInput = true;
+            allocated_path = from_real_to_fake_path(pathname);
+            if (allocated_path) {
+                final_path = allocated_path;
+                isFromInput = true;
+            }
         } else if (!strcmp(pathname, "/dev/input")) {
-            pathname = hook_dir;
+            final_path = hook_dir;
         }
     }
 
-    if (hasMode)
-        fd = my_openat(dirfd, pathname, flags, mode);
-    else
-        fd = my_openat(dirfd, pathname, flags);
-
-    if (isFromInput) {
-        Logger::log("Adding controller, fd %d event %s\n", fd, get_event(pathname));
-        controller_map[fd] = strdup(get_event(pathname));
+    int fd;
+    mode_t mode = 0;
+    if (flags & O_CREAT) {
+        va_list va;
+        va_start(va, flags);
+        mode = va_arg(va, mode_t);
+        va_end(va);
+        fd = my_openat(dirfd, final_path, flags, mode);
+    } else {
+        fd = my_openat(dirfd, final_path, flags);
     }
 
+    if (isFromInput && fd >= 0) {
+        Logger::log("Adding controller, fd %d event %s\n", fd, get_event(final_path));
+        controller_map[fd] = strdup(get_event(final_path));
+    }
+
+    if (allocated_path) free(allocated_path);
     return fd;
+}
+
+EXPORT int access(const char *pathname, int mode) {
+    if (!my_access)
+        *(void **)&my_access = dlsym(RTLD_NEXT, "access");
+
+    char *allocated_path = nullptr;
+    const char *final_path = pathname;
+
+    if (pathname) {
+        if (strstr(pathname, "/dev/input/event")) {
+            allocated_path = from_real_to_fake_path(pathname);
+            if (allocated_path) final_path = allocated_path;
+        } else if (!strcmp(pathname, "/dev/input")) {
+            final_path = hook_dir;
+        }
+    }
+
+    int ret = my_access(final_path, mode);
+    if (allocated_path) free(allocated_path);
+    return ret;
 }
 
 EXPORT int stat(const char *pathname, struct stat *statbuf) {
@@ -195,23 +214,67 @@ EXPORT int stat(const char *pathname, struct stat *statbuf) {
 
     const char *event = nullptr;
     int event_number = -1;
+    char *allocated_path = nullptr;
+    const char *final_path = pathname;
 
     if (pathname) {
         if (strstr(pathname, "/dev/input/event")) {
-            pathname = from_real_to_fake_path(pathname);
-            event = get_event(pathname);
-            event_number = get_event_number(event);
+            allocated_path = from_real_to_fake_path(pathname);
+            if (allocated_path) {
+                final_path = allocated_path;
+                event = get_event(final_path);
+                event_number = get_event_number(event);
+            }
         } else if (!strcmp(pathname, "/dev/input")) {
-            pathname = hook_dir;
+            final_path = hook_dir;
         }
     }
 
-    int ret = my_stat(pathname, statbuf);
+    int ret = my_stat(final_path, statbuf);
 
-    if (event && event_number >= 0) {
-        statbuf->st_rdev = makedev(1, event_number);
+    if (ret == 0 && event_number >= 0) {
+        statbuf->st_mode = (statbuf->st_mode & ~S_IFMT) | S_IFCHR;
+        statbuf->st_rdev = makedev(13, 64 + event_number);
+        statbuf->st_uid = 0;
+        statbuf->st_gid = 0;
     }
 
+    if (allocated_path) free(allocated_path);
+    return ret;
+}
+
+EXPORT int lstat(const char *pathname, struct stat *statbuf) {
+    if (!my_lstat)
+        *(void **)&my_lstat = dlsym(RTLD_NEXT, "lstat");
+
+    const char *event = nullptr;
+    int event_number = -1;
+    char *allocated_path = nullptr;
+    const char *final_path = pathname;
+
+    if (pathname) {
+        if (strstr(pathname, "/dev/input/event")) {
+            allocated_path = from_real_to_fake_path(pathname);
+            if (allocated_path) {
+                final_path = allocated_path;
+                event = get_event(final_path);
+                event_number = get_event_number(event);
+            }
+        } else if (!strcmp(pathname, "/dev/input")) {
+            final_path = hook_dir;
+        }
+    }
+
+    int ret = my_lstat(final_path, statbuf);
+
+    if (ret == 0 && event_number >= 0) {
+        statbuf->st_mode = (statbuf->st_mode & ~S_IFMT) | S_IFCHR;
+        statbuf->st_rdev = makedev(13, 64 + event_number);
+        statbuf->st_uid = 0;
+        statbuf->st_gid = 0;
+    }
+
+    if (allocated_path) free(allocated_path);
     return ret;
 }
 
@@ -222,8 +285,12 @@ EXPORT int fstat(int fd, struct stat *buf) {
     int ret = my_fstat(fd, buf);
 
     auto controller = controller_map.find(fd);
-    if (controller != controller_map.end()) {
-        buf->st_rdev = makedev(1, get_event_number(controller->second));
+    if (ret == 0 && controller != controller_map.end()) {
+        int event_number = get_event_number(controller->second);
+        buf->st_mode = (buf->st_mode & ~S_IFMT) | S_IFCHR;
+        buf->st_rdev = makedev(13, 64 + event_number);
+        buf->st_uid = 0;
+        buf->st_gid = 0;
     }
 
     return ret;
@@ -246,15 +313,21 @@ EXPORT int inotify_add_watch(int fd, const char *pathname, uint32_t mask) {
     if (!my_inotify_add_watch)
         *(void **)&my_inotify_add_watch = dlsym(RTLD_NEXT, "inotify_add_watch");
 
+    char *allocated_path = nullptr;
+    const char *final_path = pathname;
+
     if (pathname) {
         if (strstr(pathname, "/dev/input/event")) {
-            pathname = from_real_to_fake_path(pathname);
+            allocated_path = from_real_to_fake_path(pathname);
+            if (allocated_path) final_path = allocated_path;
         } else if (!strcmp(pathname, "/dev/input")) {
-            pathname = hook_dir;
+            final_path = hook_dir;
         }
     }
 
-    return my_inotify_add_watch(fd, pathname, mask);
+    int ret = my_inotify_add_watch(fd, final_path, mask);
+    if (allocated_path) free(allocated_path);
+    return ret;
 }
 
 EXPORT int ioctl(int fd, int op, ...) {
@@ -273,15 +346,12 @@ EXPORT int ioctl(int fd, int op, ...) {
     int type = (op >> 8 & 0xFF);
     int number = (op >> 0 & 0xFF);
     const char *event = controller->second;
-    int event_number = get_event_number(event);
 
     if (type == 0x45 && number == 0x1) {
-        Logger::log("Hooking ioctl EVIOCGVERSION for event %s\n", event);
         int version = 65536;
         memcpy(argp, (void *)&version, sizeof(int));
         return 0;
     } else if (type == 0x45 && number == 0x2) {
-        Logger::log("Hooking ioctl EVIOCGID for event %s\n", event);
         struct input_id id;
         memset(&id, 0, sizeof(id));
         id.bustype = 0x03;
@@ -291,19 +361,15 @@ EXPORT int ioctl(int fd, int op, ...) {
         memcpy(argp, (void *)&id, sizeof(id));
         return 0;
     } else if (type == 0x45 && number == 0x6) {
-        Logger::log("Hooking ioctl EVIOCGNAME for event %s\n", event);
         strcpy((char *)argp, "Microsoft X-Box 360 pad");
         return 0;
     } else if (type == 0x45 && number == 0x9) {
-        Logger::log("Hooking ioctl EVIOCGPROP for event %s\n", event);
         return 0;
     } else if (type == 0x45 && number == 0x18) {
-        Logger::log("Hooking ioctl EVIOCGKEY(len) for event %s\n", event);
         char bitmask[KEY_MAX / 8] = {0};
         memcpy(argp, (void *)&bitmask, sizeof(bitmask));
         return 0;
     } else if (type == 0x45 && number == 0x20) {
-        Logger::log("Hooking ioctl EVIOCGBIT(0, len) for event %s\n", event);
         char bitmask[EV_MAX / 8] = {0};
         bitmask[EV_SYN / 8] |= (1 << (EV_SYN % 8));
         bitmask[EV_KEY / 8] |= (1 << (EV_KEY % 8));
@@ -311,21 +377,18 @@ EXPORT int ioctl(int fd, int op, ...) {
         memcpy(argp, (void *)&bitmask, sizeof(bitmask));
         return 0;
     } else if (type == 0x45 && number == 0x21) {
-        Logger::log("Hooking ioctl EVIOCGBIT(EV_KEY, len) for event %s\n", event);
         char bitmask[KEY_MAX / 8] = {0};
-        int buttons[] = {BTN_A, BTN_B, BTN_X, BTN_Y, BTN_TL, BTN_TR, BTN_SELECT, BTN_START, BTN_THUMBL, BTN_THUMBR, BTN_MODE};
+        int buttons[] = {BTN_A, BTN_B, BTN_X, BTN_Y, BTN_TL, BTN_TR, BTN_SELECT, BTN_START, BTN_THUMBL, BTN_THUMBR, BTN_MODE, BTN_TL2, BTN_TR2};
         for (int btn : buttons) {
             bitmask[btn / 8] |= (1 << (btn % 8));
         }
         memcpy(argp, (void *)&bitmask, sizeof(bitmask));
         return 0;
     } else if (type == 0x45 && number == 0x22) {
-        Logger::log("Hooking ioctl EVIOCGBIT(EV_REL, len) for event %s\n", event);
         char bitmask[REL_MAX / 8] = {0};
         memcpy(argp, (void *)&bitmask, sizeof(bitmask));
         return 0;
     } else if (type == 0x45 && number == 0x23) {
-        Logger::log("Hooking ioctl EVIOCGBIT(EV_ABS, len) for event %s\n", event);
         char bitmask[ABS_MAX / 8] = {0};
         short axes[] = {ABS_X, ABS_Y, ABS_RX, ABS_RY, ABS_Z, ABS_RZ, ABS_HAT0X, ABS_HAT0Y};
         for (short axis : axes) {
@@ -334,10 +397,8 @@ EXPORT int ioctl(int fd, int op, ...) {
         memcpy(argp, (void *)&bitmask, sizeof(bitmask));
         return 0;
     } else if (type == 0x45 && number == 0x35) {
-        Logger::log("Hooking ioctl EVIOCGBIT(EV_FF, len) for event %s\n", event);
         return 0;
     } else if (type == 0x45 && number >= 0x40 && number <= 0x51) {
-        Logger::log("Hooking ioctl EVIOCGABS(ABS) for event %s\n", event);
         struct input_absinfo abs_info;
         memset(&abs_info, 0, sizeof(abs_info));
         if (number >= 0x40 && number <= 0x44) { // ABS_X to ABS_RY
@@ -348,35 +409,27 @@ EXPORT int ioctl(int fd, int op, ...) {
             abs_info.value = 0;
             abs_info.minimum = 0;
             abs_info.maximum = 255;
-        } else if (number >= 0x50 && number <= 0x51) { // ABS_HAT0X, ABS_HAT0Y
+        } else if (number == 0x50 || number == 0x51) { // ABS_HAT0X, ABS_HAT0Y
             abs_info.value = 0;
             abs_info.minimum = -1;
             abs_info.maximum = 1;
         }
         memcpy(argp, (void *)&abs_info, sizeof(abs_info));
         return 0;
-    } else if (type == 0x45 && number == 0x90) {
-        Logger::log("Hooking ioctl EVIOCGRAB for event %s\n", event);
-        return 0;
-    } else if (type == 0x6A && number == 0x13) {
-        Logger::log("Hooking ioctl JSIOCGNAME(len) for event %s\n", event);
-        strcpy((char *)argp, "Microsoft X-Box 360 pad");
-        return 0;
-    } else {
-        Logger::log("Unhandled evdev ioctl, type %d number %d\n", type, number);
-        return syscall(SYS_ioctl, fd, op, argp);
     }
+
+    return syscall(SYS_ioctl, fd, op, argp);
 }
 
 EXPORT int close(int fd) {
     if (!my_close)
         *(void **)&my_close = dlsym(RTLD_NEXT, "close");
 
-    auto controller = controller_map.find(fd);
-    if (controller != controller_map.end()) {
-        Logger::log("Removing controller, fd %d event %s\n", controller->first, controller->second);
-        free((void *)controller->second);
-        controller_map.erase(fd);
+    auto it = controller_map.find(fd);
+    if (it != controller_map.end()) {
+        Logger::log("Closing controller, fd %d event %s\n", fd, it->second);
+        free((void *)it->second);
+        controller_map.erase(it);
     }
 
     return my_close(fd);
@@ -392,12 +445,8 @@ EXPORT ssize_t read(int fd, void *buf, size_t count) {
         
         bytes_read = syscall(SYS_read, fd, buf, count);
         
-        // Fix: Avoid infinite loop on regular files. 
-        // Regular files return 0 at EOF, they don't block.
-        // We should only retry if it's NOT a regular file or if we want to mock blocking.
-        // For now, let's add a small sleep to avoid 100% CPU and a retry limit.
         int retries = 0;
-        while (bytes_read == 0 && !isNonBlock && retries < 100) {
+        while (bytes_read == 0 && !isNonBlock && retries < 1000) {
             setup_signal_handler();
             if (stop_flag) {
                 return -1;

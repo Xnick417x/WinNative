@@ -18,13 +18,14 @@ public class FakeInputWriter {
     public static final short ABS_RY = 4;
     public static final short ABS_X = 0;
     public static final short ABS_Y = 1;
-    private static final int BUFFER_SIZE = 480;
+    public static final short ABS_Z = 2;
+    public static final short ABS_RZ = 5;
+    private static final int BUFFER_SIZE = 1024;
     private static final int EVENT_SIZE = 24;
     public static final short EV_ABS = 3;
     public static final short EV_KEY = 1;
     public static final short EV_MSC = 4;
     public static final short EV_SYN = 0;
-    private static final int MAX_EVENTS_PER_UPDATE = 20;
     public static final short MSC_SCAN = 4;
     public static final short SYN_REPORT = 0;
     private static final String TAG = "FakeInputWriter";
@@ -49,10 +50,27 @@ public class FakeInputWriter {
     public static final short BTN_START = 315;
     public static final short BTN_THUMBL = 317;
     public static final short BTN_THUMBR = 318;
-    private static final short[] BUTTON_MAP = {BTN_A, BTN_B, BTN_X, BTN_Y, BTN_TL, BTN_TR, BTN_SELECT, BTN_START, BTN_THUMBL, BTN_THUMBR};
+    public static final short BTN_MODE = 316;
+    public static final short BTN_TL2 = 312;
+    public static final short BTN_TR2 = 313;
+    private static final short[] BUTTON_MAP = {
+        BTN_A,      // 0
+        BTN_B,      // 1
+        BTN_X,      // 2
+        BTN_Y,      // 3
+        BTN_TL,     // 4 (L1)
+        BTN_TR,     // 5 (R1)
+        BTN_SELECT, // 6
+        BTN_START,  // 7
+        BTN_THUMBL, // 8 (L3)
+        BTN_THUMBR, // 9 (R3)
+        BTN_TL2,    // 10 (L2)
+        BTN_TR2,    // 11 (R2)
+        BTN_MODE    // 12
+    };
     private boolean isOpen = false;
     private volatile boolean destroyed = false;
-    private final boolean[] prevButtonStates = new boolean[12];
+    private final boolean[] prevButtonStates = new boolean[14];
     private boolean hasChanges = false;
     private final ByteBuffer buffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
 
@@ -98,21 +116,21 @@ public class FakeInputWriter {
             for (int i = 0; i < BUTTON_MAP.length; i++) {
                 if (this.prevButtonStates[i]) {
                     this.prevButtonStates[i] = false;
-                    writeEvent((short) 4, (short) 4, BUTTON_MAP[i]);
-                    writeEvent((short) 1, BUTTON_MAP[i], 0);
+                    writeEvent(EV_MSC, MSC_SCAN, BUTTON_MAP[i]);
+                    writeEvent(EV_KEY, BUTTON_MAP[i], 0);
                 }
             }
-            if (this.prevThumbLX != 0) { this.prevThumbLX = 0; writeEvent((short) 3, (short) 0, 0); }
-            if (this.prevThumbLY != 0) { this.prevThumbLY = 0; writeEvent((short) 3, (short) 1, 0); }
-            if (this.prevThumbRX != 0) { this.prevThumbRX = 0; writeEvent((short) 3, (short) 3, 0); }
-            if (this.prevThumbRY != 0) { this.prevThumbRY = 0; writeEvent((short) 3, (short) 4, 0); }
-            if (this.prevTriggerL != 0) { this.prevTriggerL = 0; writeEvent((short) 3, (short) 10, 0); }
-            if (this.prevTriggerR != 0) { this.prevTriggerR = 0; writeEvent((short) 3, (short) 9, 0); }
-            if (this.prevHatX != 0) { this.prevHatX = 0; writeEvent((short) 3, (short) 16, 0); }
-            if (this.prevHatY != 0) { this.prevHatY = 0; writeEvent((short) 3, (short) 17, 0); }
+            if (this.prevThumbLX != 0) { this.prevThumbLX = 0; writeEvent(EV_ABS, ABS_X, 0); }
+            if (this.prevThumbLY != 0) { this.prevThumbLY = 0; writeEvent(EV_ABS, ABS_Y, 0); }
+            if (this.prevThumbRX != 0) { this.prevThumbRX = 0; writeEvent(EV_ABS, ABS_RX, 0); }
+            if (this.prevThumbRY != 0) { this.prevThumbRY = 0; writeEvent(EV_ABS, ABS_RY, 0); }
+            if (this.prevTriggerL != 0) { this.prevTriggerL = 0; writeEvent(EV_ABS, ABS_BRAKE, 0); }
+            if (this.prevTriggerR != 0) { this.prevTriggerR = 0; writeEvent(EV_ABS, ABS_GAS, 0); }
+            if (this.prevHatX != 0) { this.prevHatX = 0; writeEvent(EV_ABS, ABS_HAT0X, 0); }
+            if (this.prevHatY != 0) { this.prevHatY = 0; writeEvent(EV_ABS, ABS_HAT0Y, 0); }
             
             if (this.hasChanges) {
-                writeEvent((short) 0, (short) 0, 0);
+                writeEvent(EV_SYN, SYN_REPORT, 0);
                 this.buffer.flip();
                 try {
                     this.channel.write(this.buffer);
@@ -155,16 +173,8 @@ public class FakeInputWriter {
             return;
         }
         this.prevButtonStates[i] = z;
-        writeEvent((short) 4, (short) 4, BUTTON_MAP[i]);
-        writeEvent((short) 1, BUTTON_MAP[i], z ? 1 : 0);
-    }
-
-    private void writeAxis(short code, int value, int[] prevRef, int index) {
-        if (prevRef[index] == value) {
-            return;
-        }
-        prevRef[index] = value;
-        writeEvent((short) 3, code, value);
+        writeEvent(EV_MSC, MSC_SCAN, BUTTON_MAP[i]);
+        writeEvent(EV_KEY, BUTTON_MAP[i], z ? 1 : 0);
     }
 
     public void writeGamepadState(GamepadState state) {
@@ -172,21 +182,21 @@ public class FakeInputWriter {
         if (!this.isOpen && !open()) return;
         this.buffer.clear();
         this.hasChanges = false;
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < BUTTON_MAP.length; i++) {
             writeButton(i, state.isPressed((byte) i));
         }
         int lx = (int) (state.thumbLX * 32767.0f);
         int ly = (int) (state.thumbLY * 32767.0f);
         int rx = (int) (state.thumbRX * 32767.0f);
         int ry = (int) (state.thumbRY * 32767.0f);
-        if (lx != this.prevThumbLX) { this.prevThumbLX = lx; writeEvent((short) 3, (short) 0, lx); }
-        if (ly != this.prevThumbLY) { this.prevThumbLY = ly; writeEvent((short) 3, (short) 1, ly); }
-        if (rx != this.prevThumbRX) { this.prevThumbRX = rx; writeEvent((short) 3, (short) 3, rx); }
-        if (ry != this.prevThumbRY) { this.prevThumbRY = ry; writeEvent((short) 3, (short) 4, ry); }
+        if (lx != this.prevThumbLX) { this.prevThumbLX = lx; writeEvent(EV_ABS, ABS_X, lx); }
+        if (ly != this.prevThumbLY) { this.prevThumbLY = ly; writeEvent(EV_ABS, ABS_Y, ly); }
+        if (rx != this.prevThumbRX) { this.prevThumbRX = rx; writeEvent(EV_ABS, ABS_RX, rx); }
+        if (ry != this.prevThumbRY) { this.prevThumbRY = ry; writeEvent(EV_ABS, ABS_RY, ry); }
         int tl = (int) (state.triggerL * 255.0f);
         int tr = (int) (state.triggerR * 255.0f);
-        if (tl != this.prevTriggerL) { this.prevTriggerL = tl; writeEvent((short) 3, (short) 10, tl); }
-        if (tr != this.prevTriggerR) { this.prevTriggerR = tr; writeEvent((short) 3, (short) 9, tr); }
+        if (tl != this.prevTriggerL) { this.prevTriggerL = tl; writeEvent(EV_ABS, ABS_BRAKE, tl); }
+        if (tr != this.prevTriggerR) { this.prevTriggerR = tr; writeEvent(EV_ABS, ABS_GAS, tr); }
         
         if (state.dpad[3]) {
             hatX = -1;
@@ -203,11 +213,11 @@ public class FakeInputWriter {
             hatY = 1;
         }
         
-        if (hatX != this.prevHatX) { this.prevHatX = hatX; writeEvent((short) 3, (short) 16, hatX); }
-        if (hatY != this.prevHatY) { this.prevHatY = hatY; writeEvent((short) 3, (short) 17, hatY); }
+        if (hatX != this.prevHatX) { this.prevHatX = hatX; writeEvent(EV_ABS, ABS_HAT0X, hatX); }
+        if (hatY != this.prevHatY) { this.prevHatY = hatY; writeEvent(EV_ABS, ABS_HAT0Y, hatY); }
         
         if (this.hasChanges) {
-            writeEvent((short) 0, (short) 0, 0); // Final SYN_REPORT
+            writeEvent(EV_SYN, SYN_REPORT, 0);
             this.buffer.flip();
             try {
                 this.channel.write(this.buffer);

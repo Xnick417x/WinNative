@@ -3444,6 +3444,7 @@ public class XServerDisplayActivity extends AppCompatActivity {
         touchpadView.setPointerButtonRightEnabled(false);
 
         inputControlsView.invalidate();
+        winHandler.sendGamepadState();
     }
 
     private void hideInputControls() {
@@ -3456,6 +3457,7 @@ public class XServerDisplayActivity extends AppCompatActivity {
         touchpadView.setPointerButtonRightEnabled(true);
 
         inputControlsView.invalidate();
+        winHandler.sendGamepadState();
     }
 
     private void extractGraphicsDriverFiles() {
@@ -3580,13 +3582,16 @@ public class XServerDisplayActivity extends AppCompatActivity {
 
     @Override
     public boolean dispatchGenericMotionEvent(MotionEvent event) {
+        boolean handledByWinHandler = false;
+        boolean handledByTouchpadView = false;
         if (this.winHandler != null) {
-            this.winHandler.onGenericMotionEvent(event);
+            handledByWinHandler = this.winHandler.onGenericMotionEvent(event);
         }
         if (this.touchpadView != null) {
-            this.touchpadView.onExternalMouseEvent(event);
+            handledByTouchpadView = this.touchpadView.onExternalMouseEvent(event);
         }
-        return super.dispatchGenericMotionEvent(event);
+        boolean handledBySuper = super.dispatchGenericMotionEvent(event);
+        return handledByWinHandler || handledByTouchpadView || handledBySuper;
     }
 
 
@@ -3597,6 +3602,9 @@ public class XServerDisplayActivity extends AppCompatActivity {
         if (this.inputControlsView.onKeyEvent(event)) return true;
         if (this.winHandler != null && this.winHandler.onKeyEvent(event)) return true;
         if (this.xServer != null && this.xServer.keyboard.onKeyEvent(event)) return true;
+        
+        if (ExternalController.isGameController(event.getDevice())) return true;
+        
         return super.dispatchKeyEvent(event);
     }
 
