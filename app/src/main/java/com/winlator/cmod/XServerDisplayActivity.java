@@ -3570,7 +3570,16 @@ public class XServerDisplayActivity extends AppCompatActivity {
 
     @Override
     public boolean dispatchGenericMotionEvent(MotionEvent event) {
-        return (this.winHandler != null && this.winHandler.onGenericMotionEvent(event)) || (this.touchpadView != null && this.touchpadView.onExternalMouseEvent(event)) || super.dispatchGenericMotionEvent(event);
+        boolean handledByWinHandler = false;
+        boolean handledByTouchpadView = false;
+        if (this.winHandler != null) {
+            handledByWinHandler = this.winHandler.onGenericMotionEvent(event);
+        }
+        if (this.touchpadView != null) {
+            handledByTouchpadView = this.touchpadView.onExternalMouseEvent(event);
+        }
+        boolean handledBySuper = super.dispatchGenericMotionEvent(event);
+        return handledByWinHandler || handledByTouchpadView || handledBySuper;
     }
 
 
