@@ -615,30 +615,38 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
         }
         envVars.put("ANDROID_RESOLV_DNS", primaryDNS);
         envVars.put("WINE_NEW_NDIS", "1");
+        envVars.put("WINE_DISABLE_FULLSCREEN_HACK", "1");
+        envVars.put("WINE_X11FORCEGLX", "1");
+        envVars.put("WINE_GST_NO_GL", "1");
         
         String ld_preload = "";
-
-        // Ensure shared memory library is extracted and available
-        File sysvshmDest = ensureImageFsNativeLibrary(context, imageFs, "libandroid-sysvshm.so");
-        if (sysvshmDest != null && sysvshmDest.exists()){
+        File sysvshmDest = new File(imageFs.getLibDir(), "libandroid-sysvshm.so");
+        if (sysvshmDest.exists()) {
             ld_preload = sysvshmDest.getAbsolutePath();
         }
 
-        File fakeinputLib = ensureImageFsNativeLibrary(context, imageFs, "libfakeinput.so");
-        if (fakeinputLib != null && fakeinputLib.exists()) {
+        File fakeinputDest = new File(imageFs.getLibDir(), "libfakeinput.so");
+        String nativeLibDir = context.getApplicationInfo().nativeLibraryDir;
+        File fakeinputSrc = new File(nativeLibDir, "libfakeinput.so");
+
+        if (!fakeinputDest.exists()) {
+            try {
+                if (fakeinputSrc.exists()) {
+                    FileUtils.copy(fakeinputSrc, fakeinputDest);
+                    Log.d("GuestLauncher", "Copied libfakeinput.so to imagefs");
+                }
+            } catch (IOException e) {
+                Log.e("GuestLauncher", "Failed to copy libfakeinput.so", e);
+            }
+        }
+
+        if (fakeinputDest.exists()) {
             if (!ld_preload.isEmpty()) ld_preload += ":";
-            ld_preload += fakeinputLib.getAbsolutePath();
+            ld_preload += fakeinputDest.getAbsolutePath();
         }
+
         envVars.put("LD_PRELOAD", ld_preload);
-
-        // FAKE_EVDEV_DIR in reference app points to ABSOLUTE path for the library to read
         envVars.put("FAKE_EVDEV_DIR", devInputPath);
-
-        // Winlator legacy hooks (libhook_impl.so, libfile_redirect_hook.so) break FEXCore rendering and stability.
-        // Removed them for Arm64EC mode to match Bionic/Ludashi implementation.
-        if (wineInfo.isArm64EC()) {
-            // Do not preload libhook_impl.so or libfile_redirect_hook.so on Arm64EC.
-        }
 
         mergeExternalEnvVars(envVars, ld_preload, devInputPath);
 
@@ -647,6 +655,12 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
         if (shortcut != null) {
             emulator = shortcut.getExtra("emulator", emulator);
         }
+
+        envVars.put("BOX64_NOBANNER", "1");
+        envVars.put("BOX64_DYNAREC", "1");
+        envVars.put("BOX64_X11GLX", "1");
+        envVars.put("BOX64_NORCFILES", "1");
+
         String command;
         if (wineInfo.isArm64EC()) {
             command = winePath + "/" + guestExecutable;
