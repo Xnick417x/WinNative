@@ -542,6 +542,18 @@ public class XServerDisplayActivity extends AppCompatActivity {
         });
 
         imageFs = ImageFs.find(this);
+        File devInputDir = new File(imageFs.getRootDir(), "dev/input");
+        if (devInputDir.exists() || devInputDir.mkdirs()) {
+            for (int i = 0; i < 4; i++) {
+                File eventFile = new File(devInputDir, "event" + i);
+                if (eventFile.exists()) eventFile.delete();
+            }
+            try {
+                new File(devInputDir, "event0").createNewFile();
+            } catch (IOException e) {}
+        }
+        winHandler = new WinHandler(this);
+        winHandler.setFakeInputPath(devInputDir.getAbsolutePath());
         GuestProgramLauncherComponent.ensureImageFsNativeLibrary(this, imageFs, "libfakeinput.so");
         GuestProgramLauncherComponent.ensureImageFsNativeLibrary(this, imageFs, "libandroid-sysvshm.so");
 
