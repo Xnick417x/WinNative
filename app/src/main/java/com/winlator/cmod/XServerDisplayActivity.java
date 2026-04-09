@@ -464,9 +464,9 @@ public class XServerDisplayActivity extends AppCompatActivity {
 
         // Initialize the WinHandler after context is set up
         winHandler = new WinHandler(this);
-        File tmpDir = new File(ImageFs.find(this).getRootDir(), "usr/tmp");
-        tmpDir.mkdirs();
-        winHandler.setFakeInputPath(tmpDir.getAbsolutePath());
+        File devInputDir = new File(ImageFs.find(this).getRootDir(), "dev/input");
+        devInputDir.mkdirs();
+        winHandler.setFakeInputPath(devInputDir.getAbsolutePath());
 
         if (isOpenWithAndroidBrowser || isShareAndroidClipboard)
             wineRequestHandler = new WineRequestHandler(this);
@@ -1633,9 +1633,22 @@ public class XServerDisplayActivity extends AppCompatActivity {
                     if (midiHandler != null) midiHandler.stop();
                     // Unregister sensor listener to avoid memory leaks
                     if (sensorManager != null) sensorManager.unregisterListener(gyroListener);
-                    if (winHandler != null) winHandler.stop();
-                    if (wineRequestHandler != null) wineRequestHandler.stop();
                     
+                    // First stop environment components (ALSA, PulseAudio, XServer, etc.)
+                    if (environment != null) {
+                        environment.stopEnvironmentComponents();
+                        environment = null;
+                    }
+
+                    if (winHandler != null) {
+                        winHandler.stop();
+                        winHandler = null;
+                    }
+                    if (wineRequestHandler != null) {
+                        wineRequestHandler.stop();
+                        wineRequestHandler = null;
+                    }
+
                     // Definitive Wine process cleanup
                     if (guestProgramLauncherComponent != null) {
                         guestProgramLauncherComponent.execShellCommand("wineserver -k");
@@ -1657,14 +1670,7 @@ public class XServerDisplayActivity extends AppCompatActivity {
                             break;
                         }
                     }
-                    /* Now safe to tear down environment components (ALSA, PulseAudio, XServer, etc.)
-                     * since Wine processes are no longer writing to their sockets. */
-                    if (environment != null) {
-                        environment.stopEnvironmentComponents();
-                        environment = null;
-                    }
-                    winHandler = null;
-                    wineRequestHandler = null;
+                    
                     midiHandler = null;
                     xServer = null;
                     xServerView = null;

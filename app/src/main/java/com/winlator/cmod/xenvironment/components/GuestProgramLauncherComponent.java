@@ -543,16 +543,16 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
         boolean enableEvshim = true;
 
         if (enableEvshim) {
-            // --- Controller support: create shared memory files for all 4 slots ---
-            // Pre-create all files to support hot-plug (controllers connected mid-game)
+            // --- Controller support: create shared memory files in /dev/input ---
+            // libfakeinput.so/evshim will look here.
             final int MAX_PLAYERS = 4;
-            File tmpDir = new File(rootDir, "usr/tmp");
-            tmpDir.mkdirs();
-            String tmpPath = tmpDir.getAbsolutePath();
+            File devInputDir = new File(imageFs.getRootDir(), "dev/input");
+            devInputDir.mkdirs();
+            String devInputPath = devInputDir.getAbsolutePath();
             for (int i = 0; i < MAX_PLAYERS; i++) {
                 String memPath = (i == 0)
-                        ? tmpPath + "/gamepad.mem"
-                        : tmpPath + "/gamepad" + i + ".mem";
+                        ? devInputPath + "/gamepad.mem"
+                        : devInputPath + "/gamepad" + i + ".mem";
                 File memFile = new File(memPath);
                 try (java.io.RandomAccessFile raf = new java.io.RandomAccessFile(memFile, "rw")) {
                     raf.setLength(64);
@@ -561,8 +561,9 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
                 }
             }
             envVars.put("EVSHIM_MAX_PLAYERS", String.valueOf(MAX_PLAYERS));
-            envVars.put("EVSHIM_DATA_PATH", tmpPath); // Absolute Android path for libfakeinput
-            envVars.put("EVSHIM_WIN_PATH", "Z:\\usr\\tmp");
+            envVars.put("EVSHIM_DATA_PATH", "/dev/input"); // Path inside the container
+            envVars.put("EVSHIM_WIN_PATH", "Z:\\dev\\input");
+            envVars.put("FAKE_EVDEV_DIR", "/dev/input"); // For libfakeinput logic if it overlaps
         } else {
             Log.d("GuestProgramLauncher", "EVSHIM disabled for compatibility mode");
         }
@@ -649,6 +650,7 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
         if (!event0.exists()) {
             try { event0.createNewFile(); } catch (Exception e) {}
         }
+        // FAKE_EVDEV_DIR in reference app points to ABSOLUTE path for the library to read
         envVars.put("FAKE_EVDEV_DIR", devInputDir.getAbsolutePath());
 
         // Winlator legacy hooks (libhook_impl.so, libfile_redirect_hook.so) break FEXCore rendering and stability.
