@@ -448,21 +448,9 @@ public class XServerDisplayActivity extends AppCompatActivity {
         
         setContentView(R.layout.xserver_display_activity);
 
-        imageFs = ImageFs.find(this);
-        File devInputDir = new File(imageFs.getRootDir(), "dev/input");
-        if (devInputDir.exists() || devInputDir.mkdirs()) {
-            for (int i = 0; i < 4; i++) {
-                File eventFile = new File(devInputDir, "event" + i);
-                if (eventFile.exists()) eventFile.delete();
-            }
-            try {
-                new File(devInputDir, "event0").createNewFile();
-            } catch (IOException e) {}
-        }
-        winHandler = new WinHandler(this);
-        winHandler.setFakeInputPath(devInputDir.getAbsolutePath());
-        GuestProgramLauncherComponent.ensureImageFsNativeLibrary(this, imageFs, "libfakeinput.so");
-        GuestProgramLauncherComponent.ensureImageFsNativeLibrary(this, imageFs, "libandroid-sysvshm.so");
+        // Initialize the WinHandler after context is set up
+        if (isOpenWithAndroidBrowser || isShareAndroidClipboard)
+            wineRequestHandler = new WineRequestHandler(this);
 
         // Initialize ControllerManager for multi-controller support
         ControllerManager.getInstance().init(this);
@@ -2627,6 +2615,21 @@ public class XServerDisplayActivity extends AppCompatActivity {
         // Clear any temporary directory
         String rootPath = imageFs.getRootDir().getPath();
         FileUtils.clear(imageFs.getTmpDir());
+
+        // Setup clean dev/input state and initialize libraries in background thread
+        File devInputDir = new File(imageFs.getRootDir(), "dev/input");
+        if (devInputDir.exists() || devInputDir.mkdirs()) {
+            for (int i = 0; i < 4; i++) {
+                File eventFile = new File(devInputDir, "event" + i);
+                if (eventFile.exists()) eventFile.delete();
+            }
+            try {
+                new File(devInputDir, "event0").createNewFile();
+            } catch (IOException e) {}
+        }
+        winHandler.setFakeInputPath(devInputDir.getAbsolutePath());
+        GuestProgramLauncherComponent.ensureImageFsNativeLibrary(this, imageFs, "libfakeinput.so");
+        GuestProgramLauncherComponent.ensureImageFsNativeLibrary(this, imageFs, "libandroid-sysvshm.so");
 
         // Exclusive Input Alignment
         boolean exclusiveXInput = container.isExclusiveXInput();

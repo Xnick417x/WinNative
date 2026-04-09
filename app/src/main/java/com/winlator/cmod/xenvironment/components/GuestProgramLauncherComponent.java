@@ -554,6 +554,7 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
                 Log.e("GuestProgramLauncher", "Failed to create event0 file", e);
             }
         }
+        envVars.put("FAKE_EVDEV_DIR", devInputPath);
 
         addBox64EnvVars(envVars, enableBox64Logs);
         envVars.putAll(FEXCorePresetManager.getEnvVars(context, fexcorePreset));
