@@ -3575,10 +3575,10 @@ public class XServerDisplayActivity extends AppCompatActivity {
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        if ((this.inputControlsView.onKeyEvent(event) || (this.winHandler != null && this.winHandler.onKeyEvent(event))) || (this.xServer != null && !this.xServer.keyboard.onKeyEvent(event))) {
-            return true;
-        }
-        return !ExternalController.isGameController(event.getDevice()) && super.dispatchKeyEvent(event);
+        if (this.inputControlsView.onKeyEvent(event)) return true;
+        if (this.winHandler != null && this.winHandler.onKeyEvent(event)) return true;
+        if (this.xServer != null && this.xServer.keyboard.onKeyEvent(event)) return true;
+        return super.dispatchKeyEvent(event);
     }
 
     public InputControlsView getInputControlsView() {
