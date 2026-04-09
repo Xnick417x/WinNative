@@ -463,11 +463,6 @@ public class XServerDisplayActivity extends AppCompatActivity {
         boolean isShareAndroidClipboard = preferences.getBoolean("share_android_clipboard", false);
 
         // Initialize the WinHandler after context is set up
-        winHandler = new WinHandler(this);
-        File devInputDir = new File(ImageFs.find(this).getRootDir(), "dev/input");
-        devInputDir.mkdirs();
-        winHandler.setFakeInputPath(devInputDir.getAbsolutePath());
-
         if (isOpenWithAndroidBrowser || isShareAndroidClipboard)
             wineRequestHandler = new WineRequestHandler(this);
 
@@ -2632,13 +2627,11 @@ public class XServerDisplayActivity extends AppCompatActivity {
 
         File devInputDir = new File(imageFs.getRootDir(), "dev/input");
         if (devInputDir.exists() || devInputDir.mkdirs()) {
-            for (int i = 0; i < 4; i++) {
-                File eventFile = new File(devInputDir, "event" + i);
-                if (!eventFile.exists()) {
-                    try {
-                        eventFile.createNewFile();
-                    } catch (IOException e) {
-                    }
+            File event0 = new File(devInputDir, "event0");
+            if (!event0.exists()) {
+                try {
+                    event0.createNewFile();
+                } catch (IOException e) {
                 }
             }
         }

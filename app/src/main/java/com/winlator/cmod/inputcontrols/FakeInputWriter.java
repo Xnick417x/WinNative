@@ -19,10 +19,12 @@ public class FakeInputWriter {
     public static final short ABS_X = 0;
     public static final short ABS_Y = 1;
     private static final int BUFFER_SIZE = 480;
+    private static final int EVENT_SIZE = 24;
     public static final short EV_ABS = 3;
     public static final short EV_KEY = 1;
     public static final short EV_MSC = 4;
     public static final short EV_SYN = 0;
+    private static final int MAX_EVENTS_PER_UPDATE = 20;
     public static final short MSC_SCAN = 4;
     public static final short SYN_REPORT = 0;
     private static final String TAG = "FakeInputWriter";
@@ -155,6 +157,14 @@ public class FakeInputWriter {
         this.prevButtonStates[i] = z;
         writeEvent((short) 4, (short) 4, BUTTON_MAP[i]);
         writeEvent((short) 1, BUTTON_MAP[i], z ? 1 : 0);
+    }
+
+    private void writeAxis(short code, int value, int[] prevRef, int index) {
+        if (prevRef[index] == value) {
+            return;
+        }
+        prevRef[index] = value;
+        writeEvent((short) 3, code, value);
     }
 
     public void writeGamepadState(GamepadState state) {
