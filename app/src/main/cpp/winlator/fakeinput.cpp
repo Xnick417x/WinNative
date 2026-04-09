@@ -64,6 +64,7 @@ namespace Logger {
 }
 
 void handle_sigint(int sig) {
+    (void)sig;
     stop_flag = 1;
 }
 
@@ -345,7 +346,6 @@ EXPORT int ioctl(int fd, int op, ...) {
 
     int type = (op >> 8 & 0xFF);
     int number = (op >> 0 & 0xFF);
-    const char *event = controller->second;
 
     if (type == 0x45 && number == 0x1) {
         int version = 65536;

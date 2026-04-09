@@ -430,17 +430,17 @@ public class WinHandler {
         dst.putShort((short) (src.triggerR * 32767)); // 10-11
 
         // Buttons: 15 individual bytes (0 or 1), matching evshim btn[15]
-        dst.put(src.isPressed(GamepadState.IDX_BUTTON_A) ? (byte) 1 : (byte) 0); // 0
-        dst.put(src.isPressed(GamepadState.IDX_BUTTON_B) ? (byte) 1 : (byte) 0); // 1
-        dst.put(src.isPressed(GamepadState.IDX_BUTTON_X) ? (byte) 1 : (byte) 0); // 2
-        dst.put(src.isPressed(GamepadState.IDX_BUTTON_Y) ? (byte) 1 : (byte) 0); // 3
-        dst.put(src.isPressed(GamepadState.IDX_BUTTON_SELECT) ? (byte) 1 : (byte) 0); // 4 (Back)
-        dst.put(src.isPressed(GamepadState.IDX_BUTTON_MODE) ? (byte) 1 : (byte) 0); // 5 (Guide)
-        dst.put(src.isPressed(GamepadState.IDX_BUTTON_START) ? (byte) 1 : (byte) 0); // 6
-        dst.put(src.isPressed(GamepadState.IDX_BUTTON_L3) ? (byte) 1 : (byte) 0); // 7
-        dst.put(src.isPressed(GamepadState.IDX_BUTTON_R3) ? (byte) 1 : (byte) 0); // 8
-        dst.put(src.isPressed(GamepadState.IDX_BUTTON_L1) ? (byte) 1 : (byte) 0); // 9
-        dst.put(src.isPressed(GamepadState.IDX_BUTTON_R1) ? (byte) 1 : (byte) 0); // 10
+        dst.put(src.isPressed(ExternalController.IDX_BUTTON_A) ? (byte) 1 : (byte) 0); // 0
+        dst.put(src.isPressed(ExternalController.IDX_BUTTON_B) ? (byte) 1 : (byte) 0); // 1
+        dst.put(src.isPressed(ExternalController.IDX_BUTTON_X) ? (byte) 1 : (byte) 0); // 2
+        dst.put(src.isPressed(ExternalController.IDX_BUTTON_Y) ? (byte) 1 : (byte) 0); // 3
+        dst.put(src.isPressed(ExternalController.IDX_BUTTON_SELECT) ? (byte) 1 : (byte) 0); // 4 (Back)
+        dst.put(src.isPressed((byte) 12) ? (byte) 1 : (byte) 0); // 5 (Guide/Mode)
+        dst.put(src.isPressed(ExternalController.IDX_BUTTON_START) ? (byte) 1 : (byte) 0); // 6
+        dst.put(src.isPressed(ExternalController.IDX_BUTTON_L3) ? (byte) 1 : (byte) 0); // 7
+        dst.put(src.isPressed(ExternalController.IDX_BUTTON_R3) ? (byte) 1 : (byte) 0); // 8
+        dst.put(src.isPressed(ExternalController.IDX_BUTTON_L1) ? (byte) 1 : (byte) 0); // 9
+        dst.put(src.isPressed(ExternalController.IDX_BUTTON_R1) ? (byte) 1 : (byte) 0); // 10
         dst.put(src.dpad[0] ? (byte) 1 : (byte) 0); // 11 (Up)
         dst.put(src.dpad[2] ? (byte) 1 : (byte) 0); // 12 (Down)
         dst.put(src.dpad[3] ? (byte) 1 : (byte) 0); // 13 (Left)
