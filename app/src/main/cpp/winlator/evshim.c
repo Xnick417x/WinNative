@@ -1,13 +1,5 @@
 /* evshim.c - Multi-Controller & Dynamic SDL Virtual Joystick Shim
- * Creates virtual SDL joysticks backed by shared memory for Wine controller
- * support
- *
- * Optimizations:
- * - Memory-mapped I/O (mmap) instead of read/write syscalls
- * - Single unified polling thread for all controllers
- * - Adaptive polling: fast (0.5ms) during activity, slow (4ms) when idle
- * - Delta-only updates per axis/button to minimize SDL calls
- * - Lock-free design using memory barriers
+ * Perfect Alignment Version - Matching Reference App & PR 151
  */
 
 #define _GNU_SOURCE
@@ -24,11 +16,12 @@
 #include <sys/mman.h>
 #include <time.h>
 #include <unistd.h>
-/* SDL2 types - minimal forward declarations */
+#include <sys/vfs.h>
+#include <sys/statvfs.h>
+
+/* SDL2 types */
 typedef struct SDL_Joystick SDL_Joystick;
-typedef struct {
-  int major, minor, patch;
-} SDL_version;
+typedef struct { int major, minor, patch; } SDL_version;
 typedef struct SDL_VirtualJoystickDesc {
   uint16_t version;
   uint16_t type;
@@ -54,44 +47,28 @@ typedef struct SDL_VirtualJoystickDesc {
 #define SDL_JOYSTICK_TYPE_GAMECONTROLLER 1
 #define SDL_INIT_JOYSTICK 0x00000200
 
-static int g_debug_enabled = 0;
-static int g_spinwait_enabled = 0;
-#define LOGI(...) dprintf(STDOUT_FILENO, __VA_ARGS__)
-#define LOGE(...) dprintf(STDERR_FILENO, __VA_ARGS__)
-#define LOGD(...)                                                              \
-  do {                                                                         \
-    if (g_debug_enabled)                                                       \
-      dprintf(STDOUT_FILENO, __VA_ARGS__);                                     \
-  } while (0)
+#define LOGI(...) dprintf(STDOUT_FILENO, "EVSHIM: " __VA_ARGS__)
+#define LOGE(...) dprintf(STDERR_FILENO, "EVSHIM ERROR: " __VA_ARGS__)
 
 #define MAX_GAMEPADS 4
 #define GAMEPAD_MEM_SIZE 64
-
-#define GAMEPAD_VENDOR_ID 0x045e
-#define GAMEPAD_PRODUCT_ID 0x028e
+#define GAMEPAD_VENDOR_ID 0x1234
+#define GAMEPAD_PRODUCT_ID 0x5678
 #define GAMEPAD_NAME_TEMPLATE "Generic HID Gamepad %d"
 
-/* Adaptive polling intervals */
-#define POLL_FAST_NS 500000L  /* 0.5ms = 2000Hz during active input */
-#define POLL_SLOW_NS 4000000L /* 4ms = 250Hz during idle */
-#define IDLE_THRESHOLD 50     /* ~25ms of no activity before slowing down */
+/* Shared memory layout - PACKED to match Java ByteBuffer exactly (Fix #1) */
+struct __attribute__((packed)) gamepad_io {
+  int16_t lx, ly, rx, ry, lt, rt; /* 0-11: axes */
+  uint8_t btn[15];                /* 12-26: buttons */
+  uint8_t hat;                    /* 27: hat/dpad */
+  uint8_t _padding[4];            /* 28-31: padding */
+  uint16_t low_freq_rumble;       /* 32-33: rumble out */
+  uint16_t high_freq_rumble;      /* 34-35: rumble out */
+};
 
-#define AXIS_DEADZONE 256 /* ~0.8% deadzone to filter stick noise */
-
-/* Shared memory layout - must match Android side exactly */
-struct gamepad_io {
-  int16_t lx, ly, rx, ry, lt, rt; /* 12 bytes: axes */
-  uint8_t btn[15];                /* 15 bytes: buttons */
-  uint8_t hat;                    /* 1 byte: hat/dpad */
-  uint8_t _padding[4];            /* 4 bytes: alignment */
-  uint16_t low_freq_rumble;       /* 2 bytes: rumble out */
-  uint16_t high_freq_rumble;      /* 2 bytes: rumble out */
-}; /* Total: 36 bytes */
-
-/* Per-controller state */
 struct controller_state {
   SDL_Joystick *js;
-  volatile struct gamepad_io *mem; /* mmap'd shared memory */
+  volatile struct gamepad_io *mem;
   int mem_fd;
   int16_t last_axes[6];
   uint8_t last_btns[15];
@@ -99,21 +76,19 @@ struct controller_state {
   int active;
 };
 
-static int vjoy_ids[MAX_GAMEPADS] = {-1, -1, -1, -1};
 static struct controller_state ctrl[MAX_GAMEPADS] = {0};
-static int g_num_players = 0;
+static int vjoy_ids[MAX_GAMEPADS] = {-1, -1, -1, -1};
 static void *handle = NULL;
+static int g_num_players = 1;
+static char g_data_path[256] = {0};
 
 /* SDL function pointers */
 static int (*p_SDL_Init)(uint32_t);
-static const char *(*p_SDL_GetError)(void);
 static SDL_Joystick *(*p_SDL_JoystickOpen)(int);
 static int (*p_SDL_JoystickAttachVirtualEx)(const SDL_VirtualJoystickDesc *);
 static int (*p_SDL_JoystickSetVirtualAxis)(SDL_Joystick *, int, int16_t);
 static int (*p_SDL_JoystickSetVirtualButton)(SDL_Joystick *, int, uint8_t);
 static int (*p_SDL_JoystickSetVirtualHat)(SDL_Joystick *, int, uint8_t);
-static void (*p_SDL_PumpEvents)(void);
-static void (*p_SDL_Delay)(uint32_t);
 static void (*p_SDL_GetVersion)(SDL_version *);
 
 #define GETFUNCPTR(name)                                                       \
@@ -127,7 +102,6 @@ static void (*p_SDL_GetVersion)(SDL_version *);
 #define ATOMIC_LOAD(ptr) __atomic_load_n(ptr, __ATOMIC_ACQUIRE)
 #define ATOMIC_STORE(ptr, val) __atomic_store_n(ptr, val, __ATOMIC_RELEASE)
 #else
-/* Fallback for non-GCC/Clang: volatile access + compiler barrier */
 #define ATOMIC_LOAD(ptr) (*(volatile typeof(*(ptr)) *)(ptr))
 #define ATOMIC_STORE(ptr, val)                                                 \
   do {                                                                         \
@@ -136,69 +110,51 @@ static void (*p_SDL_GetVersion)(SDL_version *);
   } while (0)
 #endif
 
-/* Inline deadzone filter */
+#define AXIS_DEADZONE 256
 static inline int16_t apply_deadzone(int16_t val) {
   int16_t abs_val = val < 0 ? -val : val;
   return abs_val < AXIS_DEADZONE ? 0 : val;
 }
 
-/* Rumble callback - writes directly to memory-mapped region */
 static int OnRumble(void *userdata, uint16_t low, uint16_t high) {
   int idx = (int)(intptr_t)userdata;
-  if (idx < 0 || idx >= MAX_GAMEPADS || !ctrl[idx].mem)
-    return -1;
-
-  /* Direct memory write with release semantics for visibility */
-  volatile struct gamepad_io *mem = ctrl[idx].mem;
-  ATOMIC_STORE(&mem->low_freq_rumble, low);
-  ATOMIC_STORE(&mem->high_freq_rumble, high);
+  if (idx >= 0 && idx < MAX_GAMEPADS && ctrl[idx].mem) {
+    volatile struct gamepad_io *mem = ctrl[idx].mem;
+    ATOMIC_STORE(&mem->low_freq_rumble, low);
+    ATOMIC_STORE(&mem->high_freq_rumble, high);
+  }
   return 0;
 }
 
-/* Unified polling thread - handles all controllers in one tight loop */
 static void *unified_updater(void *arg) {
   (void)arg;
-  struct timespec fast_sleep = {0, POLL_FAST_NS};
-  struct timespec slow_sleep = {0, POLL_SLOW_NS};
+  struct timespec fast_sleep = {0, 500000L};
+  struct timespec slow_sleep = {0, 4000000L};
   int idle_count = 0;
 
-  /* Open all SDL joysticks upfront */
   for (int i = 0; i < g_num_players; i++) {
-    if (vjoy_ids[i] < 0 || !ctrl[i].mem)
-      continue;
+    if (vjoy_ids[i] < 0 || !ctrl[i].mem) continue;
     ctrl[i].js = p_SDL_JoystickOpen(vjoy_ids[i]);
-    if (!ctrl[i].js) {
-      LOGE("P%d: SDL_JoystickOpen failed\n", i);
-      continue;
-    }
+    if (!ctrl[i].js) continue;
     ctrl[i].active = 1;
-    LOGI("VJOY P%d active\n", i);
   }
-
-  LOGI("VJOY adaptive updater (fast=%ldus, slow=%ldus) PID %d\n",
-       POLL_FAST_NS / 1000, POLL_SLOW_NS / 1000, getpid());
 
   for (;;) {
     int had_updates = 0;
-
-    /* Process all controllers in a single pass */
     for (int i = 0; i < g_num_players; i++) {
-      if (!ctrl[i].active)
-        continue;
+      if (!ctrl[i].active) continue;
 
       volatile struct gamepad_io *mem = ctrl[i].mem;
       SDL_Joystick *js = ctrl[i].js;
 
-      /* Read axes with atomic acquire + deadzone filtering */
       int16_t axes[6];
       axes[0] = apply_deadzone(ATOMIC_LOAD(&mem->lx));
       axes[1] = apply_deadzone(ATOMIC_LOAD(&mem->ly));
       axes[2] = apply_deadzone(ATOMIC_LOAD(&mem->rx));
       axes[3] = apply_deadzone(ATOMIC_LOAD(&mem->ry));
-      axes[4] = ATOMIC_LOAD(&mem->lt); /* No deadzone for triggers */
+      axes[4] = ATOMIC_LOAD(&mem->lt); 
       axes[5] = ATOMIC_LOAD(&mem->rt);
 
-      /* Delta update axes - only call SDL when value changes */
       for (int a = 0; a < 6; a++) {
         if (axes[a] != ctrl[i].last_axes[a]) {
           p_SDL_JoystickSetVirtualAxis(js, a, axes[a]);
@@ -207,7 +163,6 @@ static void *unified_updater(void *arg) {
         }
       }
 
-      /* Delta update buttons */
       for (int b = 0; b < 15; b++) {
         uint8_t btn = ATOMIC_LOAD(&mem->btn[b]);
         if (btn != ctrl[i].last_btns[b]) {
@@ -217,7 +172,6 @@ static void *unified_updater(void *arg) {
         }
       }
 
-      /* Delta update hat */
       uint8_t hat = ATOMIC_LOAD(&mem->hat);
       if (hat != ctrl[i].last_hat) {
         p_SDL_JoystickSetVirtualHat(js, 0, hat);
@@ -226,96 +180,64 @@ static void *unified_updater(void *arg) {
       }
     }
 
-    /* Adaptive timing based on activity */
     if (had_updates) {
       idle_count = 0;
-      if (g_spinwait_enabled) {
-        sched_yield(); /* Ultra-low latency: just yield CPU briefly */
-      } else {
-        nanosleep(&fast_sleep, NULL); /* 0.5ms during active input */
-      }
+      nanosleep(&fast_sleep, NULL);
     } else {
       idle_count++;
-      if (idle_count > IDLE_THRESHOLD) {
-        nanosleep(&slow_sleep, NULL); /* 4ms when idle - saves CPU */
+      if (idle_count > 50) {
+        nanosleep(&slow_sleep, NULL);
       } else {
-        nanosleep(&fast_sleep, NULL); /* Stay fast briefly after activity */
+        nanosleep(&fast_sleep, NULL);
       }
     }
   }
   return NULL;
 }
 
-/* Watchdog wrapper - respawns updater thread if it dies unexpectedly */
 static void *watchdog_thread(void *arg) {
   (void)arg;
-  struct timespec check_interval = {1, 0}; /* Check every 1 second */
+  struct timespec check_interval = {1, 0}; 
 
   while (1) {
     pthread_t tid;
-    int result = pthread_create(&tid, NULL, unified_updater, NULL);
-    if (result != 0) {
-      LOGE("Failed to create updater thread: %d\n", result);
+    if (pthread_create(&tid, NULL, unified_updater, NULL) != 0) {
       nanosleep(&check_interval, NULL);
       continue;
     }
-
-    /* Wait for the thread to exit (it shouldn't under normal conditions) */
     void *retval;
     pthread_join(tid, &retval);
-
-    /* If we get here, the thread exited unexpectedly - respawn it */
-    LOGE("Updater thread exited unexpectedly, respawning in 1s...\n");
     nanosleep(&check_interval, NULL);
   }
   return NULL;
 }
 
-/* Hot-plug detection - checks for newly connected controllers */
-static char g_data_path[256] = {0};
-
-static char *make_virtual_pad_name(int idx) {
-  char *name;
-  asprintf(&name, GAMEPAD_NAME_TEMPLATE, idx);
-  return name;
-}
-
 static void try_attach_controller(int idx) {
-  if (ctrl[idx].active || !handle)
-    return; /* Already active or SDL not loaded */
+  if (ctrl[idx].active || !handle) return;
 
   char path[300];
   snprintf(path, sizeof path, "%s/gamepad%s.mem", g_data_path,
            (idx == 0) ? "" : (char[2]){'0' + idx, '\0'});
 
-  /* Check if memory file exists now */
-  if (access(path, F_OK) != 0)
-    return;
-
-  /* Try to open and map */
+  if (access(path, F_OK) != 0) return;
   int fd = open(path, O_RDWR);
-  if (fd < 0)
-    return;
+  if (fd < 0) return;
 
-  void *mem =
-      mmap(NULL, GAMEPAD_MEM_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+  void *mem = mmap(NULL, GAMEPAD_MEM_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
   if (mem == MAP_FAILED) {
     close(fd);
     return;
   }
 
-  /* Create virtual joystick */
   SDL_VirtualJoystickDesc d = {0};
   d.version = SDL_VIRTUAL_JOYSTICK_DESC_VERSION;
   d.type = SDL_JOYSTICK_TYPE_GAMECONTROLLER;
-  d.naxes = 6;
-  d.nbuttons = 15;
-  d.nhats = 1;
-  d.vendor_id = GAMEPAD_VENDOR_ID;
-  d.product_id = GAMEPAD_PRODUCT_ID;
-  d.Rumble = &OnRumble;
-  d.userdata = (void *)(intptr_t)idx;
-  d.name = make_virtual_pad_name(idx);
+  d.naxes = 6; d.nbuttons = 15; d.nhats = 1;
+  d.vendor_id = GAMEPAD_VENDOR_ID; d.product_id = GAMEPAD_PRODUCT_ID;
+  d.Rumble = &OnRumble; d.userdata = (void *)(intptr_t)idx;
+  
+  char name[64]; snprintf(name, sizeof(name), GAMEPAD_NAME_TEMPLATE, idx);
+  d.name = strdup(name);
 
   int vjoy_id = p_SDL_JoystickAttachVirtualEx(&d);
   if (vjoy_id < 0) {
@@ -324,7 +246,6 @@ static void try_attach_controller(int idx) {
     return;
   }
 
-  /* Open the SDL joystick */
   SDL_Joystick *js = p_SDL_JoystickOpen(vjoy_id);
   if (!js) {
     munmap(mem, GAMEPAD_MEM_SIZE);
@@ -332,82 +253,47 @@ static void try_attach_controller(int idx) {
     return;
   }
 
-  /* Success - store everything */
   ctrl[idx].mem_fd = fd;
   ctrl[idx].mem = (volatile struct gamepad_io *)mem;
   ctrl[idx].js = js;
   vjoy_ids[idx] = vjoy_id;
   ctrl[idx].active = 1;
 
-  /* Update player count if needed */
-  if (idx >= g_num_players)
-    g_num_players = idx + 1;
-
-  LOGI("HOTPLUG: P%d connected dynamically\n", idx + 1);
+  if (idx >= g_num_players) g_num_players = idx + 1;
 }
 
 static void *hotplug_thread(void *arg) {
   (void)arg;
-  struct timespec interval = {2, 0}; /* Check every 2 seconds */
-
-  LOGI("EVSHIM hotplug detection started\n");
-
+  struct timespec interval = {2, 0};
   while (1) {
     nanosleep(&interval, NULL);
-
-    /* Check for any inactive slots that might have new files */
     for (int i = 0; i < MAX_GAMEPADS; i++) {
-      if (!ctrl[i].active) {
-        try_attach_controller(i);
-      }
+      if (!ctrl[i].active) try_attach_controller(i);
     }
   }
   return NULL;
 }
 
 __attribute__((constructor)) static void initialize_all_pads(void) {
-  const char *dbg = getenv("EVSHIM_DEBUG");
-  g_debug_enabled = dbg && strchr("1yY", *dbg);
-
-  const char *spinwait = getenv("EVSHIM_SPINWAIT");
-  g_spinwait_enabled = spinwait && strchr("1yY", *spinwait);
-
-  LOGI("EVSHIM initializing (spinwait=%d)...\n", g_spinwait_enabled);
-
-  handle = dlopen("libSDL2-2.0.so.0", RTLD_LAZY | RTLD_GLOBAL);
-  if (!handle) {
-    LOGE("dlopen SDL failed: %s\n", dlerror());
-    return;
-  }
+  const char *libs[] = {"libSDL2-2.0.so.0", "libSDL2-2.0.so", "libSDL2.so", NULL};
+  for (int i = 0; libs[i] && !handle; i++) handle = dlopen(libs[i], RTLD_LAZY | RTLD_GLOBAL);
+  if (!handle) return;
 
   GETFUNCPTR(SDL_Init);
-  GETFUNCPTR(SDL_GetError);
   GETFUNCPTR(SDL_JoystickOpen);
   GETFUNCPTR(SDL_JoystickAttachVirtualEx);
   GETFUNCPTR(SDL_JoystickSetVirtualAxis);
   GETFUNCPTR(SDL_JoystickSetVirtualButton);
   GETFUNCPTR(SDL_JoystickSetVirtualHat);
-  GETFUNCPTR(SDL_PumpEvents);
-  GETFUNCPTR(SDL_Delay);
   GETFUNCPTR(SDL_GetVersion);
 
+  if (!p_SDL_Init || !p_SDL_JoystickAttachVirtualEx) return;
   p_SDL_Init(SDL_INIT_JOYSTICK);
 
-  SDL_version v;
-  p_SDL_GetVersion(&v);
-  LOGI("SDL %d.%d.%d bound\n", v.major, v.minor, v.patch);
-
-  g_num_players =
-      getenv("EVSHIM_MAX_PLAYERS") ? atoi(getenv("EVSHIM_MAX_PLAYERS")) : 1;
-  if (g_num_players > MAX_GAMEPADS)
-    g_num_players = MAX_GAMEPADS;
-
-  const char *data_path = getenv("EVSHIM_DATA_PATH");
-  if (!data_path)
-    data_path = "/data/data/com.winnative.cmod/files/imagefs/tmp";
-
-  /* Store path globally for hotplug detection */
+  const char *data_path = getenv("EVSHIM_DATA_PATH") ?: "/data/data/com.winnative.cmod/files/imagefs/tmp";
   strncpy(g_data_path, data_path, sizeof(g_data_path) - 1);
+  g_num_players = getenv("EVSHIM_MAX_PLAYERS") ? atoi(getenv("EVSHIM_MAX_PLAYERS")) : 1;
+  if (g_num_players > MAX_GAMEPADS) g_num_players = MAX_GAMEPADS;
 
   int attached = 0;
   for (int i = 0; i < g_num_players; ++i) {
@@ -415,94 +301,59 @@ __attribute__((constructor)) static void initialize_all_pads(void) {
     snprintf(path, sizeof path, "%s/gamepad%s.mem", data_path,
              (i == 0) ? "" : (char[2]){'0' + i, '\0'});
 
-    /* Open for read+write (needed for mmap and rumble writeback) */
-    ctrl[i].mem_fd = open(path, O_RDWR);
-    if (ctrl[i].mem_fd < 0) {
-      LOGE("P%d: open '%s' failed: %s\n", i, path, strerror(errno));
-      continue;
-    }
+    int fd = open(path, O_RDWR);
+    if (fd < 0) continue;
 
-    /* Memory-map for zero-copy access - eliminates read() syscall overhead */
-    void *mem = mmap(NULL, GAMEPAD_MEM_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED,
-                     ctrl[i].mem_fd, 0);
+    void *mem = mmap(NULL, GAMEPAD_MEM_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     if (mem == MAP_FAILED) {
-      LOGE("P%d: mmap failed: %s\n", i, strerror(errno));
-      close(ctrl[i].mem_fd);
-      ctrl[i].mem_fd = -1;
+      close(fd);
       continue;
     }
-    ctrl[i].mem = (volatile struct gamepad_io *)mem;
 
-    /* Create virtual joystick */
     SDL_VirtualJoystickDesc d = {0};
     d.version = SDL_VIRTUAL_JOYSTICK_DESC_VERSION;
     d.type = SDL_JOYSTICK_TYPE_GAMECONTROLLER;
-    d.naxes = 6;
-    d.nbuttons = 15;
-    d.nhats = 1;
-    d.vendor_id = GAMEPAD_VENDOR_ID;
-    d.product_id = GAMEPAD_PRODUCT_ID;
-    d.Rumble = &OnRumble;
-    d.userdata = (void *)(intptr_t)i;
-    d.name = make_virtual_pad_name(i);
+    d.naxes = 6; d.nbuttons = 15; d.nhats = 1;
+    d.vendor_id = GAMEPAD_VENDOR_ID; d.product_id = GAMEPAD_PRODUCT_ID;
+    d.Rumble = &OnRumble; d.userdata = (void *)(intptr_t)i;
+    
+    char name[64]; snprintf(name, sizeof(name), GAMEPAD_NAME_TEMPLATE, i);
+    d.name = strdup(name);
 
-    vjoy_ids[i] = p_SDL_JoystickAttachVirtualEx(&d);
-    if (vjoy_ids[i] < 0) {
-      LOGE("P%d: SDL attach failed\n", i);
-      munmap((void *)ctrl[i].mem, GAMEPAD_MEM_SIZE);
-      ctrl[i].mem = NULL;
+    int vjoy_id = p_SDL_JoystickAttachVirtualEx(&d);
+    if (vjoy_id < 0) {
+      munmap(mem, GAMEPAD_MEM_SIZE);
+      close(fd);
       continue;
     }
+    
+    SDL_Joystick *js = p_SDL_JoystickOpen(vjoy_id);
+    if (!js) {
+      munmap(mem, GAMEPAD_MEM_SIZE);
+      close(fd);
+      continue;
+    }
+    
+    ctrl[i].mem_fd = fd;
+    ctrl[i].mem = (volatile struct gamepad_io *)mem;
+    ctrl[i].js = js;
+    vjoy_ids[i] = vjoy_id;
+    ctrl[i].active = 1;
     attached++;
   }
 
-  /* Start watchdog thread (which manages the updater thread with respawn) */
   if (attached > 0) {
     pthread_t watchdog_tid;
     pthread_create(&watchdog_tid, NULL, watchdog_thread, NULL);
     pthread_detach(watchdog_tid);
-    LOGI("EVSHIM: %d controller(s) ready\n", attached);
   }
 
-  /* Start hotplug detection thread for controllers connected later */
   pthread_t hotplug_tid;
   pthread_create(&hotplug_tid, NULL, hotplug_thread, NULL);
   pthread_detach(hotplug_tid);
 }
 
-/* Intercept open() to hide /dev/input/event* and prevent conflicts */
-static inline int is_event_node(const char *p) {
-  return p && !strncmp(p, "/dev/input/event", 16);
-}
-
-typedef int (*open_f)(const char *, int, ...);
-static open_f real_open;
-
-int open(const char *path, int flags, ...)
-    __attribute__((visibility("default")));
-int open(const char *path, int flags, ...) {
-  if (is_event_node(path)) {
-    errno = ENOENT;
-    return -1;
-  }
-  if (!real_open)
-    real_open = (open_f)dlsym(RTLD_NEXT, "open");
-  va_list ap;
-  va_start(ap, flags);
-  mode_t mode = (flags & O_CREAT) ? va_arg(ap, mode_t) : 0;
-  va_end(ap);
-  return real_open(path, flags, mode);
-}
-
-/* Android 11+ FUSE NOEXEC bypass for Wine */
-#include <sys/vfs.h>
-#include <sys/statvfs.h>
-
-#ifndef ST_NOEXEC
-#define ST_NOEXEC 8
-#endif
-
-/* Cached function pointers - resolved once on first call */
+/* FUSE Bypass Hooks */
 static int (*real_statfs)(const char*, struct statfs*);
 static int (*real_statfs64)(const char*, struct statfs64*);
 static int (*real_statvfs)(const char*, struct statvfs*);
@@ -511,6 +362,10 @@ static int (*real_fstatfs)(int, struct statfs*);
 static int (*real_fstatfs64)(int, struct statfs64*);
 static int (*real_fstatvfs)(int, struct statvfs*);
 static int (*real_fstatvfs64)(int, struct statvfs64*);
+
+#ifndef ST_NOEXEC
+#define ST_NOEXEC 8
+#endif
 
 __attribute__((visibility("default")))
 int statfs(const char *path, struct statfs *buf) {

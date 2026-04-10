@@ -500,10 +500,8 @@ public abstract class WineUtils {
             for (int i = 0; i < 4; i++) {
                 if (exclusiveXInput) {
                     registryEditor.setStringValue("Software\\Wine\\DirectInput\\Joysticks", "Generic HID Gamepad " + i, value);
-                    registryEditor.setStringValue("Software\\Wine\\DirectInput\\Joysticks", "ric HID Gamepad " + i, value);
                 } else {
                     registryEditor.removeValue("Software\\Wine\\DirectInput\\Joysticks", "Generic HID Gamepad " + i);
-                    registryEditor.removeValue("Software\\Wine\\DirectInput\\Joysticks", "ric HID Gamepad " + i);
                 }
             }
         }

@@ -28,6 +28,9 @@
 
 #define EXPORT __attribute__((visibility("default"))) extern "C"
 
+#define ABS_BRAKE 10
+#define ABS_GAS 9
+
 std::unordered_map<int, const char *> controller_map;
 static bool initialized = false;
 static const char *hook_dir = nullptr;
@@ -357,8 +360,8 @@ EXPORT int ioctl(int fd, int op, ...) {
         struct input_id id;
         memset(&id, 0, sizeof(id));
         id.bustype = 0x03;
-        id.vendor = 0x045e; // Microsoft
-        id.product = 0x028e; // Xbox 360 Controller
+        id.vendor = 0x1234;
+        id.product = 0x5678;
         id.version = 0x0110;
         memcpy(argp, (void *)&id, sizeof(id));
         return 0;
@@ -394,7 +397,7 @@ EXPORT int ioctl(int fd, int op, ...) {
         return 0;
     } else if (type == 0x45 && number == 0x23) {
         char bitmask[ABS_MAX / 8] = {0};
-        short axes[] = {ABS_X, ABS_Y, ABS_RX, ABS_RY, ABS_Z, ABS_RZ, ABS_HAT0X, ABS_HAT0Y};
+        short axes[] = {ABS_X, ABS_Y, ABS_RX, ABS_RY, ABS_BRAKE, ABS_GAS, ABS_HAT0X, ABS_HAT0Y};
         for (short axis : axes) {
             bitmask[axis / 8] |= (1 << (axis % 8));
         }
@@ -409,7 +412,7 @@ EXPORT int ioctl(int fd, int op, ...) {
             abs_info.value = 0;
             abs_info.minimum = -32768;
             abs_info.maximum = 32767;
-        } else if (number == 0x42 || number == 0x45) { // ABS_Z, ABS_RZ (Triggers)
+        } else if (number == 0x49 || number == 0x4a) { // ABS_BRAKE, ABS_GAS (Triggers)
             abs_info.value = 0;
             abs_info.minimum = 0;
             abs_info.maximum = 255;

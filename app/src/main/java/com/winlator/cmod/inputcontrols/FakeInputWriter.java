@@ -10,14 +10,14 @@ import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 
 public class FakeInputWriter {
+    public static final short ABS_BRAKE = 10;
+    public static final short ABS_GAS = 9;
     public static final short ABS_HAT0X = 16;
     public static final short ABS_HAT0Y = 17;
-    public static final short ABS_X = 0;
-    public static final short ABS_Y = 1;
-    public static final short ABS_Z = 2;
     public static final short ABS_RX = 3;
     public static final short ABS_RY = 4;
-    public static final short ABS_RZ = 5;
+    public static final short ABS_X = 0;
+    public static final short ABS_Y = 1;
     private static final int BUFFER_SIZE = 1024;
     private static final int EVENT_SIZE = 24;
     public static final short EV_ABS = 3;
@@ -118,14 +118,14 @@ public class FakeInputWriter {
                     writeEvent(EV_KEY, BUTTON_MAP[i], 0);
                 }
             }
-            if (this.prevThumbLX != 0) { this.prevThumbLX = 0; writeEvent(EV_ABS, ABS_X, 0); }
-            if (this.prevThumbLY != 0) { this.prevThumbLY = 0; writeEvent(EV_ABS, ABS_Y, 0); }
-            if (this.prevThumbRX != 0) { this.prevThumbRX = 0; writeEvent(EV_ABS, ABS_RX, 0); }
-            if (this.prevThumbRY != 0) { this.prevThumbRY = 0; writeEvent(EV_ABS, ABS_RY, 0); }
-            if (this.prevTriggerL != 0) { this.prevTriggerL = 0; writeEvent(EV_ABS, ABS_Z, 0); }
-            if (this.prevTriggerR != 0) { this.prevTriggerR = 0; writeEvent(EV_ABS, ABS_RZ, 0); }
-            if (this.prevHatX != 0) { this.prevHatX = 0; writeEvent(EV_ABS, ABS_HAT0X, 0); }
-            if (this.prevHatY != 0) { this.prevHatY = 0; writeEvent(EV_ABS, ABS_HAT0Y, 0); }
+            if (this.prevThumbLX != 0) { this.prevThumbLX = 0; writeEvent(EV_ABS, (short) 0, 0); }
+            if (this.prevThumbLY != 0) { this.prevThumbLY = 0; writeEvent(EV_ABS, (short) 1, 0); }
+            if (this.prevThumbRX != 0) { this.prevThumbRX = 0; writeEvent(EV_ABS, (short) 3, 0); }
+            if (this.prevThumbRY != 0) { this.prevThumbRY = 0; writeEvent(EV_ABS, (short) 4, 0); }
+            if (this.prevTriggerL != 0) { this.prevTriggerL = 0; writeEvent(EV_ABS, ABS_BRAKE, 0); }
+            if (this.prevTriggerR != 0) { this.prevTriggerR = 0; writeEvent(EV_ABS, ABS_GAS, 0); }
+            if (this.prevHatX != 0) { this.prevHatX = 0; writeEvent(EV_ABS, (short) 16, 0); }
+            if (this.prevHatY != 0) { this.prevHatY = 0; writeEvent(EV_ABS, (short) 17, 0); }
             
             if (this.hasChanges) {
                 writeEvent(EV_SYN, SYN_REPORT, 0);
@@ -187,14 +187,14 @@ public class FakeInputWriter {
         int ly = (int) (state.thumbLY * 32767.0f);
         int rx = (int) (state.thumbRX * 32767.0f);
         int ry = (int) (state.thumbRY * 32767.0f);
-        if (lx != this.prevThumbLX) { this.prevThumbLX = lx; writeEvent(EV_ABS, ABS_X, lx); }
-        if (ly != this.prevThumbLY) { this.prevThumbLY = ly; writeEvent(EV_ABS, ABS_Y, ly); }
-        if (rx != this.prevThumbRX) { this.prevThumbRX = rx; writeEvent(EV_ABS, ABS_RX, rx); }
-        if (ry != this.prevThumbRY) { this.prevThumbRY = ry; writeEvent(EV_ABS, ABS_RY, ry); }
+        if (lx != this.prevThumbLX) { this.prevThumbLX = lx; writeEvent(EV_ABS, (short) 0, lx); }
+        if (ly != this.prevThumbLY) { this.prevThumbLY = ly; writeEvent(EV_ABS, (short) 1, ly); }
+        if (rx != this.prevThumbRX) { this.prevThumbRX = rx; writeEvent(EV_ABS, (short) 3, rx); }
+        if (ry != this.prevThumbRY) { this.prevThumbRY = ry; writeEvent(EV_ABS, (short) 4, ry); }
         int tl = (int) (state.triggerL * 255.0f);
         int tr = (int) (state.triggerR * 255.0f);
-        if (tl != this.prevTriggerL) { this.prevTriggerL = tl; writeEvent(EV_ABS, ABS_Z, tl); }
-        if (tr != this.prevTriggerR) { this.prevTriggerR = tr; writeEvent(EV_ABS, ABS_RZ, tr); }
+        if (tl != this.prevTriggerL) { this.prevTriggerL = tl; writeEvent(EV_ABS, ABS_BRAKE, tl); }
+        if (tr != this.prevTriggerR) { this.prevTriggerR = tr; writeEvent(EV_ABS, ABS_GAS, tr); }
         
         if (state.dpad[3]) {
             hatX = -1;
@@ -211,8 +211,8 @@ public class FakeInputWriter {
             hatY = 1;
         }
         
-        if (hatX != this.prevHatX) { this.prevHatX = hatX; writeEvent(EV_ABS, ABS_HAT0X, hatX); }
-        if (hatY != this.prevHatY) { this.prevHatY = hatY; writeEvent(EV_ABS, ABS_HAT0Y, hatY); }
+        if (hatX != this.prevHatX) { this.prevHatX = hatX; writeEvent(EV_ABS, (short) 16, hatX); }
+        if (hatY != this.prevHatY) { this.prevHatY = hatY; writeEvent(EV_ABS, (short) 17, hatY); }
         
         if (this.hasChanges) {
             writeEvent(EV_SYN, SYN_REPORT, 0);
