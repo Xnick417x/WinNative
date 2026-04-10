@@ -2549,6 +2549,8 @@ public class XServerDisplayActivity extends AppCompatActivity {
             container.putExtra("desktopTheme", desktopTheme+","+xServer.screenInfo);
             containerDataChanged = true;
         }
+        
+        WineStartMenuCreator.create(this, container);
 
         String gameInstallPath = null;
         if (shortcut != null) {
