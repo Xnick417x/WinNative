@@ -504,6 +504,9 @@ public abstract class WineUtils {
                     registryEditor.removeValue("Software\\Wine\\DirectInput\\Joysticks", "Generic HID Gamepad " + i);
                 }
             }
+            // Fix from reference_apps: force builtin dinput/dinput8 to ensure our hooks work
+            registryEditor.setStringValue("Software\\Wine\\DllOverrides", "dinput", "builtin");
+            registryEditor.setStringValue("Software\\Wine\\DllOverrides", "dinput8", "builtin");
         }
     }
 

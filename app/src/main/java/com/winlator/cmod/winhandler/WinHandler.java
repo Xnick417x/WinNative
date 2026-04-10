@@ -1,5 +1,6 @@
 package com.winlator.cmod.winhandler;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.hardware.input.InputManager;
 import android.util.Log;
@@ -20,22 +21,12 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.net.UnknownHostException;
-import java.io.RandomAccessFile;
-import java.nio.BufferOverflowException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
-import java.io.File;
 import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -57,8 +48,8 @@ public class WinHandler {
     private SharedPreferences preferences;
     private DatagramSocket socket;
     private boolean xinputDisabled;
-    private final ByteBuffer sendData = ByteBuffer.allocate(64).order(ByteOrder.LITTLE_ENDIAN);
-    private final ByteBuffer receiveData = ByteBuffer.allocate(64).order(ByteOrder.LITTLE_ENDIAN);
+    private final java.nio.ByteBuffer sendData = java.nio.ByteBuffer.allocate(64).order(java.nio.ByteOrder.LITTLE_ENDIAN);
+    private final java.nio.ByteBuffer receiveData = java.nio.ByteBuffer.allocate(64).order(java.nio.ByteOrder.LITTLE_ENDIAN);
     private final DatagramPacket sendPacket = new DatagramPacket(this.sendData.array(), 64);
     private final DatagramPacket receivePacket = new DatagramPacket(this.receiveData.array(), 64);
     private final ArrayDeque<Runnable> actions = new ArrayDeque<>();
@@ -66,10 +57,7 @@ public class WinHandler {
     private boolean running = false;
     private final Map<Integer, ExternalController> controllers = new HashMap<>();
     private byte inputType = 4;
-    private final List<Integer> gamepadClients = new CopyOnWriteArrayList<>();
     private FakeInputWriter[] writers = new FakeInputWriter[4];
-    private MappedByteBuffer gamepadBuffer; // P1
-    private final MappedByteBuffer[] extraGamepadBuffers = new MappedByteBuffer[3]; // P2-P4
     private Map<Integer, Integer> deviceToSlot = new HashMap<>();
     private Set<Integer> usedSlots = new HashSet<>();
     private boolean xinputDisabledInitialized = false;
@@ -90,7 +78,7 @@ public class WinHandler {
 
     public WinHandler(XServerDisplayActivity activity) {
         this.activity = activity;
-        this.inputManager = (InputManager) activity.getSystemService("input");
+        this.inputManager = (InputManager) activity.getSystemService(Context.INPUT_SERVICE);
         this.inputManager.registerInputDeviceListener(this.inputDeviceListener, null);
         this.preferences = PreferenceManager.getDefaultSharedPreferences(activity.getBaseContext());
     }
@@ -240,7 +228,7 @@ public class WinHandler {
                 this.sendData.putInt(bytes.length);
                 this.sendData.put(bytes);
                 this.sendData.putLong(handle);
-            } catch (BufferOverflowException e) {
+            } catch (java.nio.BufferOverflowException e) {
                 e.printStackTrace();
                 this.sendData.rewind();
             }
@@ -279,10 +267,6 @@ public class WinHandler {
                 }
             }
         });
-    }
-
-    public DatagramSocket getSocket() {
-        return socket;
     }
 
     public void stop() {
@@ -347,34 +331,6 @@ public class WinHandler {
             }
         }
 
-        // --- Map shared memory files for controller support ---
-        try {
-            File tmpDir = new File(activity.getFilesDir(), "imagefs/tmp");
-            tmpDir.mkdirs();
-            String tmpPath = tmpDir.getAbsolutePath();
-
-            // P1
-            File p1File = new File(tmpPath + "/gamepad.mem");
-            try (RandomAccessFile raf = new RandomAccessFile(p1File, "rw")) {
-                raf.setLength(64);
-                gamepadBuffer = raf.getChannel().map(FileChannel.MapMode.READ_WRITE, 0, 64);
-                gamepadBuffer.order(ByteOrder.LITTLE_ENDIAN);
-            }
-
-            // P2-P4
-            for (int i = 0; i < extraGamepadBuffers.length; i++) {
-                String path = tmpPath + "/gamepad" + (i + 1) + ".mem";
-                File f = new File(path);
-                try (RandomAccessFile raf = new RandomAccessFile(f, "rw")) {
-                    raf.setLength(64);
-                    extraGamepadBuffers[i] = raf.getChannel().map(FileChannel.MapMode.READ_WRITE, 0, 64);
-                    extraGamepadBuffers[i].order(ByteOrder.LITTLE_ENDIAN);
-                }
-            }
-        } catch (IOException e) {
-            Log.e("WinHandler", "Failed to map controller memory files", e);
-        }
-
         this.running = true;
         startSendThread();
         Executors.newSingleThreadExecutor().execute(() -> {
@@ -404,55 +360,12 @@ public class WinHandler {
         boolean useVirtualGamepad = profile.isVirtualGamepad() && this.activity.getInputControlsView().isShowTouchscreenControls();
         if (useVirtualGamepad) {
             int slot = assignSlot(OSC_DEVICE_ID);
-            if (slot >= 0) {
-                if (this.writers[slot] != null) this.writers[slot].writeGamepadState(gamepadState);
-                MappedByteBuffer buffer = (slot == 0) ? gamepadBuffer : (slot <= 3 ? extraGamepadBuffers[slot - 1] : null);
-                if (buffer != null) writeStateToMappedBuffer(gamepadState, buffer, slot);
-                return;
+            if (slot >= 0 && this.writers[slot] != null) {
+                this.writers[slot].writeGamepadState(gamepadState);
             }
         } else {
             releaseSlot(OSC_DEVICE_ID);
         }
-    }
-
-    private void writeStateToMappedBuffer(GamepadState src, MappedByteBuffer dst, int slot) {
-        if (dst == null) return;
-        dst.position(0);
-
-        // Axes: convert float [-1,1] to int16 [-32768, 32767]
-        dst.putShort((short) (src.thumbLX * 32767)); // 0-1
-        dst.putShort((short) (src.thumbLY * 32767)); // 2-3
-        dst.putShort((short) (src.thumbRX * 32767)); // 4-5
-        dst.putShort((short) (src.thumbRY * 32767)); // 6-7
-
-        // Triggers: convert float [0,1] to int16 [0, 32767]
-        dst.putShort((short) (src.triggerL * 32767)); // 8-9
-        dst.putShort((short) (src.triggerR * 32767)); // 10-11
-
-        // Buttons: 15 individual bytes (0 or 1), matching evshim btn[15]
-        dst.put(src.isPressed(ExternalController.IDX_BUTTON_A) ? (byte) 1 : (byte) 0); // 0
-        dst.put(src.isPressed(ExternalController.IDX_BUTTON_B) ? (byte) 1 : (byte) 0); // 1
-        dst.put(src.isPressed(ExternalController.IDX_BUTTON_X) ? (byte) 1 : (byte) 0); // 2
-        dst.put(src.isPressed(ExternalController.IDX_BUTTON_Y) ? (byte) 1 : (byte) 0); // 3
-        dst.put(src.isPressed(ExternalController.IDX_BUTTON_SELECT) ? (byte) 1 : (byte) 0); // 4 (Back)
-        dst.put(src.isPressed((byte) 12) ? (byte) 1 : (byte) 0); // 5 (Guide/Mode)
-        dst.put(src.isPressed(ExternalController.IDX_BUTTON_START) ? (byte) 1 : (byte) 0); // 6
-        dst.put(src.isPressed(ExternalController.IDX_BUTTON_L3) ? (byte) 1 : (byte) 0); // 7
-        dst.put(src.isPressed(ExternalController.IDX_BUTTON_R3) ? (byte) 1 : (byte) 0); // 8
-        dst.put(src.isPressed(ExternalController.IDX_BUTTON_L1) ? (byte) 1 : (byte) 0); // 9
-        dst.put(src.isPressed(ExternalController.IDX_BUTTON_R1) ? (byte) 1 : (byte) 0); // 10
-        dst.put(src.dpad[0] ? (byte) 1 : (byte) 0); // 11 (Up)
-        dst.put(src.dpad[2] ? (byte) 1 : (byte) 0); // 12 (Down)
-        dst.put(src.dpad[3] ? (byte) 1 : (byte) 0); // 13 (Left)
-        dst.put(src.dpad[1] ? (byte) 1 : (byte) 0); // 14 (Right)
-
-        // D-pad as hat byte (bitmask: 1=up, 2=right, 4=down, 8=left) - matching SDL_HAT_*
-        byte hat = 0;
-        if (src.dpad[0]) hat |= 1;
-        if (src.dpad[1]) hat |= 2;
-        if (src.dpad[2]) hat |= 4;
-        if (src.dpad[3]) hat |= 8;
-        dst.put(hat); // 27
     }
 
     public void sendGamepadState(ExternalController controller) {
@@ -463,18 +376,14 @@ public class WinHandler {
         ControlsProfile profile = this.activity.getInputControlsView().getProfile();
         if (profile != null && (profileController = profile.getController(controller.getDeviceId())) != null && profileController.getControllerBindingCount() > 0) {
             int slot = assignSlot(controller.getDeviceId());
-            if (slot >= 0) {
-                if (this.writers[slot] != null) this.writers[slot].writeGamepadState(controller.remappedState);
-                MappedByteBuffer buffer = (slot == 0) ? gamepadBuffer : (slot <= 3 ? extraGamepadBuffers[slot - 1] : null);
-                if (buffer != null) writeStateToMappedBuffer(controller.remappedState, buffer, slot);
+            if (slot >= 0 && this.writers[slot] != null) {
+                this.writers[slot].writeGamepadState(controller.remappedState);
                 return;
             }
         }
         int slot2 = assignSlot(controller.getDeviceId());
-        if (slot2 >= 0) {
-            if (this.writers[slot2] != null) this.writers[slot2].writeGamepadState(controller.state);
-            MappedByteBuffer buffer = (slot2 == 0) ? gamepadBuffer : (slot2 <= 3 ? extraGamepadBuffers[slot2 - 1] : null);
-            if (buffer != null) writeStateToMappedBuffer(controller.state, buffer, slot2);
+        if (slot2 >= 0 && this.writers[slot2] != null) {
+            this.writers[slot2].writeGamepadState(controller.state);
         }
     }
 
@@ -488,7 +397,6 @@ public class WinHandler {
                 this.usedSlots.add(slot);
                 this.deviceToSlot.put(deviceId, slot);
                 
-                // Initialize the writer only if it doesn't exist; keep it open
                 if (this.fakeInputBasePath != null && this.writers[slot] == null) {
                     this.writers[slot] = new FakeInputWriter(this.fakeInputBasePath, slot);
                     this.writers[slot].open();

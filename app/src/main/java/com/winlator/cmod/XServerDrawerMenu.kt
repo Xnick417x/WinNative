@@ -48,6 +48,8 @@ import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxHeight
+import org.json.JSONArray
+import org.json.JSONObject
 
 data class XServerDrawerItem(
     val itemId: Int,
@@ -57,16 +59,28 @@ data class XServerDrawerItem(
     val active: Boolean = false,
 )
 
+data class StartMenuCategory(
+    val name: String,
+    val items: List<StartMenuItem>
+)
+
+data class StartMenuItem(
+    val name: String,
+    val path: String
+)
+
 data class XServerDrawerState(
     val items: List<XServerDrawerItem>,
     val hudTransparency: Float = 1.0f,
     val hudScale: Float = 1.0f,
     val hudElements: BooleanArray = booleanArrayOf(true, true, true, true, true, true),
     val dualSeriesBatteryEnabled: Boolean = false,
+    val startMenuCategories: List<StartMenuCategory> = emptyList(),
 )
 
 interface XServerDrawerActionListener {
     fun onActionSelected(itemId: Int)
+    fun onStartMenuItemSelected(path: String)
     fun onHUDElementToggled(index: Int, enabled: Boolean)
     fun onHUDTransparencyChanged(transparency: Float)
     fun onHUDScaleChanged(scale: Float)
@@ -188,7 +202,24 @@ fun buildXServerDrawerState(
         iconRes = R.drawable.icon_exit,
     )
 
-    return XServerDrawerState(items, hudTransparency, hudScale, hudElements, dualSeriesBatteryEnabled)
+    val startMenuCategories = mutableListOf<StartMenuCategory>()
+    try {
+        val jsonString = context.assets.open("wine_startmenu.json").bufferedReader().use { it.readText() }
+        val array = JSONArray(jsonString)
+        for (i in 0 until array.length()) {
+            val catObj = array.getJSONObject(i)
+            val catName = catObj.getString("name")
+            val children = catObj.getJSONArray("children")
+            val itemsList = mutableListOf<StartMenuItem>()
+            for (j in 0 until children.length()) {
+                val itemObj = children.getJSONObject(j)
+                itemsList.add(StartMenuItem(itemObj.getString("name"), itemObj.getString("path")))
+            }
+            startMenuCategories.add(StartMenuCategory(catName, itemsList))
+        }
+    } catch (e: Exception) {}
+
+    return XServerDrawerState(items, hudTransparency, hudScale, hudElements, dualSeriesBatteryEnabled, startMenuCategories)
 }
 
 fun setupXServerDrawerComposeView(
@@ -236,6 +267,28 @@ private fun XServerDrawerContent(
                 XServerDrawerRow(item = item, onClick = { listener.onActionSelected(item.itemId) })
                 if (item.itemId == R.id.main_menu_fps_monitor && item.active) {
                     XServerHUDSettingsExpanded(state, listener)
+                }
+            }
+
+            state.startMenuCategories.forEach { category ->
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = category.name.uppercase(),
+                    color = Color(0xFF8B949E),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 4.dp)
+                )
+                category.items.forEach { item ->
+                    XServerDrawerRow(
+                        item = XServerDrawerItem(
+                            itemId = 0,
+                            title = item.name,
+                            subtitle = item.path,
+                            iconRes = R.drawable.ic_launcher
+                        ),
+                        onClick = { listener.onStartMenuItemSelected(item.path) }
+                    )
                 }
             }
         }

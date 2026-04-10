@@ -2052,6 +2052,14 @@ public class XServerDisplayActivity extends AppCompatActivity {
                     }
 
                     @Override
+                    public void onStartMenuItemSelected(String path) {
+                        if (winHandler != null) {
+                            winHandler.exec(path);
+                            drawerLayout.closeDrawers();
+                        }
+                    }
+
+                    @Override
                     public void onHUDElementToggled(int index, boolean enabled) {
                         hudElements[index] = enabled;
                         if (frameRating != null) frameRating.toggleElement(index, enabled);
