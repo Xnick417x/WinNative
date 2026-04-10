@@ -346,6 +346,8 @@ EXPORT int ioctl(int fd, int op, ...) {
 
     int type = (op >> 8 & 0xFF);
     int number = (op >> 0 & 0xFF);
+    const char *event = controller->second;
+    int event_number = get_event_number(event);
 
     if (type == 0x45 && number == 0x1) {
         int version = 65536;
@@ -361,7 +363,9 @@ EXPORT int ioctl(int fd, int op, ...) {
         memcpy(argp, (void *)&id, sizeof(id));
         return 0;
     } else if (type == 0x45 && number == 0x6) {
-        strcpy((char *)argp, "Microsoft X-Box 360 pad");
+        char name[128];
+        snprintf(name, sizeof(name), "Generic HID Gamepad %d", event_number);
+        strcpy((char *)argp, name);
         return 0;
     } else if (type == 0x45 && number == 0x9) {
         return 0;
