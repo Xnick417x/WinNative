@@ -301,9 +301,10 @@ static void try_attach_controller(int idx) {
   d.naxes = 6;
   d.nbuttons = 15;
   d.nhats = 1;
+  d.vendor_id = 0x045e; // Microsoft
+  d.product_id = 0x028e; // Xbox 360 Controller
   d.Rumble = &OnRumble;
   d.userdata = (void *)(intptr_t)idx;
-
   char name[64];
   snprintf(name, sizeof name, "Virtual Gamepad P%d", idx + 1);
   d.name = strdup(name);
@@ -395,7 +396,7 @@ __attribute__((constructor)) static void initialize_all_pads(void) {
 
   const char *data_path = getenv("EVSHIM_DATA_PATH");
   if (!data_path)
-    data_path = "/data/data/com.winlator.cmod/files/imagefs/tmp";
+    data_path = "/data/data/com.winnative.cmod/files/imagefs/tmp";
 
   /* Store path globally for hotplug detection */
   strncpy(g_data_path, data_path, sizeof(g_data_path) - 1);
@@ -431,6 +432,8 @@ __attribute__((constructor)) static void initialize_all_pads(void) {
     d.naxes = 6;
     d.nbuttons = 15;
     d.nhats = 1;
+    d.vendor_id = 0x045e; // Microsoft
+    d.product_id = 0x028e; // Xbox 360 Controller
     d.Rumble = &OnRumble;
     d.userdata = (void *)(intptr_t)i;
 
