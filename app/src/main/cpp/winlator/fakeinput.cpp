@@ -28,10 +28,6 @@
 
 #define EXPORT __attribute__((visibility("default"))) extern "C"
 
-/* Fix #4: Reference App trigger codes */
-#define ABS_BRAKE 10
-#define ABS_GAS 9
-
 std::unordered_map<int, const char *> controller_map;
 static bool initialized = false;
 static const char *hook_dir = nullptr;
@@ -42,7 +38,6 @@ static int (*my_openat)(int, const char *, int, ...) = nullptr;
 static int (*my_stat)(const char *, struct stat *) = nullptr;
 static int (*my_fstat)(int fd, struct stat *buf) = nullptr;
 static int (*my_scandir)(const char *, struct dirent***, int(*)(const struct dirent *), int(*)(const struct dirent**, const struct dirent**));
-static int (*my_inotify_add_watch)(int, const char *, uint32_t);
 static int (*my_close)(int);
 
 namespace Logger {

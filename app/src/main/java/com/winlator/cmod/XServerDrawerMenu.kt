@@ -285,7 +285,7 @@ private fun XServerDrawerContent(
                             itemId = 0,
                             title = item.name,
                             subtitle = item.path,
-                            iconRes = R.drawable.ic_launcher
+                            iconRes = R.drawable.icon_wine
                         ),
                         onClick = { listener.onStartMenuItemSelected(item.path) }
                     )
