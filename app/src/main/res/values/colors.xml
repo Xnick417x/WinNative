@@ -15,9 +15,9 @@
     <color name="white">#ffffff</color>
 
     
-    <color name="control_editor_background">#22202A</color>
-    <color name="settings_card_surface">#212E3F</color>
-    <color name="settings_outline">#20344B</color>
+    <color name="control_editor_background">#12121B</color>
+    <color name="settings_card_surface">#1E252E</color>
+    <color name="settings_outline">#2A2A3A</color>
     <color name="settings_chip_selected_stroke">#74D0FF</color>
     <color name="settings_text_primary">#F5F9FF</color>
     <color name="settings_text_secondary">#9CB0C7</color>

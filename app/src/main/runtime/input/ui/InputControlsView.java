@@ -245,7 +245,7 @@ public class InputControlsView extends View {
     paint.setStrokeWidth(snappingSize * 0.0625f);
 
     // Background color from theme
-    int bgColor = 0xFF22202A;
+    int bgColor = 0xFF12121B;
     canvas.drawColor(bgColor);
 
     paint.setAntiAlias(false);
