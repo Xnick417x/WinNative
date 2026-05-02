@@ -298,6 +298,11 @@ public class WinHandler {
   }
 
   public void listProcesses() {
+    if (!this.running) {
+      OnGetProcessInfoListener listener = this.onGetProcessInfoListener;
+      if (listener != null) listener.onGetProcessInfo(0, 0, null);
+      return;
+    }
     addAction(
         () -> {
           try {
@@ -409,6 +414,7 @@ public class WinHandler {
 
   private void addAction(Runnable action) {
     synchronized (this.actions) {
+      if (!this.running) return;
       this.actions.add(action);
       this.actions.notifyAll();
     }
@@ -1059,6 +1065,7 @@ public class WinHandler {
   }
 
   public boolean onGenericMotionEvent(MotionEvent event) {
+    if (!this.running) return false;
     boolean handled = false;
     int deviceId = event.getDeviceId();
     ExternalController controller = getController(deviceId);
@@ -1070,6 +1077,7 @@ public class WinHandler {
   }
 
   public boolean onKeyEvent(KeyEvent event) {
+    if (!this.running) return false;
     boolean handled = false;
     int deviceId = event.getDeviceId();
     ExternalController controller = getController(deviceId);
