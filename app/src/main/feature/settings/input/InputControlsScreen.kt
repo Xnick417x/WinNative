@@ -1543,7 +1543,6 @@ private fun RTSTouchCard(
 
 @Composable
 private fun OverlayOpacityCard(
-...
     state: InputControlsScreenState,
     actions: InputControlsScreenActions,
 ) {

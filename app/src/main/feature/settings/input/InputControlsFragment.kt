@@ -344,7 +344,6 @@ private fun setRTSTouchConfig(config: com.winlator.cmod.runtime.input.ui.TouchGe
 }
 
 private fun buildBindingState(
-...
         controller: ExternalController,
         bindingTypeEntries: Array<String>,
     ): List<InputControllerBindingState> =
