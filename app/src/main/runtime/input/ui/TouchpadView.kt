@@ -22,6 +22,7 @@ import com.winlator.cmod.runtime.display.winhandler.MouseEventFlags
 import com.winlator.cmod.runtime.display.winhandler.WinHandler
 import com.winlator.cmod.runtime.display.xserver.Pointer
 import com.winlator.cmod.runtime.display.xserver.XServer
+import com.winlator.cmod.runtime.input.controls.Binding
 import com.winlator.cmod.shared.android.AppUtils
 import com.winlator.cmod.shared.math.Mathf
 import com.winlator.cmod.shared.math.XForm
@@ -437,8 +438,8 @@ class TouchpadView(
                             stopRTSTwoFingerPan()
                             if (finger?.isTap() == true) injectBindingAction(gestureConfig.twoFingerTapAction)
                         }
-                        3 -> if (finger?.isTap() == true) handleFingerUp(finger)
-                        4 -> if (finger?.isTap() == true) handleFingerUp(finger)
+                        3 -> if (finger?.isTap() == true) injectBindingAction(gestureConfig.threeFingerTapAction)
+                        4 -> if (finger?.isTap() == true) injectBindingAction(gestureConfig.fourFingerTapAction)
                         else -> handleTouchUp()
                     }
                 } else if (numFingers.toInt() == 2 && finger?.isTap() == true) {
@@ -710,8 +711,8 @@ class TouchpadView(
                 xServer.injectPointerButtonRelease(button)
             }
         } else if (binding.isKeyboard) {
-            val xKeycode = xServer.keyboard.getXKeycode(binding.keycode.nativeKeycode)
-            if (xKeycode != null) {
+            val xKeycode = binding.keycode
+            if (xKeycode != null && xKeycode != XKeycode.KEY_NONE) {
                 xServer.injectKeyPress(xKeycode)
                 xServer.injectKeyRelease(xKeycode)
             }

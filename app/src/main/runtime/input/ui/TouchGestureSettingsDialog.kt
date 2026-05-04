@@ -8,6 +8,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -297,7 +298,7 @@ private fun BindingPickerDialog(
                             modifier = Modifier.weight(1f)
                         )
                         if (binding == selectedBinding) {
-                            Icon(androidx.compose.material.icons.filled.Check, null, tint = WinNativeAccent, modifier = Modifier.size(18.dp))
+                            Icon(Icons.Filled.Check, null, tint = WinNativeAccent, modifier = Modifier.size(18.dp))
                         }
                     }
                 }
@@ -312,6 +313,17 @@ private fun BindingPickerDialog(
                 Text("Close", color = WinNativeTextPrimary)
             }
         }
+    }
+}
+
+@Composable
+private fun getBindingActionLabel(binding: Binding): String {
+    return when (binding) {
+        Binding.NONE -> stringResource(R.string.touch_gestures_action_none)
+        Binding.MOUSE_LEFT_BUTTON -> "Left Click"
+        Binding.MOUSE_RIGHT_BUTTON -> "Right Click"
+        Binding.MOUSE_MIDDLE_BUTTON -> "Middle Click"
+        else -> binding.toString()
     }
 }
 
@@ -407,15 +419,5 @@ private fun getPinchActionLabel(action: TouchGestureConfig.PinchAction): String 
         TouchGestureConfig.PinchAction.NONE -> stringResource(R.string.touch_gestures_action_none)
         TouchGestureConfig.PinchAction.SCROLL_WHEEL -> stringResource(R.string.touch_gestures_action_scroll_wheel)
         TouchGestureConfig.PinchAction.ZOOM_KEYS -> stringResource(R.string.touch_gestures_action_zoom_keys)
-    }
-}
-
-@Composable
-private fun getTapActionLabel(action: TouchGestureConfig.TapAction): String {
-    return when (action) {
-        TouchGestureConfig.TapAction.NONE -> stringResource(R.string.touch_gestures_action_none)
-        TouchGestureConfig.TapAction.LEFT_CLICK -> stringResource(R.string.touch_gestures_action_left_click)
-        TouchGestureConfig.TapAction.RIGHT_CLICK -> stringResource(R.string.touch_gestures_action_right_click)
-        TouchGestureConfig.TapAction.MIDDLE_CLICK -> stringResource(R.string.touch_gestures_action_middle_click)
     }
 }

@@ -59,7 +59,9 @@ import androidx.compose.material.icons.outlined.FileUpload
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.ScreenRotationAlt
 import androidx.compose.material.icons.outlined.SportsEsports
-import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.material.icons.outlined.TouchApp
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -1506,7 +1508,7 @@ private fun RTSTouchCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                IconBox(Icons.Outlined.TouchApp, InputTextSecondary)
+                IconBox(TouchApp, InputTextSecondary)
                 Spacer(Modifier.width(10.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
@@ -1524,7 +1526,7 @@ private fun RTSTouchCard(
                 Spacer(Modifier.width(8.dp))
 
                 IconActionButton(
-                    icon = Icons.Outlined.Settings,
+                    image = Settings,
                     onClick = { showGestureSettings = true },
                     contentDescription = stringResource(R.string.touch_gestures_edit)
                 )
