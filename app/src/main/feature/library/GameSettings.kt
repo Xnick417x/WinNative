@@ -2946,49 +2946,6 @@ private fun InputSection(state: GameSettingsStateHolder) {
 
     // Game Controller group
     SubsectionLabel(stringResource(R.string.session_gamepad_game_controller))
-...
-@Composable
-private fun SettingWithButton(
-    label: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    buttonLabel: String,
-    onButtonClick: () -> Unit,
-    enabled: Boolean = true
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(Modifier.weight(1f)) {
-            SettingCheckbox(
-                label = label,
-                checked = checked,
-                onCheckedChange = onCheckedChange,
-                enabled = enabled
-            )
-        }
-        
-        Spacer(Modifier.width(8.dp))
-        
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(8.dp))
-                .background(AccentBlue.copy(alpha = 0.08f))
-                .border(1.dp, AccentBlue.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
-                .clickable(enabled = enabled) { onButtonClick() }
-                .padding(horizontal = 10.dp, vertical = 6.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = buttonLabel,
-                color = if (enabled) AccentBlue else TextDim,
-                fontSize = SettingLabelSize,
-                fontWeight = FontWeight.Bold
-            )
-        }
-    }
-}
     Spacer(Modifier.height(8.dp))
     SettingGroup {
         // DInput Mapper Type (only visible when DInput enabled)
@@ -3784,3 +3741,47 @@ private fun SettingSlider(
         )
     }
 }
+
+@Composable
+private fun SettingWithButton(
+    label: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    buttonLabel: String,
+    onButtonClick: () -> Unit,
+    enabled: Boolean = true
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(Modifier.weight(1f)) {
+            SettingCheckbox(
+                label = label,
+                checked = checked,
+                onCheckedChange = onCheckedChange,
+                enabled = enabled
+            )
+        }
+
+        Spacer(Modifier.width(8.dp))
+
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(8.dp))
+                .background(AccentBlue.copy(alpha = 0.08f))
+                .border(1.dp, AccentBlue.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
+                .clickable(enabled = enabled) { onButtonClick() }
+                .padding(horizontal = 10.dp, vertical = 6.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = buttonLabel,
+                color = if (enabled) AccentBlue else TextDim,
+                fontSize = SettingLabelSize,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
