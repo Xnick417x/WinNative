@@ -155,6 +155,8 @@ data class InputControlsScreenState(
     val triggerTypeIndex: Int = 1,
     val triggerCardExpanded: Boolean = false,
     val triggerDescription: String = "",
+    val rtsTouchEnabled: Boolean = false,
+    val touchGestureConfig: com.winlator.cmod.runtime.input.ui.TouchGestureConfig = com.winlator.cmod.runtime.input.ui.TouchGestureConfig(),
     val controllerCards: List<InputControllerCardState> = emptyList(),
     val dialog: InputControlsDialogUiState = InputControlsDialogUiState.None,
 )
@@ -250,6 +252,8 @@ data class InputControlsScreenActions(
     val onBindingTypeClick: (String, Int) -> Unit,
     val onBindingValueClick: (String, Int) -> Unit,
     val onRemoveBinding: (String, Int) -> Unit,
+    val onRTSTouchEnabledChanged: (Boolean) -> Unit,
+    val onRTSTouchConfigChanged: (com.winlator.cmod.runtime.input.ui.TouchGestureConfig) -> Unit,
 )
 
 @Composable
@@ -283,6 +287,8 @@ fun InputControlsScreen(
             item("profile-card") { ProfileCard(state, actions) }
             item("overlay-label") { SectionLabel(stringResource(R.string.input_controls_editor_overlay_opacity)) }
             item("overlay-card") { OverlayOpacityCard(state, actions) }
+            item("rts-label") { SectionLabel(stringResource(R.string.touch_gestures)) }
+            item("rts-card") { RTSTouchCard(state, actions) }
             item("gyro-label") { SectionLabel(stringResource(R.string.session_gyroscope_title)) }
             item("gyro-card") { GyroscopeCard(state, actions) }
             item("trigger-label") { SectionLabel(stringResource(R.string.session_gamepad_trigger_type)) }
@@ -1487,9 +1493,57 @@ private fun ProfileActionMenuItem(
         onClick = onClick,
     )
 }
+@Composable
+private fun RTSTouchCard(
+    state: InputControlsScreenState,
+    actions: InputControlsScreenActions,
+) {
+    var showGestureSettings by remember { mutableStateOf(false) }
+
+    CardShell {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                IconBox(Icons.Outlined.TouchApp, InputTextSecondary)
+                Spacer(Modifier.width(10.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.touch_gestures_enabled),
+                        color = InputTextPrimary,
+                        fontSize = InputPrimaryTextSize,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+                AppSwitch(
+                    checked = state.rtsTouchEnabled,
+                    onCheckedChange = actions.onRTSTouchEnabledChanged,
+                )
+
+                Spacer(Modifier.width(8.dp))
+
+                IconActionButton(
+                    icon = Icons.Outlined.Settings,
+                    onClick = { showGestureSettings = true },
+                    contentDescription = stringResource(R.string.touch_gestures_edit)
+                )
+            }
+        }
+    }
+
+    if (showGestureSettings) {
+        com.winlator.cmod.runtime.input.ui.TouchGestureSettingsDialog(
+            config = state.touchGestureConfig,
+            onConfigChange = actions.onRTSTouchConfigChanged,
+            onDismiss = { showGestureSettings = false }
+        )
+    }
+}
 
 @Composable
 private fun OverlayOpacityCard(
+...
     state: InputControlsScreenState,
     actions: InputControlsScreenActions,
 ) {

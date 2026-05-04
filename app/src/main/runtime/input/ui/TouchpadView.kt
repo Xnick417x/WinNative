@@ -73,12 +73,16 @@ class TouchpadView(
         Runnable {
             if (tapToClickEnabled && numFingers.toInt() == 1 && fingers[0] != null && fingers[0]!!.travelDistance() < MAX_TAP_TRAVEL_DISTANCE) {
                 longPressActive = true
-                if (xServer.isRelativeMouseMovement) {
-                    xServer.winHandler.mouseEvent(MouseEventFlags.RIGHTDOWN, 0, 0, 0)
-                    xServer.winHandler.mouseEvent(MouseEventFlags.RIGHTUP, 0, 0, 0)
+                if (gestureConfig.enabled) {
+                    injectBindingAction(gestureConfig.oneFingerLongPressAction)
                 } else {
-                    xServer.injectPointerButtonPress(Pointer.Button.BUTTON_RIGHT)
-                    xServer.injectPointerButtonRelease(Pointer.Button.BUTTON_RIGHT)
+                    if (xServer.isRelativeMouseMovement) {
+                        xServer.winHandler.mouseEvent(MouseEventFlags.RIGHTDOWN, 0, 0, 0)
+                        xServer.winHandler.mouseEvent(MouseEventFlags.RIGHTUP, 0, 0, 0)
+                    } else {
+                        xServer.injectPointerButtonPress(Pointer.Button.BUTTON_RIGHT)
+                        xServer.injectPointerButtonRelease(Pointer.Button.BUTTON_RIGHT)
+                    }
                 }
             }
         }
@@ -403,6 +407,7 @@ class TouchpadView(
                 fingers[pointerId] = Finger(event.getX(actionIndex), event.getY(actionIndex))
                 numFingers++
                 handleTouchDown(event)
+                if (numFingers.toInt() == 1) swipeHandled = false
             }
 
             MotionEvent.ACTION_MOVE -> {
@@ -411,8 +416,12 @@ class TouchpadView(
                     val pIdx = event.findPointerIndex(i)
                     if (pIdx >= 0) finger.update(event.getX(pIdx), event.getY(pIdx))
                 }
-                if (numFingers.toInt() == 2 && gestureConfig.enabled) {
-                    handleRTSTwoFingerPan()
+                if (gestureConfig.enabled) {
+                    when (numFingers.toInt()) {
+                        2 -> handleRTSTwoFingerPan()
+                        3, 4 -> handleSwipeDetection()
+                        else -> handleTouchMove(event)
+                    }
                 } else if (numFingers.toInt() == 2) {
                     handleTwoFingerScroll(event)
                 } else {
@@ -422,8 +431,16 @@ class TouchpadView(
 
             MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP -> {
                 val finger = fingers[pointerId]
-                if (numFingers.toInt() == 2 && gestureConfig.enabled) {
-                    stopRTSTwoFingerPan()
+                if (gestureConfig.enabled) {
+                    when (numFingers.toInt()) {
+                        2 -> {
+                            stopRTSTwoFingerPan()
+                            if (finger?.isTap() == true) injectBindingAction(gestureConfig.twoFingerTapAction)
+                        }
+                        3 -> if (finger?.isTap() == true) handleFingerUp(finger)
+                        4 -> if (finger?.isTap() == true) handleFingerUp(finger)
+                        else -> handleTouchUp()
+                    }
                 } else if (numFingers.toInt() == 2 && finger?.isTap() == true) {
                     handleTwoFingerTap()
                 } else {
@@ -597,6 +614,43 @@ class TouchpadView(
         rtsPanActiveKeys.clear()
     }
 
+    private var swipeHandled = false
+    private fun handleSwipeDetection() {
+        if (swipeHandled) return
+        val activeFingers = fingers.filterNotNull()
+        if (activeFingers.size < 3) return
+
+        val threshold = 100f
+        var totalDx = 0f
+        var totalDy = 0f
+        
+        for (finger in activeFingers) {
+            totalDx += (finger.x - finger.startX)
+            totalDy += (finger.y - finger.startY)
+        }
+        
+        val avgDx = totalDx / activeFingers.size
+        val avgDy = totalDy / activeFingers.size
+        
+        if (Math.abs(avgDx) > threshold || Math.abs(avgDy) > threshold) {
+            swipeHandled = true
+            val binding = if (Math.abs(avgDx) > Math.abs(avgDy)) {
+                if (avgDx > 0) {
+                    if (activeFingers.size == 3) gestureConfig.threeFingerSwipeRightAction else gestureConfig.fourFingerSwipeRightAction
+                } else {
+                    if (activeFingers.size == 3) gestureConfig.threeFingerSwipeLeftAction else gestureConfig.fourFingerSwipeLeftAction
+                }
+            } else {
+                if (avgDy > 0) {
+                    if (activeFingers.size == 3) gestureConfig.threeFingerSwipeDownAction else gestureConfig.fourFingerSwipeDownAction
+                } else {
+                    if (activeFingers.size == 3) gestureConfig.threeFingerSwipeUpAction else gestureConfig.fourFingerSwipeUpAction
+                }
+            }
+            injectBindingAction(binding)
+        }
+    }
+
     private fun handleFingerUp(finger1: Finger) {
         if (tapToClickEnabled) {
             when (numFingers.toInt()) {
@@ -613,21 +667,27 @@ class TouchpadView(
 
                 2 -> {
                     val finger2 = findSecondFinger(finger1)
-                    if (finger2 != null && finger1.isTap()) pressPointerButtonRight(finger1)
+                    if (finger2 != null && finger1.isTap()) {
+                        if (gestureConfig.enabled) {
+                            injectBindingAction(gestureConfig.twoFingerTapAction)
+                        } else {
+                            pressPointerButtonRight(finger1)
+                        }
+                    }
                 }
 
                 3 -> {
-                    if (gestureConfig.enabled && gestureConfig.threeFingerTapAction != TouchGestureConfig.TapAction.NONE) {
+                    if (gestureConfig.enabled && gestureConfig.threeFingerTapAction != Binding.NONE) {
                         if (fingers.filterNotNull().all { it.isTap() }) {
-                            injectTapAction(gestureConfig.threeFingerTapAction)
+                            injectBindingAction(gestureConfig.threeFingerTapAction)
                         }
                     }
                 }
 
                 4 -> {
-                    if (gestureConfig.enabled && gestureConfig.fourFingerTapAction != TouchGestureConfig.TapAction.NONE) {
+                    if (gestureConfig.enabled && gestureConfig.fourFingerTapAction != Binding.NONE) {
                         if (fingers.filterNotNull().all { it.isTap() }) {
-                            injectTapAction(gestureConfig.fourFingerTapAction)
+                            injectBindingAction(gestureConfig.fourFingerTapAction)
                         }
                     } else {
                         fourFingersTapCallback?.let {
@@ -641,16 +701,20 @@ class TouchpadView(
         releasePointerButtonRight(finger1)
     }
 
-    private fun injectTapAction(action: TouchGestureConfig.TapAction) {
-        val button = when (action) {
-            TouchGestureConfig.TapAction.LEFT_CLICK -> Pointer.Button.BUTTON_LEFT
-            TouchGestureConfig.TapAction.RIGHT_CLICK -> Pointer.Button.BUTTON_RIGHT
-            TouchGestureConfig.TapAction.MIDDLE_CLICK -> Pointer.Button.BUTTON_MIDDLE
-            else -> null
-        }
-        button?.let {
-            xServer.injectPointerButtonPress(it)
-            xServer.injectPointerButtonRelease(it)
+    private fun injectBindingAction(binding: Binding) {
+        if (binding == Binding.NONE) return
+        if (binding.isMouse) {
+            val button = binding.pointerButton
+            if (button != null) {
+                xServer.injectPointerButtonPress(button)
+                xServer.injectPointerButtonRelease(button)
+            }
+        } else if (binding.isKeyboard) {
+            val xKeycode = xServer.keyboard.getXKeycode(binding.keycode.nativeKeycode)
+            if (xKeycode != null) {
+                xServer.injectKeyPress(xKeycode)
+                xServer.injectKeyRelease(xKeycode)
+            }
         }
     }
 

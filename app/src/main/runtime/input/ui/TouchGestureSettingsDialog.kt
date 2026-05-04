@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.winlator.cmod.R
+import com.winlator.cmod.runtime.input.controls.Binding
 import com.winlator.cmod.shared.theme.*
 
 @Composable
@@ -34,8 +35,8 @@ fun TouchGestureSettingsDialog(
     onDismiss: () -> Unit
 ) {
     val configuration = LocalConfiguration.current
-    val dialogWidth = (configuration.screenWidthDp.dp * 0.9f).coerceAtMost(400.dp)
-    val dialogHeight = (configuration.screenHeightDp.dp * 0.8f).coerceAtMost(600.dp)
+    val dialogWidth = (configuration.screenWidthDp.dp * 0.95f).coerceAtMost(420.dp)
+    val dialogHeight = (configuration.screenHeightDp.dp * 0.85f).coerceAtMost(700.dp)
 
     var currentConfig by remember { mutableStateOf(config.copy()) }
 
@@ -72,9 +73,10 @@ fun TouchGestureSettingsDialog(
                     .weight(1f, fill = false)
                     .verticalScroll(rememberScrollState())
                     .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Two Finger Pan
+                // Section: Mouse & Pan
+                GestureSectionLabel("Mouse & Pan")
                 GestureSettingRow(
                     label = stringResource(R.string.touch_gestures_two_finger_pan),
                     selectedOption = currentConfig.twoFingerPanAction.name,
@@ -82,7 +84,6 @@ fun TouchGestureSettingsDialog(
                     onOptionSelected = { currentConfig = currentConfig.copy(twoFingerPanAction = TouchGestureConfig.PanAction.valueOf(it)) }
                 )
 
-                // Pinch
                 GestureToggleSettingRow(
                     label = stringResource(R.string.touch_gestures_pinch),
                     checked = currentConfig.pinchEnabled,
@@ -92,20 +93,74 @@ fun TouchGestureSettingsDialog(
                     onOptionSelected = { currentConfig = currentConfig.copy(pinchAction = TouchGestureConfig.PinchAction.valueOf(it)) }
                 )
 
-                // Three Finger Tap
-                GestureSettingRow(
-                    label = stringResource(R.string.touch_gestures_three_finger_tap),
-                    selectedOption = currentConfig.threeFingerTapAction.name,
-                    options = TouchGestureConfig.TapAction.entries.map { it.name to getTapActionLabel(it) },
-                    onOptionSelected = { currentConfig = currentConfig.copy(threeFingerTapAction = TouchGestureConfig.TapAction.valueOf(it)) }
+                BindingSettingRow(
+                    label = "One-Finger Long Press",
+                    selectedBinding = currentConfig.oneFingerLongPressAction,
+                    onBindingSelected = { currentConfig = currentConfig.copy(oneFingerLongPressAction = it) }
                 )
 
-                // Four Finger Tap
-                GestureSettingRow(
+                // Section: Taps
+                GestureSectionLabel("Multi-Finger Taps")
+                BindingSettingRow(
+                    label = "Two-Finger Tap",
+                    selectedBinding = currentConfig.twoFingerTapAction,
+                    onBindingSelected = { currentConfig = currentConfig.copy(twoFingerTapAction = it) }
+                )
+                BindingSettingRow(
+                    label = stringResource(R.string.touch_gestures_three_finger_tap),
+                    selectedBinding = currentConfig.threeFingerTapAction,
+                    onBindingSelected = { currentConfig = currentConfig.copy(threeFingerTapAction = it) }
+                )
+                BindingSettingRow(
                     label = stringResource(R.string.touch_gestures_four_finger_tap),
-                    selectedOption = currentConfig.fourFingerTapAction.name,
-                    options = TouchGestureConfig.TapAction.entries.map { it.name to getTapActionLabel(it) },
-                    onOptionSelected = { currentConfig = currentConfig.copy(fourFingerTapAction = TouchGestureConfig.TapAction.valueOf(it)) }
+                    selectedBinding = currentConfig.fourFingerTapAction,
+                    onBindingSelected = { currentConfig = currentConfig.copy(fourFingerTapAction = it) }
+                )
+
+                // Section: 3-Finger Swipes
+                GestureSectionLabel("3-Finger Swipes")
+                BindingSettingRow(
+                    label = "Swipe Up",
+                    selectedBinding = currentConfig.threeFingerSwipeUpAction,
+                    onBindingSelected = { currentConfig = currentConfig.copy(threeFingerSwipeUpAction = it) }
+                )
+                BindingSettingRow(
+                    label = "Swipe Down",
+                    selectedBinding = currentConfig.threeFingerSwipeDownAction,
+                    onBindingSelected = { currentConfig = currentConfig.copy(threeFingerSwipeDownAction = it) }
+                )
+                BindingSettingRow(
+                    label = "Swipe Left",
+                    selectedBinding = currentConfig.threeFingerSwipeLeftAction,
+                    onBindingSelected = { currentConfig = currentConfig.copy(threeFingerSwipeLeftAction = it) }
+                )
+                BindingSettingRow(
+                    label = "Swipe Right",
+                    selectedBinding = currentConfig.threeFingerSwipeRightAction,
+                    onBindingSelected = { currentConfig = currentConfig.copy(threeFingerSwipeRightAction = it) }
+                )
+
+                // Section: 4-Finger Swipes
+                GestureSectionLabel("4-Finger Swipes")
+                BindingSettingRow(
+                    label = "Swipe Up",
+                    selectedBinding = currentConfig.fourFingerSwipeUpAction,
+                    onBindingSelected = { currentConfig = currentConfig.copy(fourFingerSwipeUpAction = it) }
+                )
+                BindingSettingRow(
+                    label = "Swipe Down",
+                    selectedBinding = currentConfig.fourFingerSwipeDownAction,
+                    onBindingSelected = { currentConfig = currentConfig.copy(fourFingerSwipeDownAction = it) }
+                )
+                BindingSettingRow(
+                    label = "Swipe Left",
+                    selectedBinding = currentConfig.fourFingerSwipeLeftAction,
+                    onBindingSelected = { currentConfig = currentConfig.copy(fourFingerSwipeLeftAction = it) }
+                )
+                BindingSettingRow(
+                    label = "Swipe Right",
+                    selectedBinding = currentConfig.fourFingerSwipeRightAction,
+                    onBindingSelected = { currentConfig = currentConfig.copy(fourFingerSwipeRightAction = it) }
                 )
             }
 
@@ -133,6 +188,128 @@ fun TouchGestureSettingsDialog(
                 ) {
                     Text(stringResource(R.string.common_ui_ok), color = Color.White)
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun GestureSectionLabel(label: String) {
+    Text(
+        text = label.uppercase(),
+        color = WinNativeAccent,
+        fontSize = 11.sp,
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+    )
+}
+
+@Composable
+private fun BindingSettingRow(
+    label: String,
+    selectedBinding: Binding,
+    onBindingSelected: (Binding) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(text = label, color = WinNativeTextSecondary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+        Spacer(Modifier.height(4.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(8.dp))
+                .background(WinNativePanel)
+                .border(1.dp, WinNativeOutline, RoundedCornerShape(8.dp))
+                .clickable { expanded = true }
+                .padding(horizontal = 12.dp, vertical = 10.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = selectedBinding.toString(),
+                    color = WinNativeTextPrimary,
+                    fontSize = 14.sp,
+                    modifier = Modifier.weight(1f)
+                )
+                Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null, tint = WinNativeTextSecondary, modifier = Modifier.size(16.dp))
+            }
+
+            if (expanded) {
+                BindingPickerDialog(
+                    selectedBinding = selectedBinding,
+                    onBindingSelected = {
+                        onBindingSelected(it)
+                        expanded = false
+                    },
+                    onDismiss = { expanded = false }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun BindingPickerDialog(
+    selectedBinding: Binding,
+    onBindingSelected: (Binding) -> Unit,
+    onDismiss: () -> Unit
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.8f)
+                .clip(RoundedCornerShape(16.dp))
+                .background(WinNativeSurface)
+                .border(1.dp, WinNativeOutline, RoundedCornerShape(16.dp))
+                .padding(16.dp)
+        ) {
+            Text(
+                text = "Select Binding",
+                color = WinNativeTextPrimary,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            val bindings = remember { Binding.values() }
+            
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                bindings.forEach { binding ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(if (binding == selectedBinding) WinNativeAccent.copy(alpha = 0.2f) else Color.Transparent)
+                            .clickable { onBindingSelected(binding) }
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = binding.toString(),
+                            color = if (binding == selectedBinding) WinNativeAccent else WinNativeTextPrimary,
+                            fontSize = 14.sp,
+                            modifier = Modifier.weight(1f)
+                        )
+                        if (binding == selectedBinding) {
+                            Icon(androidx.compose.material.icons.filled.Check, null, tint = WinNativeAccent, modifier = Modifier.size(18.dp))
+                        }
+                    }
+                }
+            }
+            
+            Spacer(Modifier.height(16.dp))
+            Button(
+                onClick = onDismiss,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = WinNativePanel)
+            ) {
+                Text("Close", color = WinNativeTextPrimary)
             }
         }
     }
