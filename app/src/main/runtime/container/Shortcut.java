@@ -19,7 +19,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Shortcut {
-...
+  public final String name;
+  public final String path;
+
   public TouchGestureConfig getTouchGestureConfig() {
     try {
       return TouchGestureConfig.Companion.fromJSONObject(extraData != null && extraData.has("touchGestureConfig") ? extraData.getJSONObject("touchGestureConfig") : null);
@@ -27,11 +29,12 @@ public class Shortcut {
       return container != null ? container.getTouchGestureConfig() : new TouchGestureConfig();
     }
   }
-public void setTouchGestureConfig(TouchGestureConfig config) {
-  putExtra("touchGestureConfig", config.toJSONObject());
-}
 
-public final Container container;
+  public void setTouchGestureConfig(TouchGestureConfig config) {
+    putExtra("touchGestureConfig", config.toJSONObject());
+  }
+
+  public final Container container;
   public final Bitmap icon;
   public final File file;
   public final File iconFile;

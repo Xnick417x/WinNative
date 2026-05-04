@@ -169,18 +169,6 @@ public class Container {
         this.dxwrapper = dxwrapper;
     }
 
-    public String getGraphicsDriverConfig() { return this.graphicsDriverConfig; }
-
-    public void setGraphicsDriverConfig(String graphicsDriverConfig) { this.graphicsDriverConfig = graphicsDriverConfig; }
-
-    public String getDXWrapper() {
-        return dxwrapper;
-    }
-
-    public void setDXWrapper(String dxwrapper) {
-        this.dxwrapper = dxwrapper;
-    }
-
     public String getDXWrapperConfig() {
         return dxwrapperConfig;
     }

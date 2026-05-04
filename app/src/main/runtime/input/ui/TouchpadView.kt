@@ -572,10 +572,16 @@ class TouchpadView(
         if (dy < -threshold) newKeys.add(keys[2]) else if (dy > threshold) newKeys.add(keys[3])
 
         for (key in rtsPanActiveKeys) {
-            if (key !in newKeys) xServer.injectKeyRelease(key)
+            if (key !in newKeys) {
+                val xKeycode = xServer.keyboard.getXKeycode(key)
+                if (xKeycode != null) xServer.injectKeyRelease(xKeycode)
+            }
         }
         for (key in newKeys) {
-            if (key !in rtsPanActiveKeys) xServer.injectKeyPress(key)
+            if (key !in rtsPanActiveKeys) {
+                val xKeycode = xServer.keyboard.getXKeycode(key)
+                if (xKeycode != null) xServer.injectKeyPress(xKeycode)
+            }
         }
         rtsPanActiveKeys = newKeys
     }
@@ -585,7 +591,8 @@ class TouchpadView(
             xServer.injectPointerButtonRelease(Pointer.Button.BUTTON_MIDDLE)
         }
         for (key in rtsPanActiveKeys) {
-            xServer.injectKeyRelease(key)
+            val xKeycode = xServer.keyboard.getXKeycode(key)
+            if (xKeycode != null) xServer.injectKeyRelease(xKeycode)
         }
         rtsPanActiveKeys.clear()
     }
@@ -736,8 +743,11 @@ class TouchpadView(
             val keycodePlus = android.view.KeyEvent.KEYCODE_PLUS
             val keycodeMinus = android.view.KeyEvent.KEYCODE_MINUS
             val keycode = if (scaleFactor > 1.0f) keycodePlus else keycodeMinus
-            xServer.injectKeyPress(keycode)
-            xServer.injectKeyRelease(keycode)
+            val xKeycode = xServer.keyboard.getXKeycode(keycode)
+            if (xKeycode != null) {
+                xServer.injectKeyPress(xKeycode)
+                xServer.injectKeyRelease(xKeycode)
+            }
         }
     }
 
