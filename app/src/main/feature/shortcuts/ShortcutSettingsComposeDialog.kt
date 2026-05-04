@@ -359,6 +359,7 @@ class ShortcutSettingsComposeDialog private constructor(
             if ((inputType and WinHandler.FLAG_DINPUT_MAPPER_STANDARD.toInt()) == WinHandler.FLAG_DINPUT_MAPPER_STANDARD.toInt()) 0 else 1
         state.disableXInput.value = shortcut.getExtra("disableXinput", "0") == "1"
         state.simTouchScreen.value = shortcut.getExtra("simTouchScreen", "0") == "1"
+        state.touchGestureConfig.value = shortcut.getTouchGestureConfig()
 
         // Steam options
         val gameSource = shortcut.getExtra("game_source", "")
@@ -1151,6 +1152,9 @@ class ShortcutSettingsComposeDialog private constructor(
                 "simTouchScreen",
                 if (state.simTouchScreen.value) "1" else "0"
             )
+
+            // Touch Gesture Config
+            shortcut.setTouchGestureConfig(state.touchGestureConfig.value)
 
             // Launch EXE path
             val launchExePath = normalizeLaunchExeForShortcut(state.launchExePath.value)

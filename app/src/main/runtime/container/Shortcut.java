@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
 import com.winlator.cmod.runtime.display.environment.ImageFs;
+import com.winlator.cmod.runtime.input.ui.TouchGestureConfig;
 import com.winlator.cmod.runtime.wine.PeIconExtractor;
 import com.winlator.cmod.shared.io.FileUtils;
 import com.winlator.cmod.shared.util.StringUtils;
@@ -18,9 +19,19 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Shortcut {
-  public final Container container;
-  public final String name;
-  public final String path;
+...
+  public TouchGestureConfig getTouchGestureConfig() {
+    try {
+      return TouchGestureConfig.Companion.fromJSONObject(extraData != null && extraData.has("touchGestureConfig") ? extraData.getJSONObject("touchGestureConfig") : null);
+    } catch (JSONException e) {
+      return container != null ? container.getTouchGestureConfig() : new TouchGestureConfig();
+    }
+  }
+public void setTouchGestureConfig(TouchGestureConfig config) {
+  putExtra("touchGestureConfig", config.toJSONObject());
+}
+
+public final Container container;
   public final Bitmap icon;
   public final File file;
   public final File iconFile;
@@ -277,7 +288,7 @@ public class Shortcut {
     return extra.isEmpty() ? containerValue : extra;
   }
 
-  public void putExtra(String name, String value) {
+  public void putExtra(String name, Object value) {
     try {
       if (value != null) {
         extraData.put(name, value);

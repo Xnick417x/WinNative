@@ -95,6 +95,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.winlator.cmod.R
+import com.winlator.cmod.runtime.input.ui.TouchGestureConfig
 import com.winlator.cmod.shared.ui.widget.EnvVarsView
 import com.winlator.cmod.shared.ui.widget.chasingBorder
 import kotlin.math.roundToInt
@@ -337,6 +338,7 @@ class GameSettingsStateHolder {
     val enableDInput = mutableStateOf(false)
     val dInputMapperTypeEntries = mutableStateOf<List<String>>(emptyList())
     val selectedDInputMapperType = mutableIntStateOf(0)
+    val touchGestureConfig = mutableStateOf(TouchGestureConfig())
 
     // Advanced - Box64
     val showBox64Frame = mutableStateOf(false)
@@ -2917,8 +2919,76 @@ private fun InputSection(state: GameSettingsStateHolder) {
 
     Spacer(Modifier.height(SettingSectionGap))
 
+    // Touch Gestures group
+    SubsectionLabel(stringResource(R.string.touch_gestures))
+    Spacer(Modifier.height(8.dp))
+    SettingGroup {
+        var showTouchGestureSettings by remember { mutableStateOf(false) }
+
+        SettingWithButton(
+            label = stringResource(R.string.touch_gestures_enabled),
+            checked = state.touchGestureConfig.value.enabled,
+            onCheckedChange = { state.touchGestureConfig.value = state.touchGestureConfig.value.copy(enabled = it) },
+            buttonLabel = stringResource(R.string.touch_gestures_edit),
+            onButtonClick = { showTouchGestureSettings = true }
+        )
+
+        if (showTouchGestureSettings) {
+            TouchGestureSettingsDialog(
+                config = state.touchGestureConfig.value,
+                onConfigChange = { state.touchGestureConfig.value = it },
+                onDismiss = { showTouchGestureSettings = false }
+            )
+        }
+    }
+
+    Spacer(Modifier.height(SettingSectionGap))
+
     // Game Controller group
     SubsectionLabel(stringResource(R.string.session_gamepad_game_controller))
+...
+@Composable
+private fun SettingWithButton(
+    label: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    buttonLabel: String,
+    onButtonClick: () -> Unit,
+    enabled: Boolean = true
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(Modifier.weight(1f)) {
+            SettingCheckbox(
+                label = label,
+                checked = checked,
+                onCheckedChange = onCheckedChange,
+                enabled = enabled
+            )
+        }
+        
+        Spacer(Modifier.width(8.dp))
+        
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(8.dp))
+                .background(AccentBlue.copy(alpha = 0.08f))
+                .border(1.dp, AccentBlue.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
+                .clickable(enabled = enabled) { onButtonClick() }
+                .padding(horizontal = 10.dp, vertical = 6.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = buttonLabel,
+                color = if (enabled) AccentBlue else TextDim,
+                fontSize = SettingLabelSize,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
     Spacer(Modifier.height(8.dp))
     SettingGroup {
         // DInput Mapper Type (only visible when DInput enabled)

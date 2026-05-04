@@ -128,6 +128,7 @@ import com.winlator.cmod.runtime.display.ui.XServerView;
 import com.winlator.cmod.shared.android.FixedFontScaleAppCompatActivity;
 import com.winlator.cmod.runtime.input.ui.InputControlsView;
 import com.winlator.cmod.runtime.input.ui.TouchpadView;
+import com.winlator.cmod.runtime.input.ui.TouchGestureConfig;
 import com.winlator.cmod.runtime.system.ui.LogView;
 import com.winlator.cmod.runtime.display.winhandler.MouseEventFlags;
 import com.winlator.cmod.runtime.display.winhandler.OnGetProcessInfoListener;
@@ -4255,6 +4256,10 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity {
         dialog.getTouchscreenHaptics().setValue(preferences.getBoolean("touchscreen_haptics_enabled", false));
         dialog.getGamepadVibration().setValue(preferences.getBoolean(ControllerManager.PREF_VIBRATION_GLOBAL, true));
 
+        TouchGestureConfig touchGestureConfig = shortcut != null ? shortcut.getTouchGestureConfig() : container.getTouchGestureConfig();
+        dialog.getRtsTouchEnabled().setValue(touchGestureConfig.getEnabled());
+        dialog.getTouchGestureConfig().setValue(touchGestureConfig);
+
         final Runnable updateProfile = () -> {
             int position = dialog.getSelectedProfileIndex().getIntValue();
             if (position > 0) {
@@ -4289,6 +4294,18 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity {
             inputControlsView.setOverlayOpacity(overlayOpacity);
             boolean isHapticsEnabled = dialog.getTouchscreenHaptics().getValue();
             boolean isGamepadVibrationEnabled = dialog.getGamepadVibration().getValue();
+
+            TouchGestureConfig newTouchGestureConfig = dialog.getTouchGestureConfig().getValue();
+            newTouchGestureConfig.setEnabled(dialog.getRtsTouchEnabled().getValue());
+            if (shortcut != null) {
+                shortcut.setTouchGestureConfig(newTouchGestureConfig);
+                shortcut.saveData();
+            } else {
+                container.setTouchGestureConfig(newTouchGestureConfig);
+                container.saveData();
+            }
+            if (touchpadView != null) touchpadView.setGestureConfig(newTouchGestureConfig);
+
             SharedPreferences.Editor editor = preferences.edit();
             editor.putBoolean("show_touchscreen_controls_enabled", dialog.getShowTouchscreenControls().getValue());
             editor.putFloat("overlay_opacity", overlayOpacity);

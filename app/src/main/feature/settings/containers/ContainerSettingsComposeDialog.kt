@@ -377,6 +377,7 @@ class ContainerSettingsComposeDialog @JvmOverloads constructor(
         }
 
         state.fullscreenStretched.value = c?.isFullscreenStretched() ?: false
+        state.touchGestureConfig.value = c?.getTouchGestureConfig() ?: TouchGestureConfig()
 
         // Steam fields are shortcut-only in the UI; leave any existing steam
         // state on the container untouched — saveSettings() skips them.
@@ -762,6 +763,7 @@ class ContainerSettingsComposeDialog @JvmOverloads constructor(
             c.setMidiSoundFont(midiSoundFont)
             c.setLC_ALL(state.lcAll.value)
             c.setExecArgs(state.execArgs.value)
+            c.setTouchGestureConfig(state.touchGestureConfig.value)
             // Steam fields are intentionally not written — container edit UI
             // doesn't expose them, and saveData() round-trips the loaded
             // values from c's in-memory state.
@@ -797,6 +799,7 @@ class ContainerSettingsComposeDialog @JvmOverloads constructor(
                 data.put("midiSoundFont", midiSoundFont)
                 data.put("lc_all", state.lcAll.value)
                 data.put("execArgs", state.execArgs.value)
+                data.put("touchGestureConfig", state.touchGestureConfig.value.toJSONObject())
 
                 preloaderDialog.show(R.string.containers_list_creating)
                 ImageFs.find(File(context.filesDir, "imagefs"))

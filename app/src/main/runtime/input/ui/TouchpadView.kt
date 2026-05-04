@@ -11,6 +11,7 @@ import android.util.Log
 import android.view.InputDevice
 import android.view.MotionEvent
 import android.view.PointerIcon
+import android.view.ScaleGestureDetector
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -62,6 +63,9 @@ class TouchpadView(
     private var mouseEnabled = true
     var tapToClickEnabled = true
     private var fourFingersTapCallback: Runnable? = null
+    private var gestureConfig = TouchGestureConfig()
+    private var scaleDetector: ScaleGestureDetector? = null
+    private var isPinching = false
     private val preferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     private val longPressHandler = Handler(Looper.getMainLooper())
     private var longPressActive = false
@@ -86,6 +90,29 @@ class TouchpadView(
         isFocusable = true
         isFocusableInTouchMode = false
         pointerIcon = PointerIcon.load(resources, R.drawable.hidden_pointer_arrow)
+
+        scaleDetector = ScaleGestureDetector(context, object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+            override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
+                if (gestureConfig.enabled && gestureConfig.pinchEnabled) {
+                    isPinching = true
+                    return true
+                }
+                return false
+            }
+
+            override fun onScale(detector: ScaleGestureDetector): Boolean {
+                if (gestureConfig.enabled && gestureConfig.pinchEnabled) {
+                    handlePinch(detector.scaleFactor)
+                    return true
+                }
+                return false
+            }
+
+            override fun onScaleEnd(detector: ScaleGestureDetector) {
+                isPinching = false
+            }
+        })
+
         updateXform(
             AppUtils.getScreenWidth(),
             AppUtils.getScreenHeight(),
@@ -180,6 +207,9 @@ class TouchpadView(
         if (!mouseEnabled) return true
         val isTouchscreenMode = preferences.getBoolean("touchscreen_toggle", false)
         resetMousePointerTimeout()
+
+        scaleDetector?.onTouchEvent(event)
+        if (isPinching) return true
 
         return when (event.getToolType(0)) {
             MotionEvent.TOOL_TYPE_STYLUS -> handleStylusEvent(event)
@@ -381,7 +411,9 @@ class TouchpadView(
                     val pIdx = event.findPointerIndex(i)
                     if (pIdx >= 0) finger.update(event.getX(pIdx), event.getY(pIdx))
                 }
-                if (numFingers.toInt() == 2) {
+                if (numFingers.toInt() == 2 && gestureConfig.enabled) {
+                    handleRTSTwoFingerPan()
+                } else if (numFingers.toInt() == 2) {
                     handleTwoFingerScroll(event)
                 } else {
                     handleTouchMove(event)
@@ -390,7 +422,9 @@ class TouchpadView(
 
             MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP -> {
                 val finger = fingers[pointerId]
-                if (numFingers.toInt() == 2 && finger?.isTap() == true) {
+                if (numFingers.toInt() == 2 && gestureConfig.enabled) {
+                    stopRTSTwoFingerPan()
+                } else if (numFingers.toInt() == 2 && finger?.isTap() == true) {
                     handleTwoFingerTap()
                 } else {
                     handleTouchUp()
@@ -403,6 +437,7 @@ class TouchpadView(
                 for (i in 0 until MAX_FINGERS.toInt()) fingers[i] = null
                 numFingers = 0
                 handleAllUp()
+                stopRTSTwoFingerPan()
             }
         }
         return true
@@ -417,10 +452,13 @@ class TouchpadView(
         }
 
         if (tapToClickEnabled && numFingers.toInt() == 1) {
-            if (xServer.isRelativeMouseMovement) {
-                xServer.winHandler.mouseEvent(MouseEventFlags.LEFTDOWN, 0, 0, 0)
-            } else {
-                xServer.injectPointerButtonPress(Pointer.Button.BUTTON_LEFT)
+            // In RTS mode, we always want a left down on first touch to support selection boxes
+            if (gestureConfig.enabled || preferences.getBoolean("touchscreen_toggle", false)) {
+                if (xServer.isRelativeMouseMovement) {
+                    xServer.winHandler.mouseEvent(MouseEventFlags.LEFTDOWN, 0, 0, 0)
+                } else {
+                    xServer.injectPointerButtonPress(Pointer.Button.BUTTON_LEFT)
+                }
             }
         }
     }
@@ -487,6 +525,71 @@ class TouchpadView(
         }
     }
 
+    private var rtsPanActiveKeys = mutableSetOf<Int>()
+
+    private fun handleRTSTwoFingerPan() {
+        val activeFingers = fingers.filterNotNull()
+        if (activeFingers.size < 2) return
+        val finger1 = activeFingers[0]
+        val finger2 = activeFingers[1]
+
+        val dx = ((finger1.x + finger2.x) * 0.5f) - ((finger1.lastX + finger2.lastX) * 0.5f)
+        val dy = ((finger1.y + finger2.y) * 0.5f) - ((finger1.lastY + finger2.lastY) * 0.5f)
+
+        when (gestureConfig.twoFingerPanAction) {
+            TouchGestureConfig.PanAction.MIDDLE_CLICK -> {
+                if (!xServer.pointer.isButtonPressed(Pointer.Button.BUTTON_MIDDLE)) {
+                    xServer.injectPointerButtonPress(Pointer.Button.BUTTON_MIDDLE)
+                }
+                xServer.injectPointerMoveDelta(dx.toInt(), dy.toInt())
+            }
+            TouchGestureConfig.PanAction.WASD -> handleKeyPan(dx, dy, intArrayOf(
+                android.view.KeyEvent.KEYCODE_A, android.view.KeyEvent.KEYCODE_D,
+                android.view.KeyEvent.KEYCODE_W, android.view.KeyEvent.KEYCODE_S
+            ))
+            TouchGestureConfig.PanAction.ARROW_KEYS -> handleKeyPan(dx, dy, intArrayOf(
+                android.view.KeyEvent.KEYCODE_DPAD_LEFT, android.view.KeyEvent.KEYCODE_DPAD_RIGHT,
+                android.view.KeyEvent.KEYCODE_DPAD_UP, android.view.KeyEvent.KEYCODE_DPAD_DOWN
+            ))
+            TouchGestureConfig.PanAction.SCROLL -> {
+                scrollAccumY += dy
+                if (Math.abs(scrollAccumY) > 50) {
+                    val button = if (scrollAccumY < 0) Pointer.Button.BUTTON_SCROLL_DOWN else Pointer.Button.BUTTON_SCROLL_UP
+                    xServer.injectPointerButtonPress(button)
+                    xServer.injectPointerButtonRelease(button)
+                    scrollAccumY = 0f
+                }
+            }
+            else -> {}
+        }
+    }
+
+    private fun handleKeyPan(dx: Float, dy: Float, keys: IntArray) {
+        val threshold = 5f
+        val newKeys = mutableSetOf<Int>()
+
+        if (dx < -threshold) newKeys.add(keys[0]) else if (dx > threshold) newKeys.add(keys[1])
+        if (dy < -threshold) newKeys.add(keys[2]) else if (dy > threshold) newKeys.add(keys[3])
+
+        for (key in rtsPanActiveKeys) {
+            if (key !in newKeys) xServer.injectKeyRelease(key)
+        }
+        for (key in newKeys) {
+            if (key !in rtsPanActiveKeys) xServer.injectKeyPress(key)
+        }
+        rtsPanActiveKeys = newKeys
+    }
+
+    private fun stopRTSTwoFingerPan() {
+        if (xServer.pointer.isButtonPressed(Pointer.Button.BUTTON_MIDDLE)) {
+            xServer.injectPointerButtonRelease(Pointer.Button.BUTTON_MIDDLE)
+        }
+        for (key in rtsPanActiveKeys) {
+            xServer.injectKeyRelease(key)
+        }
+        rtsPanActiveKeys.clear()
+    }
+
     private fun handleFingerUp(finger1: Finger) {
         if (tapToClickEnabled) {
             when (numFingers.toInt()) {
@@ -506,15 +609,42 @@ class TouchpadView(
                     if (finger2 != null && finger1.isTap()) pressPointerButtonRight(finger1)
                 }
 
+                3 -> {
+                    if (gestureConfig.enabled && gestureConfig.threeFingerTapAction != TouchGestureConfig.TapAction.NONE) {
+                        if (fingers.filterNotNull().all { it.isTap() }) {
+                            injectTapAction(gestureConfig.threeFingerTapAction)
+                        }
+                    }
+                }
+
                 4 -> {
-                    fourFingersTapCallback?.let {
-                        if (fingers.filterNotNull().all { it.isTap() }) it.run()
+                    if (gestureConfig.enabled && gestureConfig.fourFingerTapAction != TouchGestureConfig.TapAction.NONE) {
+                        if (fingers.filterNotNull().all { it.isTap() }) {
+                            injectTapAction(gestureConfig.fourFingerTapAction)
+                        }
+                    } else {
+                        fourFingersTapCallback?.let {
+                            if (fingers.filterNotNull().all { it.isTap() }) it.run()
+                        }
                     }
                 }
             }
         }
         releasePointerButtonLeft(finger1)
         releasePointerButtonRight(finger1)
+    }
+
+    private fun injectTapAction(action: TouchGestureConfig.TapAction) {
+        val button = when (action) {
+            TouchGestureConfig.TapAction.LEFT_CLICK -> Pointer.Button.BUTTON_LEFT
+            TouchGestureConfig.TapAction.RIGHT_CLICK -> Pointer.Button.BUTTON_RIGHT
+            TouchGestureConfig.TapAction.MIDDLE_CLICK -> Pointer.Button.BUTTON_MIDDLE
+            else -> null
+        }
+        button?.let {
+            xServer.injectPointerButtonPress(it)
+            xServer.injectPointerButtonRelease(it)
+        }
     }
 
     private fun handleFingerMove(finger1: Finger) {
@@ -590,6 +720,24 @@ class TouchpadView(
                 xServer.injectPointerButtonRelease(Pointer.Button.BUTTON_RIGHT)
                 fingerPointerButtonRight = null
             }, 30)
+        }
+    }
+
+    fun setGestureConfig(config: TouchGestureConfig) {
+        this.gestureConfig = config
+    }
+
+    private fun handlePinch(scaleFactor: Float) {
+        if (gestureConfig.pinchAction == TouchGestureConfig.PinchAction.SCROLL_WHEEL) {
+            val button = if (scaleFactor > 1.0f) Pointer.Button.BUTTON_SCROLL_UP else Pointer.Button.BUTTON_SCROLL_DOWN
+            xServer.injectPointerButtonPress(button)
+            xServer.injectPointerButtonRelease(button)
+        } else if (gestureConfig.pinchAction == TouchGestureConfig.PinchAction.ZOOM_KEYS) {
+            val keycodePlus = android.view.KeyEvent.KEYCODE_PLUS
+            val keycodeMinus = android.view.KeyEvent.KEYCODE_MINUS
+            val keycode = if (scaleFactor > 1.0f) keycodePlus else keycodeMinus
+            xServer.injectKeyPress(keycode)
+            xServer.injectKeyRelease(keycode)
         }
     }
 
