@@ -55,6 +55,7 @@ import com.winlator.cmod.runtime.compat.fexcore.FEXCorePresetManager
 import com.winlator.cmod.runtime.audio.midi.MidiManager
 import com.winlator.cmod.runtime.display.winhandler.WinHandler
 import com.winlator.cmod.runtime.display.environment.ImageFs
+import com.winlator.cmod.runtime.input.ui.TouchGestureConfig
 import org.json.JSONObject
 import java.io.File
 import java.util.Locale
