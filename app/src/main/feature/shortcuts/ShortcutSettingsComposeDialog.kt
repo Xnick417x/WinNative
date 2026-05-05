@@ -359,7 +359,9 @@ class ShortcutSettingsComposeDialog private constructor(
             if ((inputType and WinHandler.FLAG_DINPUT_MAPPER_STANDARD.toInt()) == WinHandler.FLAG_DINPUT_MAPPER_STANDARD.toInt()) 0 else 1
         state.disableXInput.value = shortcut.getExtra("disableXinput", "0") == "1"
         state.simTouchScreen.value = shortcut.getExtra("simTouchScreen", "0") == "1"
-        state.touchGestureConfig.value = shortcut.getTouchGestureConfig()
+        state.touchGestureConfig.value = shortcut.getTouchGestureConfig() ?: com.winlator.cmod.runtime.input.ui.TouchGestureConfig.fromJSONObject(
+            runCatching { JSONObject(prefs.getString("global_touch_gesture_config", "{}")!!) }.getOrNull()
+        )
 
         // Steam options
         val gameSource = shortcut.getExtra("game_source", "")

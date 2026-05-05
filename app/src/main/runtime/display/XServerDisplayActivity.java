@@ -3972,6 +3972,20 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity {
 
         globalCursorSpeed = preferences.getFloat("cursor_speed", 1.0f);
         touchpadView = new TouchpadView(this, xServer, timeoutHandler, hideControlsRunnable);
+
+        TouchGestureConfig touchGestureConfig = null;
+        if (shortcut != null) touchGestureConfig = shortcut.getTouchGestureConfig();
+
+        if (touchGestureConfig == null) {
+            String json = preferences.getString("global_touch_gesture_config", "{}");
+            try {
+                touchGestureConfig = TouchGestureConfig.Companion.fromJSONObject(new JSONObject(json));
+            } catch (JSONException e) {
+                touchGestureConfig = new TouchGestureConfig();
+            }
+        }
+        touchpadView.setGestureConfig(touchGestureConfig);
+
         touchpadView.setTapToClickEnabled(isTapToClickEnabled);
         touchpadView.setSensitivity(globalCursorSpeed);
         touchpadView.setMouseEnabled(!isMouseDisabled);
@@ -4256,7 +4270,17 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity {
         dialog.getTouchscreenHaptics().setValue(preferences.getBoolean("touchscreen_haptics_enabled", false));
         dialog.getGamepadVibration().setValue(preferences.getBoolean(ControllerManager.PREF_VIBRATION_GLOBAL, true));
 
-        TouchGestureConfig touchGestureConfig = shortcut != null ? shortcut.getTouchGestureConfig() : container.getTouchGestureConfig();
+        TouchGestureConfig touchGestureConfig = null;
+        if (shortcut != null) touchGestureConfig = shortcut.getTouchGestureConfig();
+
+        if (touchGestureConfig == null) {
+            String json = preferences.getString("global_touch_gesture_config", "{}");
+            try {
+                touchGestureConfig = TouchGestureConfig.Companion.fromJSONObject(new JSONObject(json));
+            } catch (JSONException e) {
+                touchGestureConfig = new TouchGestureConfig();
+            }
+        }
         dialog.getRtsTouchEnabled().setValue(touchGestureConfig.getEnabled());
         dialog.getTouchGestureConfig().setValue(touchGestureConfig);
 
@@ -4301,8 +4325,7 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity {
                 shortcut.setTouchGestureConfig(newTouchGestureConfig);
                 shortcut.saveData();
             } else {
-                container.setTouchGestureConfig(newTouchGestureConfig);
-                container.saveData();
+                preferences.edit().putString("global_touch_gesture_config", newTouchGestureConfig.toJSONObject().toString()).apply();
             }
             if (touchpadView != null) touchpadView.setGestureConfig(newTouchGestureConfig);
 
@@ -7843,6 +7866,17 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity {
             }
 
             // Collect the first valid candidate as a fallback
+            if (fallbackExe == null && !candidates.isEmpty()) {
+                fallbackExe = candidates.get(0);
+            }
+            
+            if (!nextDirs.isEmpty()) queue.add(nextDirs.toArray(new File[0]));
+            depth++;
+        }
+        return fallbackExe;
+    }
+}
+// Collect the first valid candidate as a fallback
             if (fallbackExe == null && !candidates.isEmpty()) {
                 fallbackExe = candidates.get(0);
             }

@@ -2921,29 +2921,31 @@ private fun InputSection(state: GameSettingsStateHolder) {
     Spacer(Modifier.height(SettingSectionGap))
 
     // Touch Gestures group
-    SubsectionLabel(stringResource(R.string.touch_gestures))
-    Spacer(Modifier.height(8.dp))
-    SettingGroup {
-        var showTouchGestureSettings by remember { mutableStateOf(false) }
+    if (!state.isContainerEditMode.value) {
+        SubsectionLabel(stringResource(R.string.touch_gestures))
+        Spacer(Modifier.height(8.dp))
+        SettingGroup {
+            var showTouchGestureSettings by remember { mutableStateOf(false) }
 
-        SettingWithButton(
-            label = stringResource(R.string.touch_gestures_enabled),
-            checked = state.touchGestureConfig.value.enabled,
-            onCheckedChange = { state.touchGestureConfig.value = state.touchGestureConfig.value.copy(enabled = it) },
-            buttonLabel = stringResource(R.string.touch_gestures_edit),
-            onButtonClick = { showTouchGestureSettings = true }
-        )
-
-        if (showTouchGestureSettings) {
-            TouchGestureSettingsDialog(
-                config = state.touchGestureConfig.value,
-                onConfigChange = { state.touchGestureConfig.value = it },
-                onDismiss = { showTouchGestureSettings = false }
+            SettingWithButton(
+                label = stringResource(R.string.touch_gestures_enabled),
+                checked = state.touchGestureConfig.value.enabled,
+                onCheckedChange = { state.touchGestureConfig.value = state.touchGestureConfig.value.copy(enabled = it) },
+                buttonLabel = stringResource(R.string.touch_gestures_edit),
+                onButtonClick = { showTouchGestureSettings = true }
             )
-        }
-    }
 
-    Spacer(Modifier.height(SettingSectionGap))
+            if (showTouchGestureSettings) {
+                TouchGestureSettingsDialog(
+                    config = state.touchGestureConfig.value,
+                    onConfigChange = { state.touchGestureConfig.value = it },
+                    onDismiss = { showTouchGestureSettings = false }
+                )
+            }
+        }
+
+        Spacer(Modifier.height(SettingSectionGap))
+    }
 
     // Game Controller group
     SubsectionLabel(stringResource(R.string.session_gamepad_game_controller))

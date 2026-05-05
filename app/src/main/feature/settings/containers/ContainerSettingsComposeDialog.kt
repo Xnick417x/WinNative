@@ -764,7 +764,6 @@ class ContainerSettingsComposeDialog @JvmOverloads constructor(
             c.setMidiSoundFont(midiSoundFont)
             c.setLC_ALL(state.lcAll.value)
             c.setExecArgs(state.execArgs.value)
-            c.setTouchGestureConfig(state.touchGestureConfig.value)
             // Steam fields are intentionally not written — container edit UI
             // doesn't expose them, and saveData() round-trips the loaded
             // values from c's in-memory state.

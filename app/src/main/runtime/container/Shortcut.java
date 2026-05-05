@@ -24,10 +24,17 @@ public class Shortcut {
 
   public TouchGestureConfig getTouchGestureConfig() {
     try {
-      return TouchGestureConfig.Companion.fromJSONObject(extraData != null && extraData.has("touchGestureConfig") ? extraData.getJSONObject("touchGestureConfig") : null);
+      if (extraData.has("touchGestureConfig")) {
+        Object value = extraData.get("touchGestureConfig");
+        if (value instanceof JSONObject) {
+          return TouchGestureConfig.Companion.fromJSONObject((JSONObject) value);
+        } else if (value instanceof String) {
+          return TouchGestureConfig.Companion.fromJSONObject(new JSONObject((String) value));
+        }
+      }
     } catch (JSONException e) {
-      return container != null ? container.getTouchGestureConfig() : new TouchGestureConfig();
     }
+    return null;
   }
 
   public void setTouchGestureConfig(TouchGestureConfig config) {
