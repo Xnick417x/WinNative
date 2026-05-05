@@ -61,7 +61,7 @@ import androidx.compose.material.icons.outlined.ScreenRotationAlt
 import androidx.compose.material.icons.outlined.SportsEsports
 import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -1508,7 +1508,7 @@ private fun RTSTouchCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                IconBox(Icons.Outlined.TouchApp, InputTextSecondary)
+                IconBox(TouchApp, InputTextSecondary)
                 Spacer(Modifier.width(10.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
@@ -1526,7 +1526,7 @@ private fun RTSTouchCard(
                 Spacer(Modifier.width(8.dp))
 
                 IconActionButton(
-                    image = Icons.Outlined.Settings,
+                    image = Settings,
                     onClick = { showGestureSettings = true },
                     contentDescription = stringResource(R.string.touch_gestures_edit)
                 )
@@ -2007,7 +2007,7 @@ private fun TriggerTypeCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                IconBox(Icons.Outlined.Tune, InputTextSecondary)
+                IconBox(Tune, InputTextSecondary)
                 Spacer(Modifier.width(10.dp))
                 Text(
                     text = stringResource(R.string.session_gamepad_trigger_type),
@@ -2209,6 +2209,11 @@ private fun BindingSelectionButton(
             imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
             contentDescription = null,
             tint = InputTextSecondary,
+            modifier = Modifier.size(12.dp),
+        )
+    }
+}
+ndary,
             modifier = Modifier.size(12.dp),
         )
     }

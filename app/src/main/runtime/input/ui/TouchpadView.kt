@@ -712,10 +712,10 @@ class TouchpadView(
                 xServer.injectPointerButtonRelease(button)
             }
         } else if (binding.isKeyboard) {
-            val xKeycode = binding.keycode
-            if (xKeycode != null && xKeycode != XKeycode.KEY_NONE) {
-                xServer.injectKeyPress(xKeycode)
-                xServer.injectKeyRelease(xKeycode)
+            val xKeycodeValue = binding.keycode
+            if (xKeycodeValue != null && xKeycodeValue != com.winlator.cmod.runtime.display.xserver.XKeycode.KEY_NONE) {
+                xServer.injectKeyPress(xKeycodeValue)
+                xServer.injectKeyRelease(xKeycodeValue)
             }
         }
     }
