@@ -7876,14 +7876,3 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity {
         return fallbackExe;
     }
 }
-// Collect the first valid candidate as a fallback
-            if (fallbackExe == null && !candidates.isEmpty()) {
-                fallbackExe = candidates.get(0);
-            }
-            
-            if (!nextDirs.isEmpty()) queue.add(nextDirs.toArray(new File[0]));
-            depth++;
-        }
-        return fallbackExe;
-    }
-}
