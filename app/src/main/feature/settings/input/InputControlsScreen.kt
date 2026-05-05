@@ -1508,7 +1508,7 @@ private fun RTSTouchCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                IconBox(TouchApp, InputTextSecondary)
+                IconBox(Icons.Outlined.TouchApp, InputTextSecondary)
                 Spacer(Modifier.width(10.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
@@ -1526,7 +1526,7 @@ private fun RTSTouchCard(
                 Spacer(Modifier.width(8.dp))
 
                 IconActionButton(
-                    image = Settings,
+                    image = Icons.Outlined.Settings,
                     onClick = { showGestureSettings = true },
                     contentDescription = stringResource(R.string.touch_gestures_edit)
                 )
