@@ -76,15 +76,8 @@ fun TouchGestureSettingsDialog(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Section: Mouse & Pan
-                GestureSectionLabel("Mouse & Pan")
-                GestureSettingRow(
-                    label = stringResource(R.string.touch_gestures_two_finger_pan),
-                    selectedOption = currentConfig.twoFingerPanAction.name,
-                    options = TouchGestureConfig.PanAction.entries.map { it.name to getPanActionLabel(it) },
-                    onOptionSelected = { currentConfig = currentConfig.copy(twoFingerPanAction = TouchGestureConfig.PanAction.valueOf(it)) }
-                )
-
+                // Section: MOVEMENT
+                GestureSectionLabel("Movement")
                 GestureToggleSettingRow(
                     label = stringResource(R.string.touch_gestures_pinch),
                     checked = currentConfig.pinchEnabled,
@@ -94,14 +87,18 @@ fun TouchGestureSettingsDialog(
                     onOptionSelected = { currentConfig = currentConfig.copy(pinchAction = TouchGestureConfig.PinchAction.valueOf(it)) }
                 )
 
+                // Section: TAPS
+                GestureSectionLabel("Taps")
                 BindingSettingRow(
-                    label = "One-Finger Long Press",
-                    selectedBinding = currentConfig.oneFingerLongPressAction,
-                    onBindingSelected = { currentConfig = currentConfig.copy(oneFingerLongPressAction = it) }
+                    label = "One-Finger Tap",
+                    selectedBinding = currentConfig.oneFingerTapAction,
+                    onBindingSelected = { currentConfig = currentConfig.copy(oneFingerTapAction = it) }
                 )
-
-                // Section: Taps
-                GestureSectionLabel("Multi-Finger Taps")
+                BindingSettingRow(
+                    label = "One-Finger Double Tap",
+                    selectedBinding = currentConfig.oneFingerDoubleTapAction,
+                    onBindingSelected = { currentConfig = currentConfig.copy(oneFingerDoubleTapAction = it) }
+                )
                 BindingSettingRow(
                     label = "Two-Finger Tap",
                     selectedBinding = currentConfig.twoFingerTapAction,
@@ -118,8 +115,97 @@ fun TouchGestureSettingsDialog(
                     onBindingSelected = { currentConfig = currentConfig.copy(fourFingerTapAction = it) }
                 )
 
-                // Section: 3-Finger Swipes
-                GestureSectionLabel("3-Finger Swipes")
+                // Section: HOLDS (LONG PRESS)
+                GestureSectionLabel("Holds (Long Press)")
+                
+                GestureSubsectionLabel("One-Finger Hold")
+                BindingSettingRow(
+                    label = "Action",
+                    selectedBinding = currentConfig.oneFingerLongPressAction,
+                    onBindingSelected = { currentConfig = currentConfig.copy(oneFingerLongPressAction = it) }
+                )
+                DurationSettingRow(
+                    label = "Duration",
+                    value = currentConfig.oneFingerLongPressDuration,
+                    onValueChange = { currentConfig = currentConfig.copy(oneFingerLongPressDuration = it) }
+                )
+
+                GestureSubsectionLabel("Two-Finger Hold")
+                BindingSettingRow(
+                    label = "Action",
+                    selectedBinding = currentConfig.twoFingerLongPressAction,
+                    onBindingSelected = { currentConfig = currentConfig.copy(twoFingerLongPressAction = it) }
+                )
+                DurationSettingRow(
+                    label = "Duration",
+                    value = currentConfig.twoFingerLongPressDuration,
+                    onValueChange = { currentConfig = currentConfig.copy(twoFingerLongPressDuration = it) }
+                )
+
+                GestureSubsectionLabel("Three-Finger Hold")
+                BindingSettingRow(
+                    label = "Action",
+                    selectedBinding = currentConfig.threeFingerLongPressAction,
+                    onBindingSelected = { currentConfig = currentConfig.copy(threeFingerLongPressAction = it) }
+                )
+                DurationSettingRow(
+                    label = "Duration",
+                    value = currentConfig.threeFingerLongPressDuration,
+                    onValueChange = { currentConfig = currentConfig.copy(threeFingerLongPressDuration = it) }
+                )
+
+                GestureSubsectionLabel("Four-Finger Hold")
+                BindingSettingRow(
+                    label = "Action",
+                    selectedBinding = currentConfig.fourFingerLongPressAction,
+                    onBindingSelected = { currentConfig = currentConfig.copy(fourFingerLongPressAction = it) }
+                )
+                DurationSettingRow(
+                    label = "Duration",
+                    value = currentConfig.fourFingerLongPressDuration,
+                    onValueChange = { currentConfig = currentConfig.copy(fourFingerLongPressDuration = it) }
+                )
+
+                // Section: SWIPES
+                GestureSectionLabel("Swipes")
+
+                GestureSubsectionLabel("One-Finger Swipes/Drag")
+                GestureSettingRow(
+                    label = "One-Finger Drag Action",
+                    selectedOption = currentConfig.oneFingerDragAction.name,
+                    options = TouchGestureConfig.DragAction.entries.map { it.name to getDragActionLabel(it) },
+                    onOptionSelected = { currentConfig = currentConfig.copy(oneFingerDragAction = TouchGestureConfig.DragAction.valueOf(it)) }
+                )
+                BindingSettingRow(
+                    label = "Swipe Up",
+                    selectedBinding = currentConfig.oneFingerSwipeUpAction,
+                    onBindingSelected = { currentConfig = currentConfig.copy(oneFingerSwipeUpAction = it) }
+                )
+                BindingSettingRow(
+                    label = "Swipe Down",
+                    selectedBinding = currentConfig.oneFingerSwipeDownAction,
+                    onBindingSelected = { currentConfig = currentConfig.copy(oneFingerSwipeDownAction = it) }
+                )
+                BindingSettingRow(
+                    label = "Swipe Left",
+                    selectedBinding = currentConfig.oneFingerSwipeLeftAction,
+                    onBindingSelected = { currentConfig = currentConfig.copy(oneFingerSwipeLeftAction = it) }
+                )
+                BindingSettingRow(
+                    label = "Swipe Right",
+                    selectedBinding = currentConfig.oneFingerSwipeRightAction,
+                    onBindingSelected = { currentConfig = currentConfig.copy(oneFingerSwipeRightAction = it) }
+                )
+
+                GestureSubsectionLabel("Two-Finger Swipe/Drag")
+                GestureSettingRow(
+                    label = "Action",
+                    selectedOption = currentConfig.twoFingerSwipeAction.name,
+                    options = TouchGestureConfig.PanAction.entries.map { it.name to getPanActionLabel(it) },
+                    onOptionSelected = { currentConfig = currentConfig.copy(twoFingerSwipeAction = TouchGestureConfig.PanAction.valueOf(it)) }
+                )
+
+                GestureSubsectionLabel("Three-Finger Swipes")
                 BindingSettingRow(
                     label = "Swipe Up",
                     selectedBinding = currentConfig.threeFingerSwipeUpAction,
@@ -141,8 +227,7 @@ fun TouchGestureSettingsDialog(
                     onBindingSelected = { currentConfig = currentConfig.copy(threeFingerSwipeRightAction = it) }
                 )
 
-                // Section: 4-Finger Swipes
-                GestureSectionLabel("4-Finger Swipes")
+                GestureSubsectionLabel("Four-Finger Swipes")
                 BindingSettingRow(
                     label = "Swipe Up",
                     selectedBinding = currentConfig.fourFingerSwipeUpAction,
@@ -202,6 +287,17 @@ private fun GestureSectionLabel(label: String) {
         fontSize = 11.sp,
         fontWeight = FontWeight.Bold,
         modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+    )
+}
+
+@Composable
+private fun GestureSubsectionLabel(label: String) {
+    Text(
+        text = label,
+        color = WinNativeTextSecondary,
+        fontSize = 11.sp,
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier.padding(top = 4.dp, bottom = 2.dp)
     )
 }
 
@@ -399,6 +495,40 @@ private fun GestureToggleSettingRow(
             Spacer(Modifier.height(4.dp))
             GestureSettingRow("", selectedOption, options, onOptionSelected)
         }
+    }
+}
+
+@Composable
+private fun DurationSettingRow(
+    label: String,
+    value: Int,
+    onValueChange: (Int) -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(text = label, color = WinNativeTextSecondary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+            Text(text = "${value}ms", color = WinNativeAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        }
+        Spacer(Modifier.height(4.dp))
+        Slider(
+            value = value.toFloat(),
+            onValueChange = { onValueChange(it.toInt()) },
+            valueRange = 200f..1000f,
+            steps = 8,
+            colors = SliderDefaults.colors(
+                thumbColor = WinNativeAccent,
+                activeTrackColor = WinNativeAccent,
+                inactiveTrackColor = WinNativeAccent.copy(alpha = 0.2f)
+            )
+        )
+    }
+}
+
+@Composable
+private fun getDragActionLabel(action: TouchGestureConfig.DragAction): String {
+    return when (action) {
+        TouchGestureConfig.DragAction.MOUSE_MOVE -> "Mouse Movement Only"
+        TouchGestureConfig.DragAction.LEFT_CLICK -> "Left-Click Drag (Selection)"
     }
 }
 

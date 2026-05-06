@@ -334,12 +334,25 @@ class InputControlsFragment : Fragment() {
             )
     }
 private fun setRTSTouchEnabled(enabled: Boolean) {
-    preferences.edit().putBoolean("rts_touch_enabled", enabled).apply()
+    val jsonString = preferences.getString("global_touch_gesture_config", "{}") ?: "{}"
+    try {
+        val json = org.json.JSONObject(jsonString)
+        json.put("enabled", enabled)
+        preferences.edit()
+            .putBoolean("rts_touch_enabled", enabled)
+            .putString("global_touch_gesture_config", json.toString())
+            .apply()
+    } catch (e: Exception) {
+        preferences.edit().putBoolean("rts_touch_enabled", enabled).apply()
+    }
     publishUiState()
 }
 
 private fun setRTSTouchConfig(config: com.winlator.cmod.runtime.input.ui.TouchGestureConfig) {
-    preferences.edit().putString("global_touch_gesture_config", config.toJSONObject().toString()).apply()
+    preferences.edit()
+        .putString("global_touch_gesture_config", config.toJSONObject().toString())
+        .putBoolean("rts_touch_enabled", config.enabled)
+        .apply()
     publishUiState()
 }
 
