@@ -275,6 +275,7 @@ data class XServerDrawerItem(
 
 data class XServerDrawerState(
     val items: List<XServerDrawerItem>,
+    val cursorLock: Boolean = false,
     val hudTransparency: Float = 1.0f,
     val hudScale: Float = 1.0f,
     val hudElements: BooleanArray = booleanArrayOf(true, true, true, true, true, true, true),
@@ -437,6 +438,7 @@ interface XServerDrawerActionListener {
 fun buildXServerDrawerState(
     context: Context,
     relativeMouseEnabled: Boolean,
+    cursorLock: Boolean,
     mouseDisabled: Boolean,
     fpsMonitorEnabled: Boolean,
     paused: Boolean,
@@ -516,6 +518,13 @@ fun buildXServerDrawerState(
                     if (relativeMouseEnabled) context.getString(R.string.common_ui_enabled) else context.getString(R.string.common_ui_disabled),
                 icon = Icons.Outlined.Mouse,
                 active = relativeMouseEnabled,
+            ),
+            XServerDrawerItem(
+                itemId = R.id.main_menu_cursor_lock,
+                title = "Capture External Pointer",
+                subtitle = if (cursorLock) context.getString(R.string.common_ui_enabled) else context.getString(R.string.common_ui_disabled),
+                icon = Icons.Outlined.Mouse,
+                active = cursorLock,
             ),
             XServerDrawerItem(
                 itemId = R.id.main_menu_disable_mouse,
@@ -601,6 +610,7 @@ fun buildXServerDrawerState(
 
     return XServerDrawerState(
         items = items,
+        cursorLock = cursorLock,
         hudTransparency = hudTransparency,
         hudScale = hudScale,
         hudElements = hudElements,

@@ -2873,6 +2873,7 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity {
         XServerDrawerState state = XServerDrawerMenuKt.buildXServerDrawerState(
                 this,
                 isRelativeMouseMovement,
+                cursorLock,
                 isMouseDisabled,
                 frameRating != null && frameRating.getVisibility() == View.VISIBLE,
                 isPaused,
@@ -3518,6 +3519,25 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity {
                 xServer.setRelativeMouseMovement(isRelativeMouseMovement);
                 renderDrawerMenu();
                 break;
+            case R.id.main_menu_cursor_lock:
+                cursorLock = !cursorLock;
+                preferences.edit().putBoolean("cursor_lock", cursorLock).apply();
+                if (cursorLock) {
+                    touchpadView.requestFocus();
+                    touchpadView.requestPointerCapture();
+                    touchpadView.setOnCapturedPointerListener(new View.OnCapturedPointerListener() {
+                        @Override
+                        public boolean onCapturedPointer(View view, MotionEvent event) {
+                            handleCapturedPointer(event);
+                            return true;
+                        }
+                    });
+                } else {
+                    touchpadView.releasePointerCapture();
+                    touchpadView.setOnCapturedPointerListener(null);
+                }
+                renderDrawerMenu();
+                break;
             case R.id.main_menu_disable_mouse:
                 isMouseDisabled = !isMouseDisabled;
                 touchpadView.setMouseEnabled(!isMouseDisabled);
@@ -3615,6 +3635,7 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity {
         super.onWindowFocusChanged(hasFocus);
 
         if (hasFocus && cursorLock) {
+            touchpadView.requestFocus();
             touchpadView.requestPointerCapture();
             touchpadView.setOnCapturedPointerListener(new View.OnCapturedPointerListener() {
                 @Override
