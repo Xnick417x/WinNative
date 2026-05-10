@@ -2,6 +2,8 @@ package com.winlator.cmod.runtime.display
 
 import android.app.Activity
 import android.content.Context
+import androidx.core.util.Consumer
+import com.winlator.cmod.runtime.input.ui.TouchGestureConfig
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
@@ -308,6 +310,7 @@ data class XServerDrawerState(
     val invertGyroY: Boolean = false,
     val gyroscopeCardExpanded: Boolean = false,
     val fpsLimit: Int = 0,
+    val rtsGesturesEnabled: Boolean = false,
     val screenEffectsCardExpanded: Boolean = false,
     val fsrEnabled: Boolean = false,
     val fsrMode: Int = 0,
@@ -320,6 +323,8 @@ data class XServerDrawerState(
     val inputControlsOverlayOpacity: Float = 0.4f,
     val inputControlsTouchscreenHaptics: Boolean = false,
     val inputControlsGamepadVibration: Boolean = true,
+    val showTouchGestureSettingsDialog: Boolean = false,
+    val touchGestureConfig: TouchGestureConfig? = null,
 )
 
 class XServerDrawerStateHolder(
@@ -344,6 +349,24 @@ class XServerDrawerStateHolder(
 
     val isDrawerOpen: Boolean
         get() = drawerOpen
+
+    var onTouchGestureConfigChanged: ((com.winlator.cmod.runtime.input.ui.TouchGestureConfig) -> Unit)? = null
+
+    fun setRTSGesturesEnabled(enabled: Boolean) {
+        val currentConfig = state.touchGestureConfig ?: com.winlator.cmod.runtime.input.ui.TouchGestureConfig()
+        currentConfig.setEnabled(enabled)
+        state = state.copy(rtsGesturesEnabled = enabled, touchGestureConfig = currentConfig)
+        onTouchGestureConfigChanged?.invoke(currentConfig)
+    }
+
+    fun setTouchGestureConfig(config: com.winlator.cmod.runtime.input.ui.TouchGestureConfig) {
+        state = state.copy(touchGestureConfig = config, rtsGesturesEnabled = config.getEnabled())
+        onTouchGestureConfigChanged?.invoke(config)
+    }
+
+    fun setShowTouchGestureSettingsDialog(show: Boolean) {
+        state = state.copy(showTouchGestureSettingsDialog = show)
+    }
 
     fun openDrawer() {
         drawerOpen = true
@@ -556,6 +579,7 @@ fun buildXServerDrawerState(
     fsrMode: Int = 0,
     fsrSharpness: Int = 100,
     colorProfile: Int = 0,
+    rtsGesturesEnabled: Boolean = false,
     inputControlsProfileNames: List<String> = emptyList(),
     inputControlsSelectedProfileIndex: Int = 0,
     inputControlsShowOverlay: Boolean = false,
@@ -564,6 +588,8 @@ fun buildXServerDrawerState(
     inputControlsTouchscreenHaptics: Boolean = false,
     inputControlsGamepadVibration: Boolean = true,
     fullscreenEnabled: Boolean = false,
+    showTouchGestureSettingsDialog: Boolean = false,
+    touchGestureConfig: TouchGestureConfig? = null,
 ): XServerDrawerState {
     val items =
         mutableListOf(
@@ -706,6 +732,7 @@ fun buildXServerDrawerState(
         invertGyroY = invertGyroY,
         gyroscopeCardExpanded = gyroscopeCardExpanded,
         fpsLimit = fpsLimit,
+        rtsGesturesEnabled = rtsGesturesEnabled,
         screenEffectsCardExpanded = screenEffectsCardExpanded,
         fsrEnabled = fsrEnabled,
         fsrMode = fsrMode,
@@ -718,6 +745,8 @@ fun buildXServerDrawerState(
         inputControlsOverlayOpacity = inputControlsOverlayOpacity,
         inputControlsTouchscreenHaptics = inputControlsTouchscreenHaptics,
         inputControlsGamepadVibration = inputControlsGamepadVibration,
+        showTouchGestureSettingsDialog = showTouchGestureSettingsDialog,
+        touchGestureConfig = touchGestureConfig,
     )
 }
 
@@ -875,6 +904,14 @@ internal fun XServerDrawerContent(
                 }
             }
         }
+    }
+
+    if (state.showTouchGestureSettingsDialog && state.touchGestureConfig != null) {
+        com.winlator.cmod.runtime.input.ui.TouchGestureSettingsDialog(
+            config = state.touchGestureConfig,
+            onConfigChange = { stateHolder.setTouchGestureConfig(it) },
+            onDismiss = { stateHolder.setShowTouchGestureSettingsDialog(false) }
+        )
     }
 }
 
@@ -1740,6 +1777,40 @@ private fun InputControlsPaneContent(
                     checked = state.inputControlsGamepadVibration,
                     onCheckedChange = listener::onInputControlsGamepadVibrationChanged,
                 )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy((8f * paneScale).dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(modifier = Modifier.weight(1f)) {
+                        DrawerBooleanRow(
+                            title = stringResource(R.string.touch_gestures),
+                            checked = state.rtsGesturesEnabled,
+                            onCheckedChange = { stateHolder.setRTSGesturesEnabled(it) },
+                        )
+                    }
+
+                    if (state.rtsGesturesEnabled) {
+                        Box(
+                            modifier =
+                                Modifier
+                                    .size((44f * paneScale).dp)
+                                    .clip(RoundedCornerShape((14f * paneScale).dp))
+                                    .background(PaneInnerResting)
+                                    .border(1.dp, RestingCardBorder, RoundedCornerShape((14f * paneScale).dp))
+                                    .clickable(onClick = { stateHolder.setShowTouchGestureSettingsDialog(true) }),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Tune,
+                                contentDescription = null,
+                                tint = DrawerTextPrimary,
+                                modifier = Modifier.size((20f * paneScale).dp),
+                            )
+                        }
+                    }
+                }
             }
         }
     }
