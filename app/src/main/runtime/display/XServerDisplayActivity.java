@@ -3071,7 +3071,9 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity {
                 preferences.getFloat("overlay_opacity", InputControlsView.DEFAULT_OVERLAY_OPACITY),
                 preferences.getBoolean("touchscreen_haptics_enabled", false),
                 preferences.getBoolean(ControllerManager.PREF_VIBRATION_GLOBAL, true),
-                xServerView != null && xServerView.getRenderer() != null && xServerView.getRenderer().isFullscreen()
+                xServerView != null && xServerView.getRenderer() != null && xServerView.getRenderer().isFullscreen(),
+                drawerStateHolder != null ? drawerStateHolder.getState().getShowTouchGestureSettingsDialog() : false,
+                touchGestureConfig
         );
 
         if (drawerActionListener == null) {
@@ -3377,6 +3379,7 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity {
                     preferences.edit().putString("touch_gesture_config", config.toJSONObject().toString()).apply();
                 }
                 if (touchpadView != null) touchpadView.setGestureConfig(config);
+                return kotlin.Unit.INSTANCE;
             });
             XServerDisplayHostKt.setupXServerDisplayHost(
                     displayHostComposeView,

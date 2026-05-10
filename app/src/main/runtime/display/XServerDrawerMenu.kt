@@ -354,13 +354,13 @@ class XServerDrawerStateHolder(
 
     fun setRTSGesturesEnabled(enabled: Boolean) {
         val currentConfig = state.touchGestureConfig ?: com.winlator.cmod.runtime.input.ui.TouchGestureConfig()
-        currentConfig.setEnabled(enabled)
+        currentConfig.enabled = enabled
         state = state.copy(rtsGesturesEnabled = enabled, touchGestureConfig = currentConfig)
         onTouchGestureConfigChanged?.invoke(currentConfig)
     }
 
     fun setTouchGestureConfig(config: com.winlator.cmod.runtime.input.ui.TouchGestureConfig) {
-        state = state.copy(touchGestureConfig = config, rtsGesturesEnabled = config.getEnabled())
+        state = state.copy(touchGestureConfig = config, rtsGesturesEnabled = config.enabled)
         onTouchGestureConfigChanged?.invoke(config)
     }
 
@@ -543,6 +543,7 @@ interface XServerDrawerActionListener {
     fun onLogsShare()
 }
 
+@JvmOverloads
 fun buildXServerDrawerState(
     context: Context,
     relativeMouseEnabled: Boolean,
@@ -763,6 +764,7 @@ fun setupXServerDrawerComposeView(
     composeView.setContent {
         WinNativeTheme {
             XServerDrawerContent(
+                stateHolder = stateHolder,
                 state = stateHolder.state,
                 taskManagerState = stateHolder.taskManagerState,
                 logsState = stateHolder.logsState,
@@ -777,6 +779,7 @@ fun setupXServerDrawerComposeView(
 
 @Composable
 internal fun XServerDrawerContent(
+    stateHolder: XServerDrawerStateHolder,
     state: XServerDrawerState,
     taskManagerState: TaskManagerPaneState,
     logsState: LogsPaneState,
@@ -859,7 +862,11 @@ internal fun XServerDrawerContent(
                             label = "drawerBody",
                         ) { pane ->
                             when (pane) {
-                                DrawerPane.INPUT_CONTROLS -> InputControlsPaneContent(state = state, listener = listener)
+                                DrawerPane.INPUT_CONTROLS -> InputControlsPaneContent(
+                                    stateHolder = stateHolder,
+                                    state = state,
+                                    listener = listener
+                                )
                                 DrawerPane.HUD -> HUDPaneContent(state = state, listener = listener)
                                 DrawerPane.GYROSCOPE -> GyroscopePaneContent(state = state, listener = listener)
                                 DrawerPane.SCREEN_EFFECTS -> ScreenEffectsPaneContent(state = state, listener = listener)
@@ -1718,6 +1725,7 @@ private fun GyroscopePaneContent(
 
 @Composable
 private fun InputControlsPaneContent(
+    stateHolder: XServerDrawerStateHolder,
     state: XServerDrawerState,
     listener: XServerDrawerActionListener,
 ) {
