@@ -1685,39 +1685,21 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity {
         switch (event.getAction()) {
             case MotionEvent.ACTION_BUTTON_PRESS:
                 if (actionButton == MotionEvent.BUTTON_PRIMARY) {
-                    if (xServer.isRelativeMouseMovement())
-                        xServer.getWinHandler().mouseEvent(MouseEventFlags.LEFTDOWN, 0, 0, 0);
-                    else
-                        xServer.injectPointerButtonPress(Pointer.Button.BUTTON_LEFT);
+                    xServer.injectPointerButtonPress(Pointer.Button.BUTTON_LEFT);
                 } else if (actionButton == MotionEvent.BUTTON_SECONDARY) {
-                    if (xServer.isRelativeMouseMovement())
-                        xServer.getWinHandler().mouseEvent(MouseEventFlags.RIGHTDOWN, 0, 0, 0);
-                    else
-                        xServer.injectPointerButtonPress(Pointer.Button.BUTTON_RIGHT);
+                    xServer.injectPointerButtonPress(Pointer.Button.BUTTON_RIGHT);
                 } else if (actionButton == MotionEvent.BUTTON_TERTIARY) {
-                    if (xServer.isRelativeMouseMovement())
-                        xServer.getWinHandler().mouseEvent(MouseEventFlags.MIDDLEDOWN, 0, 0, 0);
-                    else
-                        xServer.injectPointerButtonPress(Pointer.Button.BUTTON_MIDDLE); // Add this line for middle mouse button press
+                    xServer.injectPointerButtonPress(Pointer.Button.BUTTON_MIDDLE); // Add this line for middle mouse button press
                 }
                 handled = true;
                 break;
             case MotionEvent.ACTION_BUTTON_RELEASE:
                 if (actionButton == MotionEvent.BUTTON_PRIMARY) {
-                    if (xServer.isRelativeMouseMovement())
-                        xServer.getWinHandler().mouseEvent(MouseEventFlags.LEFTUP, 0, 0, 0);
-                    else
-                        xServer.injectPointerButtonRelease(Pointer.Button.BUTTON_LEFT);
+                    xServer.injectPointerButtonRelease(Pointer.Button.BUTTON_LEFT);
                 } else if (actionButton == MotionEvent.BUTTON_SECONDARY) {
-                    if (xServer.isRelativeMouseMovement())
-                        xServer.getWinHandler().mouseEvent(MouseEventFlags.RIGHTUP, 0, 0, 0);
-                    else
-                        xServer.injectPointerButtonRelease(Pointer.Button.BUTTON_RIGHT);
+                    xServer.injectPointerButtonRelease(Pointer.Button.BUTTON_RIGHT);
                 } else if (actionButton == MotionEvent.BUTTON_TERTIARY) {
-                    if (xServer.isRelativeMouseMovement())
-                        xServer.getWinHandler().mouseEvent(MouseEventFlags.MIDDLEUP, 0, 0, 0);
-                    else
-                        xServer.injectPointerButtonRelease(Pointer.Button.BUTTON_MIDDLE); // Add this line for middle mouse button release
+                    xServer.injectPointerButtonRelease(Pointer.Button.BUTTON_MIDDLE); // Add this line for middle mouse button release
                 }
                 handled = true;
                 break;
@@ -1736,19 +1718,11 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity {
             case MotionEvent.ACTION_SCROLL:
                 float scrollY = event.getAxisValue(MotionEvent.AXIS_VSCROLL);
                 if (scrollY <= -1.0f) {
-                    if (xServer.isRelativeMouseMovement())
-                        xServer.getWinHandler().mouseEvent(MouseEventFlags.WHEEL, 0, 0, (int)scrollY * 270);
-                    else {
-                        xServer.injectPointerButtonPress(Pointer.Button.BUTTON_SCROLL_DOWN);
-                        xServer.injectPointerButtonRelease(Pointer.Button.BUTTON_SCROLL_DOWN);
-                    }
+                    xServer.injectPointerButtonPress(Pointer.Button.BUTTON_SCROLL_DOWN);
+                    xServer.injectPointerButtonRelease(Pointer.Button.BUTTON_SCROLL_DOWN);
                 } else if (scrollY >= 1.0f) {
-                    if (xServer.isRelativeMouseMovement())
-                        xServer.getWinHandler().mouseEvent(MouseEventFlags.WHEEL, 0, 0,(int)scrollY * 270);
-                    else {
-                        xServer.injectPointerButtonPress(Pointer.Button.BUTTON_SCROLL_UP);
-                        xServer.injectPointerButtonRelease(Pointer.Button.BUTTON_SCROLL_UP);
-                    }
+                    xServer.injectPointerButtonPress(Pointer.Button.BUTTON_SCROLL_UP);
+                    xServer.injectPointerButtonRelease(Pointer.Button.BUTTON_SCROLL_UP);
                 }
                 handled = true;
                 break;
@@ -4449,7 +4423,7 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity {
 
         boolean swapRB = shortcut != null ? shortcut.getExtra("swapRB", "0").equals("1")
                          : (container != null && container.getExtra("swapRB", "0").equals("1"));
-        renderer.swapRB = swapRB;
+        renderer.setSwapRB(swapRB);
 
         if (shortcut != null) {
             renderer.setUnviewableWMClasses("explorer.exe");

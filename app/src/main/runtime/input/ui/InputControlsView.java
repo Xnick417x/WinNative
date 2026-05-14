@@ -1007,26 +1007,11 @@ public class InputControlsView extends View {
         Pointer.Button pointerButton = binding.getPointerButton();
         if (isActionDown) {
           if (pointerButton != null) {
-            if (xServer.isRelativeMouseMovement()) {
-              int wheelDelta =
-                  pointerButton == Pointer.Button.BUTTON_SCROLL_UP
-                      ? MOUSE_WHEEL_DELTA
-                      : (pointerButton == Pointer.Button.BUTTON_SCROLL_DOWN
-                          ? -MOUSE_WHEEL_DELTA
-                          : 0);
-              winHandler.mouseEvent(
-                  MouseEventFlags.getFlagFor(pointerButton, true), 0, 0, wheelDelta);
-            } else {
-              xServer.injectPointerButtonPress(pointerButton);
-            }
+            xServer.injectPointerButtonPress(pointerButton);
           } else xServer.injectKeyPress(binding.keycode);
         } else {
           if (pointerButton != null) {
-            if (xServer.isRelativeMouseMovement()) {
-              winHandler.mouseEvent(MouseEventFlags.getFlagFor(pointerButton, false), 0, 0, 0);
-            } else {
-              xServer.injectPointerButtonRelease(pointerButton);
-            }
+            xServer.injectPointerButtonRelease(pointerButton);
           } else xServer.injectKeyRelease(binding.keycode);
         }
       }
