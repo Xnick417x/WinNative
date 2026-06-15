@@ -6727,10 +6727,24 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity {
             String vkd3dWrapper = dxwrapper.split(";")[1];
             String ddrawrapper = dxwrapper.split(";")[2];
             
+            boolean ddrawNoneSelected = ddrawrapper == null
+                    || ddrawrapper.equalsIgnoreCase("none") || ddrawrapper.contains("None");
+            boolean keepBundledDdraw = false;
+            File syswow64Dir = new File(rootDir, ImageFs.WINEPREFIX + "/drive_c/windows/syswow64");
+            File system32Dir = new File(rootDir, ImageFs.WINEPREFIX + "/drive_c/windows/system32");
+
             if (hasSelectedDxvkWrapper(dxvkWrapper)) {
                 ContentProfile dxvkProfile = contentsManager.getProfileByEntryName(dxvkWrapper);
                 if (dxvkProfile != null) {
                     Log.d(TAG, "Applying user-defined DXVK content profile: " + dxvkWrapper);
+                    if (ddrawNoneSelected && dxvkProfileBundlesDdraw(dxvkProfile)) {
+                        keepBundledDdraw = true;
+                        WinComponentSetup.restoreWineBuiltinDllFiles(imageFs, wineInfo, "ddraw.dll", "d3dimm.dll");
+                        new File(syswow64Dir, "ddraw_.dll").delete();
+                        new File(system32Dir, "ddraw_.dll").delete();
+                        File origDdraw = new File(syswow64Dir, "ddraw.dll");
+                        if (origDdraw.exists()) FileUtils.copy(origDdraw, new File(syswow64Dir, "ddraw_.dll"));
+                    }
                     contentsManager.applyContent(dxvkProfile);
                     extractD8VKIfNeeded(dxvkWrapper, windowsDir);
                 } else {
@@ -6752,31 +6766,33 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity {
             Log.d(TAG, "Extracting nglide wrapper");
             TarCompressorUtils.extract(TarCompressorUtils.Type.ZSTD, this, "ddrawrapper/nglide.tzst", windowsDir, onExtractFileListener);
 
-            // Clear any stale D7VK passthrough DLL left from a previous selection.
-            File syswow64Dir = new File(rootDir, ImageFs.WINEPREFIX + "/drive_c/windows/syswow64");
-            File system32Dir = new File(rootDir, ImageFs.WINEPREFIX + "/drive_c/windows/system32");
-            new File(syswow64Dir, "ddraw_.dll").delete();
-            new File(system32Dir, "ddraw_.dll").delete();
+            if (keepBundledDdraw) {
+                Log.d(TAG, "Keeping DXVK-bundled ddraw wrapper");
+            } else {
+                // Clear any stale D7VK passthrough DLL left from a previous selection.
+                new File(syswow64Dir, "ddraw_.dll").delete();
+                new File(system32Dir, "ddraw_.dll").delete();
 
-            ContentProfile d7vkProfile = findD7vkProfileForDdrawrapper(ddrawrapper);
-            if (d7vkProfile != null) {
-                Log.d(TAG, "Applying D7VK ddraw wrapper: " + ddrawrapper);
-                WinComponentSetup.restoreWineBuiltinDllFiles(imageFs, wineInfo, "ddraw.dll", "d3dimm.dll");
-                File origDdraw = new File(syswow64Dir, "ddraw.dll");
-                File renamedDdraw = new File(syswow64Dir, "ddraw_.dll");
-                if (origDdraw.exists()) FileUtils.copy(origDdraw, renamedDdraw);
-                contentsManager.applyContent(d7vkProfile);
-            }
-            else if (ddrawrapper.equalsIgnoreCase("none") || ddrawrapper.contains("None")) {
-                Log.d(TAG, "No DDRaw wrapper has been selected, restoring original ddraw files");
-                WinComponentSetup.restoreWineBuiltinDllFiles(imageFs, wineInfo, "ddraw.dll", "d3dimm.dll");
-            }
-            else {
-                if (ddrawrapper.equals("cnc-ddraw"))
-                    envVars.put("CNC_DDRAW_CONFIG_FILE", "C:\\windows\\syswow64\\ddraw.ini");
+                ContentProfile d7vkProfile = findD7vkProfileForDdrawrapper(ddrawrapper);
+                if (d7vkProfile != null) {
+                    Log.d(TAG, "Applying D7VK ddraw wrapper: " + ddrawrapper);
+                    WinComponentSetup.restoreWineBuiltinDllFiles(imageFs, wineInfo, "ddraw.dll", "d3dimm.dll");
+                    File origDdraw = new File(syswow64Dir, "ddraw.dll");
+                    File renamedDdraw = new File(syswow64Dir, "ddraw_.dll");
+                    if (origDdraw.exists()) FileUtils.copy(origDdraw, renamedDdraw);
+                    contentsManager.applyContent(d7vkProfile);
+                }
+                else if (ddrawrapper.equalsIgnoreCase("none") || ddrawrapper.contains("None")) {
+                    Log.d(TAG, "No DDRaw wrapper has been selected, restoring original ddraw files");
+                    WinComponentSetup.restoreWineBuiltinDllFiles(imageFs, wineInfo, "ddraw.dll", "d3dimm.dll");
+                }
+                else {
+                    if (ddrawrapper.equals("cnc-ddraw"))
+                        envVars.put("CNC_DDRAW_CONFIG_FILE", "C:\\windows\\syswow64\\ddraw.ini");
 
-                Log.d(TAG, "Extracting ddrawrapper " + ddrawrapper);
-                TarCompressorUtils.extract(TarCompressorUtils.Type.ZSTD, this, "ddrawrapper/" + ddrawrapper + ".tzst", windowsDir, onExtractFileListener);
+                    Log.d(TAG, "Extracting ddrawrapper " + ddrawrapper);
+                    TarCompressorUtils.extract(TarCompressorUtils.Type.ZSTD, this, "ddrawrapper/" + ddrawrapper + ".tzst", windowsDir, onExtractFileListener);
+                }
             }
 
             Log.d(TAG, "Finished extraction of DXVK wrapper files, version: " + dxwrapper);
@@ -6818,6 +6834,16 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity {
                 return profile;
         }
         return null;
+    }
+
+    private static boolean dxvkProfileBundlesDdraw(ContentProfile profile) {
+        if (profile == null || profile.fileList == null) return false;
+        for (ContentProfile.ContentFile file : profile.fileList) {
+            if (file.target == null) continue;
+            String target = file.target.replace('\\', '/').toLowerCase();
+            if (target.contains("syswow64") && target.endsWith("/ddraw.dll")) return true;
+        }
+        return false;
     }
 
     private static String findDelimitedWrapper(String value, String prefix) {
